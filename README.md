@@ -70,5 +70,4 @@ npm update
 
 MIT License - (c) 2018 - 2020 [10 Quality](https://www.10quality.com/).
 
-
 php ayuco create controller:MyController@init@render
