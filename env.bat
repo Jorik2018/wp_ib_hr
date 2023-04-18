@@ -1,0 +1,1 @@
+SET PATH=D:\php\php-7.4.30-Win32-vc15-x64;D:\nodejs\node-v13.14.0-win-x64;D:\nodejs\node-v13.14.0-win-x64\globals;%PATH% & npm config set prefix D:\nodejs\node-v13.14.0-win-x64\globals
