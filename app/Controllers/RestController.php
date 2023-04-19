@@ -183,11 +183,12 @@ class RestController extends Controller
             foreach($wpdb->get_results($querystr, OBJECT) as $post){
                 $posts[(explode("_",$post->post_name))[0]]=$post->ID;
             }
+            $out=[];
             foreach($products as $item){
                 $product = $posts[$item['code']];
                 //$product = get_page_by_path($item['code'], OBJECT, 'product' );
                 if (empty( $product ) ) {
-            
+                    $out[]=$item;
                     $count++;if($count>30)break;
                     $product = new \WC_Product_Simple();
                     $product->set_name($item['name']); // product title
@@ -228,8 +229,9 @@ class RestController extends Controller
                 }
 
             }
+            return $out;
         }
-        return $products;
+        return ['categories'=>$categories,'brands'=>$brands];
     }
     /**
      * @since 1.0.0
