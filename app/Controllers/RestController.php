@@ -131,7 +131,7 @@ class RestController extends Controller
         $count=0;
         foreach($categories as $item){
             $count++;
-            if($count>10)break;
+            if($count>20)break;
             wp_insert_term(strtoupper($item[1]), 'product_cat', array(
                 'description' => '', // optional
                 'parent' => 0, // optional
