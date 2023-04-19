@@ -189,7 +189,7 @@ class RestController extends Controller
                 //$product = get_page_by_path($item['code'], OBJECT, 'product' );
                 if (empty( $product ) ) {
                     $out[]=$item;
-                    $count++;if($count>30)break;
+                    $count++;if($count>50)break;
                     $product = new \WC_Product_Simple();
                     $product->set_name($item['name']); // product title
                     $product->set_slug($item['code']);
