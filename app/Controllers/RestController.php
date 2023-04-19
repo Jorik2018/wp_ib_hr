@@ -73,7 +73,7 @@ class RestController extends Controller
         $categories=[];
         $brands=[];
         $row=[];
-        if (file_exists(wp_upload_dir()['basedir'].DIRECTORY_SEPARATOR ."DELTRON.csv")) {
+        if (file_exists($filename=wp_upload_dir()['basedir'].DIRECTORY_SEPARATOR ."DELTRON.csv")) {
             return"The file $filename exists";
         } else {
              return "The file $filename does not exist";
