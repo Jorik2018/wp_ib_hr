@@ -74,7 +74,7 @@ class RestController extends Controller
         $brands=[];
         $row=[];
        return wp_upload_dir()['basedir']."\DELTRON.csv";
-        if (($handle = fopen(wp_upload_dir()['basedir']."\DELTRON.csv", "r")) !== FALSE) {
+        if (($handle = fopen(wp_upload_dir()['basedir'].DIRECTORY_SEPARATOR ."DELTRON.csv", "r")) !== FALSE) {
             return 11;
             while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
                 $num = count($data);
