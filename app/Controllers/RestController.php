@@ -170,6 +170,7 @@ class RestController extends Controller
                 'taxonomy'   => 'pwb-brand',
                 'hide_empty' => false,
             ));
+
             $querystr = "
             SELECT $wpdb->posts.ID, $wpdb->posts.post_name
             FROM $wpdb->posts
@@ -183,6 +184,7 @@ class RestController extends Controller
             foreach($wpdb->get_results($querystr, OBJECT) as $post){
                 $posts[(explode("_",$post->post_name))[0]]=$post->ID;
             }
+            return $posts;
             $out=[];
             foreach($products as $item){
                 $product = $posts[$item['code']];
