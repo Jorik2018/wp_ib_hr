@@ -27,7 +27,7 @@ class Main extends Bridge
      */
     public function init()
     {
-        $this->add_filter( 'the_content', 'MyController@print_hello_world' );
+        //$this->add_filter( 'the_content', 'MyController@print_hello_world' );
         $this->add_action( 'rest_api_init','RestController@init' );
         $this->add_action( 'rest_api_init','CvRestController@init');
         $this->add_action( 'plugins_loaded', 'AdminController@activate' );
