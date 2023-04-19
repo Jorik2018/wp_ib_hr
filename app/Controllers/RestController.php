@@ -77,7 +77,6 @@ class RestController extends Controller
             return"The file $filename not exists";
         }
         if (($handle = fopen(wp_upload_dir()['basedir'].DIRECTORY_SEPARATOR ."DELTRON.csv", "r")) !== FALSE) {
-            return 11;
             while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
                 $num = count($data);
 
@@ -123,9 +122,6 @@ class RestController extends Controller
             }
             fclose($handle);
         }
-
-        return $products;
-
         $categories_terms=array_map(function($e){return $e->slug;},get_terms(array(
             'taxonomy'   => 'product_cat',
             'hide_empty' => false,
