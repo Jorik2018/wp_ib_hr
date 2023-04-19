@@ -122,6 +122,8 @@ class RestController extends Controller
             fclose($handle);
         }
 
+        return $products;
+
         $categories_terms=array_map(function($e){return $e->slug;},get_terms(array(
             'taxonomy'   => 'product_cat',
             'hide_empty' => false,
