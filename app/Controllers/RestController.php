@@ -177,6 +177,7 @@ class RestController extends Controller
             WHERE $wpdb->posts.post_status = 'publish' 
             AND $wpdb->posts.post_type = 'product'
             AND $wpdb->posts.post_date < NOW()
+            AND $wpdb->posts.post_name 
             ORDER BY $wpdb->posts.post_date DESC
             ";
             
@@ -184,10 +185,12 @@ class RestController extends Controller
             foreach($wpdb->get_results($querystr, OBJECT) as $post){
                 $posts[(explode("_",$post->post_name))[0]]=$post->ID;
             }
-            return $posts;
+            
             $out=[];
             foreach($products as $item){
+                if($item['code']!='acecor3otc')continue;
                 $product = $posts[$item['code']];
+                return [$posts,$product,$item];
                 //$product = get_page_by_path($item['code'], OBJECT, 'product' );
                 if (empty( $product ) ) {
                     $out[]=$item;
