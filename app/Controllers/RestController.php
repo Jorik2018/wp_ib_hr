@@ -73,7 +73,7 @@ class RestController extends Controller
         $categories=[];
         $brands=[];
         $row=[];
-       return wp_upload_dir()['basedir']."\DELTRON.csv";
+      // return wp_upload_dir()['basedir']."\DELTRON.csv";
         if (($handle = fopen(wp_upload_dir()['basedir'].DIRECTORY_SEPARATOR ."DELTRON.csv", "r")) !== FALSE) {
             return 11;
             while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
