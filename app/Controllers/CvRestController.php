@@ -31,7 +31,7 @@ class CvRestController extends Controller
 
     public function study_pag()
     {
-
+        return 1;
     }
 
     public function training_get()
