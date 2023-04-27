@@ -68,7 +68,7 @@ class CvRestController extends Controller
 
         register_rest_route( 'api/hr','/study/(?P<from>\d+)/(?P<to>\d+)', array(
             'methods' => 'GET',
-            array($this,'study_pag')
+            'callback' => array($this,'study_pag')
         ));
 
         register_rest_route( 'api/hr','/study/(?P<id>\d+)', array(
@@ -78,12 +78,12 @@ class CvRestController extends Controller
 
         register_rest_route( 'api/hr','/training/(?P<from>\d+)/(?P<to>\d+)', array(
             'methods' => 'GET',
-            array($this,'training_pag')
+            'callback' => array($this,'training_pag')
         ));
 
         register_rest_route( 'api/hr','/training/(?P<id>\d+)', array(
             'methods' => 'GET',
-            array($this,'training_get')
+            'callback' => array($this,'training_get')
         ));
 
         register_rest_route( 'api/hr','/experience/(?P<from>\d+)/(?P<to>\d+)', array(
