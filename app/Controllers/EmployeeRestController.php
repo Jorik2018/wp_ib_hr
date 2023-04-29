@@ -5,18 +5,7 @@ namespace IB\cv\Controllers;
 use WPMVC\MVC\Controller;
 use IB\cv\toCamelCase;
 
-/**
- * MyController
- * WordPress MVC controller.
- *
- * @author me
- * @package ip-cv
- * @version 1.0.0
- */
-
-/*I need you complete all the methods controller acording the implemented code */
-
-class CvRestController extends Controller
+class EmployeeRestController extends Controller
 {
 
     public function init()
