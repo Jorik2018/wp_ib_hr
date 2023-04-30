@@ -24,7 +24,7 @@ class StudyRestController extends Controller
 
         register_rest_route( 'api/hr','/study/(?P<id>\d+)', array(
             'methods' => 'GET',
-            array($this,'get')
+            'callback' => array($this,'get')
         ));
 
         register_rest_route( 'api/hr', '/study/(?P<id>)',array(

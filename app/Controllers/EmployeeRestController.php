@@ -13,12 +13,12 @@ class EmployeeRestController extends Controller
     {
         register_rest_route( 'api/hr','/employee/(?P<from>\d+)/(?P<to>\d+)', array(
             'methods' => 'GET',
-            array($this,'employee_pag')
+            'callback' => array($this,'employee_pag')
         ));
 
         register_rest_route( 'api/hr','/employee/(?P<id>\d+)', array(
             'methods' => 'GET',
-            array($this,'employee_get')
+            'callback' => array($this,'employee_get')
         ));
 
         register_rest_route( 'api/hr','/employee', array(

@@ -23,7 +23,7 @@ class TrainingRestController extends Controller
 
         register_rest_route( 'api/hr','/training/(?P<id>\d+)', array(
             'methods' => 'GET',
-            array($this,'get')
+            'callback' => array($this,'get')
         ));
 
         register_rest_route( 'api/hr', '/training/(?P<id>)',array(

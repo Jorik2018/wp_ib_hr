@@ -25,7 +25,7 @@ class ExperienceRestController extends Controller
 
         register_rest_route( 'api/hr','/experience/(?P<id>\d+)', array(
             'methods' => 'GET',
-            array($this,'get')
+            'callback' => array($this,'get')
         ));
 
         register_rest_route( 'api/hr', '/experience/(?P<id>)',array(
