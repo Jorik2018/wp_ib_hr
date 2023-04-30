@@ -69,7 +69,7 @@ class StudyRestController extends Controller
 
     public function get($request){    
         global $wpdb;
-        $o = (\stdClass)($wpdb->get_row($wpdb->prepare("SELECT * FROM hr_study WHERE id=" . $request['id']), ARRAY_A));
+        $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM hr_study WHERE id=" . $request['id']), ARRAY_A);
         if ($wpdb->last_error) return t_error();
         return Util\toCamelCase($o);
     }
