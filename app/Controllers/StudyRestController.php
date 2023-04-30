@@ -41,8 +41,6 @@ class StudyRestController extends Controller
         cfield($o, 'employeeId', 'employee_id');
         cfield($o, 'expeditionDate', 'expedition_date');
         cfield($o, 'inProgress', 'in_progress');
-        
-
         $tmpId = remove($o, 'tmpId');
         unset($o['synchronized']);
         $inserted = 0;
@@ -71,8 +69,7 @@ class StudyRestController extends Controller
 
     public function get($request){    
         global $wpdb;
-        $o = (object)$wpdb->get_row($wpdb->prepare("SELECT * FROM hr_study WHERE id=" 
-            . $request['id']), ARRAY_A);
+        $o = (\object)($wpdb->get_row($wpdb->prepare("SELECT * FROM hr_study WHERE id=" . $request['id']), ARRAY_A));
         if ($wpdb->last_error) return t_error();
         return Util\toCamelCase($o);
     }
