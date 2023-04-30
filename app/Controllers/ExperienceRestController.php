@@ -5,9 +5,9 @@ namespace IB\cv\Controllers;
 use WPMVC\MVC\Controller;
 use IB\cv\Util;
 
-use function IB\cv\Util\toCamelCase;
+#use function IB\cv\Util\toCamelCase;
 
-require_once __DIR__ . '/../Util/Utils.php';
+#require_once __DIR__ . '/../Util/Utils.php';
 
 class ExperienceRestController extends Controller
 {
@@ -92,9 +92,6 @@ class ExperienceRestController extends Controller
 
 
         if ($wpdb->last_error) return t_error();
-
-
-        $i=1/0;
         return $to > 0 ? array('data' => toCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;    
     }
 
