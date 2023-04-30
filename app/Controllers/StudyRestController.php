@@ -41,6 +41,9 @@ class StudyRestController extends Controller
         cfield($o, 'employeeId', 'employee_id');
         cfield($o, 'expeditionDate', 'expedition_date');
         cfield($o, 'inProgress', 'in_progress');
+        unset($o['uid_insert']);
+        unset($o['user_insert']);
+        unset($o['insert_date']);
         $tmpId = remove($o, 'tmpId');
         unset($o['synchronized']);
         $inserted = 0;
