@@ -51,7 +51,7 @@ class StudyRestController extends Controller
         remove($o,'deleteDate');
         cfield($o, 'expeditionDate', 'expedition_date');
         cdfield($o,'expedition_date');
-return $o;
+
         $tmpId = remove($o, 'tmpId');
         unset($o['synchronized']);
         $inserted = 0;
