@@ -39,7 +39,6 @@ class StudyRestController extends Controller
         $o = method_exists($request, 'get_params') ? $request->get_params() : $request;
         $current_user = wp_get_current_user();
         cfield($o, 'employeeId', 'employee_id');
-        cfield($o, 'expeditionDate', 'expedition_date');
         cfield($o, 'inProgress', 'in_progress');
         remove($o,'uidInsert');
         remove($o,'userInsert');
@@ -50,7 +49,9 @@ class StudyRestController extends Controller
         remove($o,'uidDelete');
         remove($o,'userDelete');
         remove($o,'deleteDate');
-
+        cfield($o, 'expeditionDate', 'expedition_date');
+        cdfield($o,'expedition_date');
+return $o;
         $tmpId = remove($o, 'tmpId');
         unset($o['synchronized']);
         $inserted = 0;
