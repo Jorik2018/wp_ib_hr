@@ -7,6 +7,8 @@ use IB\cv\Util;
 
 class ExperienceRestController extends Controller
 {
+    use Util;
+    
     public function init()
     {
  
