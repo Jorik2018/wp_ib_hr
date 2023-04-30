@@ -13,13 +13,13 @@ function toCamelCase($data) {
             $newKey = lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $key))));
             $result->$newKey = toCamelCase($value);
         }
-        return $result;
+        return 'is_object';// $result;
     } elseif (is_array($data)) {
         $result = array();
         foreach ($data as $item) {
             $result[] = toCamelCase($item);
         }
-        return $result;
+        return 'is_array';// $result;
     } else {
         return $data;
     }
