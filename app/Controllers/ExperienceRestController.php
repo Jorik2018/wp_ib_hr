@@ -7,7 +7,6 @@ use IB\cv\Util;
 
 class ExperienceRestController extends Controller
 {
-    use Util;
 
     public function init()
     {
@@ -87,7 +86,7 @@ class ExperienceRestController extends Controller
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
     
         if ($wpdb->last_error) return t_error();
-        return $to > 0 ? array('data' => toCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;    
+        return $to > 0 ? array('data' => IB\cv\Util\toCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;    
     }
 
     public function delete($data){
