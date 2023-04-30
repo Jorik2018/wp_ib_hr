@@ -21,7 +21,7 @@ function toCamelCase($data) {
         }
         return 'is_array';// $result;
     } else {
-        return $data;
+        return '$data';
     }
 }
 
