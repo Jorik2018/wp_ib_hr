@@ -4,6 +4,7 @@ namespace IB\cv\Controllers;
 
 use WPMVC\MVC\Controller;
 use IB\cv\Util;
+require_once __DIR__ . '/../Util/Utils.php';
 
 class EmployeeRestController extends Controller
 {
@@ -68,7 +69,7 @@ class EmployeeRestController extends Controller
         global $wpdb;
         $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM hr_employee WHERE id=" . $request['id']), ARRAY_A);
         if ($wpdb->last_error) return t_error();
-        return toCamelCase($o);
+        return Util\toCamelCase($o);
     }
 
     public function pag($request){
@@ -84,7 +85,7 @@ class EmployeeRestController extends Controller
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
     
         if ($wpdb->last_error) return t_error();
-        return $to > 0 ? array('data' => toCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;    
+        return $to > 0 ? array('data' => Util\toCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;    
     }
 
     public function delete($data){
