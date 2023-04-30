@@ -38,6 +38,19 @@ class TrainingRestController extends Controller
         $o = method_exists($request, 'get_params') ? $request->get_params() : $request;
         $current_user = wp_get_current_user();
         cfield($o, 'employeeId', 'employee_id');
+        remove($o,'uidInsert');
+        remove($o,'userInsert');
+        remove($o,'insertDate');
+        remove($o,'uidUpdate');
+        remove($o,'userUpdate');
+        remove($o,'updateDate');
+        remove($o,'uidDelete');
+        remove($o,'userDelete');
+        remove($o,'deleteDate');
+        cfield($o, 'startDate', 'start_date');
+        cdfield($o,'start_date');
+        cfield($o, 'endDate', 'end_date');
+        cdfield($o,'end_date');
 
         $tmpId = remove($o, 'tmpId');
         unset($o['synchronized']);
