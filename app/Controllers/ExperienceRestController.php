@@ -70,7 +70,7 @@ class ExperienceRestController extends Controller
 
     public function get($request){    
         global $wpdb;
-        $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM hr_experience WHERE id=" . $request['id']), ARRAY_A);
+        $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM hr_experience WHERE id=" . $request['id']), OBJECT);
         if ($wpdb->last_error) return t_error();
         return Util\toCamelCase($o);
     }
@@ -85,7 +85,7 @@ class ExperienceRestController extends Controller
         $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS o.* FROM hr_experience o " .
             "WHERE o.canceled=0 " . (isset($people_id) ? " AND o.people_id=$people_id " : "") .
             "ORDER BY o.id DESC " .
-            ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
+            ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), OBJECT);
     
 
 
