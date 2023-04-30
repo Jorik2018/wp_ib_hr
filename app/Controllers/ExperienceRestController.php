@@ -3,14 +3,8 @@
 namespace IB\cv\Controllers;
 
 use WPMVC\MVC\Controller;
-/**
- * ExperienceRestController
- * WordPress MVC controller.
- *
- * @author 
- * @package ib-cv
- * @version 1.0.0
- */
+use IB\cv\cfield;
+
 class ExperienceRestController extends Controller
 {
     public function init()
@@ -43,7 +37,7 @@ class ExperienceRestController extends Controller
         $o = method_exists($request, 'get_params') ? $request->get_params() : $request;
         $current_user = wp_get_current_user();
         cfield($o, 'employeeId', 'employee_id');
-
+        cfield($o, 'startDate', 'start_date');
         $tmpId = remove($o, 'tmpId');
         unset($o['synchronized']);
         $inserted = 0;
