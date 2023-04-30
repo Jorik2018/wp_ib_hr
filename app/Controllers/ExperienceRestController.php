@@ -5,6 +5,8 @@ namespace IB\cv\Controllers;
 use WPMVC\MVC\Controller;
 use IB\cv\Util;
 
+use function IB\cv\Util\toCamelCase;
+
 class ExperienceRestController extends Controller
 {
 
