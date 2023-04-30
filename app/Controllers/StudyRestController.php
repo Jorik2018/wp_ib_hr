@@ -39,6 +39,9 @@ class StudyRestController extends Controller
         $o = method_exists($request, 'get_params') ? $request->get_params() : $request;
         $current_user = wp_get_current_user();
         cfield($o, 'employeeId', 'employee_id');
+        cfield($o, 'expeditionDate', 'expedition_date');
+        cfield($o, 'inProgress', 'in_progress');
+        
 
         $tmpId = remove($o, 'tmpId');
         unset($o['synchronized']);
