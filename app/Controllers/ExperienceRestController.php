@@ -3,8 +3,7 @@
 namespace IB\cv\Controllers;
 
 use WPMVC\MVC\Controller;
-use IB\cv\Util\cfield;
-use IB\cv\Util\toCamelCase as toCamelCase;
+use IB\cv\Util;
 
 class ExperienceRestController extends Controller
 {
