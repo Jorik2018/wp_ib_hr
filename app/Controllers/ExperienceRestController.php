@@ -38,6 +38,7 @@ class ExperienceRestController extends Controller
         $current_user = wp_get_current_user();
         cfield($o, 'employeeId', 'employee_id');
         cfield($o, 'startDate', 'start_date');
+        cfield($o, 'endDate', 'end_date');
         $tmpId = remove($o, 'tmpId');
         unset($o['synchronized']);
         $inserted = 0;
