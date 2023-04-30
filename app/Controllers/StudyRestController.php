@@ -95,7 +95,7 @@ class StudyRestController extends Controller
         $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS o.* FROM hr_study o " .
             "WHERE o.canceled=0 " . (isset($people_id) ? " AND o.people_id=$people_id " : "") .
             "ORDER BY o.id DESC " .
-            ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
+            ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), OBJECT);
     
         if ($wpdb->last_error) return t_error();
         return $to > 0 ? array('data' => Util\toCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;    
