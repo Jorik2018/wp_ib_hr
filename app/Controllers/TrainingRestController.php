@@ -28,7 +28,7 @@ class TrainingRestController extends Controller
 
         register_rest_route( 'api/hr', '/training/(?P<id>)',array(
             'methods' => 'DELETE',
-            'callback' => 'delete'
+            'callback' => array($this,'delete')
         ));
 
     }

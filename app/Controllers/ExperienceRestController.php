@@ -30,7 +30,7 @@ class ExperienceRestController extends Controller
 
         register_rest_route( 'api/hr', '/experience/(?P<id>)',array(
             'methods' => 'DELETE',
-            'callback' => 'delete'
+            'callback' => array($this,'delete')
         ));
 
     }

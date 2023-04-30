@@ -29,7 +29,7 @@ class StudyRestController extends Controller
 
         register_rest_route( 'api/hr', '/study/(?P<id>)',array(
             'methods' => 'DELETE',
-            'callback' => 'delete'
+            'callback' => array($this,'delete')
         ));
 
     }

@@ -28,7 +28,7 @@ class EmployeeRestController extends Controller
 
         register_rest_route( 'api/hr', '/employee/(?P<id>)',array(
             'methods' => 'DELETE',
-            'callback' => 'delete'
+            'callback' => array($this,'delete')
         ));
 
     }
