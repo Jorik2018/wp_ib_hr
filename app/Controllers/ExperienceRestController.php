@@ -69,7 +69,7 @@ class ExperienceRestController extends Controller
         global $wpdb;
         $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM hr_experience WHERE id=" . $request['id']), ARRAY_A);
         if ($wpdb->last_error) return t_error();
-        return IB\cv\toCamelCase($o);
+        return Util\toCamelCase($o);
     }
 
     public function pag($request){
