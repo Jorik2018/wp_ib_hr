@@ -89,7 +89,12 @@ class ExperienceRestController extends Controller
             "ORDER BY o.id DESC " .
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
     
+
+
         if ($wpdb->last_error) return t_error();
+
+
+        $i=1/0;
         return $to > 0 ? array('data' => toCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;    
     }
 
