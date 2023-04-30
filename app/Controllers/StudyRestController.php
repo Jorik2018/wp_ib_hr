@@ -5,14 +5,7 @@ namespace IB\cv\Controllers;
 use WPMVC\MVC\Controller;
 use IB\cv\cfield;
 use IB\cv\toCamelCase;
-/**
- * StudyRestController
- * WordPress MVC controller.
- *
- * @author 
- * @package ib-cv
- * @version 1.0.0
- */
+
 class StudyRestController extends Controller
 {
 
