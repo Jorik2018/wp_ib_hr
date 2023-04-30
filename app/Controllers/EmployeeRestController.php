@@ -3,8 +3,7 @@
 namespace IB\cv\Controllers;
 
 use WPMVC\MVC\Controller;
-use IB\cv\cfield;
-use IB\cv\toCamelCase;
+use IB\cv\Util;
 
 class EmployeeRestController extends Controller
 {

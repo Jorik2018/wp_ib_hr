@@ -1,6 +1,6 @@
 <?php
 
-namespace IB\cv;
+namespace IB\cv\Util;
 
 use WPMVC\Bridge;
 
