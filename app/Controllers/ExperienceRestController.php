@@ -7,7 +7,7 @@ use IB\cv\Util;
 
 use function IB\cv\Util\toCamelCase;
 
-#require_once __DIR__ . '/../Util/Utils.php';
+require_once __DIR__ . '/../Util/Utils.php';
 
 class ExperienceRestController extends Controller
 {
