@@ -47,6 +47,10 @@ class StudyRestController extends Controller
         remove($o,'uidUpdate');
         remove($o,'userUpdate');
         remove($o,'updateDate');
+        remove($o,'uidDelete');
+        remove($o,'userDelete');
+        remove($o,'deleteDate');
+
         $tmpId = remove($o, 'tmpId');
         unset($o['synchronized']);
         $inserted = 0;
