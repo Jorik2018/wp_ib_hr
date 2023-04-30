@@ -44,6 +44,9 @@ class StudyRestController extends Controller
         unset($o['uid_insert']);
         unset($o['user_insert']);
         unset($o['insert_date']);
+        unset($o['uidInsert']);
+        unset($o['userInsert']);
+        unset($o['insertDate']);
         $tmpId = remove($o, 'tmpId');
         unset($o['synchronized']);
         $inserted = 0;
