@@ -8,7 +8,7 @@ use WPMVC\Bridge;
 
 function toCamelCase($data) {
     if (is_object($data)) {
-        $result = new stdClass();
+        $result = new \stdClass();
         foreach ($data as $key => $value) {
             $newKey = lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $key))));
             $result->$newKey = toCamelCase($value);
