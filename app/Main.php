@@ -25,6 +25,7 @@ class Main extends Bridge
         $this->add_action( 'rest_api_init','StudyRestController@init');
         $this->add_action( 'rest_api_init','TrainingRestController@init');
         $this->add_action( 'rest_api_init','ExperienceRestController@init');
+        $this->add_action( 'rest_api_init','DocumentRestController@init');
         $this->add_action( 'plugins_loaded', 'AdminController@activate' );
     }
 
