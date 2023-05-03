@@ -51,6 +51,7 @@ class TrainingRestController extends Controller
         cdfield($o,'start_date');
         cfield($o, 'endDate', 'end_date');
         cdfield($o,'end_date');
+        return $o['attachment'];
         if(isset($o['attachment'])&&is_array($o['attachment'])){
             $o['attachment']=$o['attachment']['tempFile'];
         }
