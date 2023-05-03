@@ -54,7 +54,6 @@ class TrainingRestController extends Controller
         
         if(isset($o['attachment'])&&is_array($o['attachment'])){
             $o['attachment']=$o['attachment']['tempFile'];
-            return $o['attachment'];
         }
         $tmpId = remove($o, 'tmpId');
         unset($o['synchronized']);
