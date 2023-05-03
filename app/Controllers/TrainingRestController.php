@@ -51,7 +51,9 @@ class TrainingRestController extends Controller
         cdfield($o,'start_date');
         cfield($o, 'endDate', 'end_date');
         cdfield($o,'end_date');
-return $o['attachment']['tempFile'];
+        if(isset($o['attachment'])&&is_array($o['attachment'])){
+            $o['attachment']=$o['attachment']['tempFile'];
+        }
         $tmpId = remove($o, 'tmpId');
         unset($o['synchronized']);
         $inserted = 0;
