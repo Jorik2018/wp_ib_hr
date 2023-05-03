@@ -51,7 +51,9 @@ class StudyRestController extends Controller
         remove($o,'deleteDate');
         cfield($o, 'expeditionDate', 'expedition_date');
         cdfield($o,'expedition_date');
-
+        if(isset($o['attachment'])&&is_array($o['attachment'])){
+            $o['attachment']=$o['attachment']['tempFile'];
+        }
         $tmpId = remove($o, 'tmpId');
         unset($o['synchronized']);
         $inserted = 0;

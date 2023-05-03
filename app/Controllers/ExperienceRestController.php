@@ -54,7 +54,9 @@ class ExperienceRestController extends Controller
         cdfield($o,'end_date');
         cfield($o, 'startDate', 'start_date');
         cdfield($o,'start_date');
-
+        if(isset($o['attachment'])&&is_array($o['attachment'])){
+            $o['attachment']=$o['attachment']['tempFile'];
+        }
         $tmpId = remove($o, 'tmpId');
         unset($o['synchronized']);
         $inserted = 0;
