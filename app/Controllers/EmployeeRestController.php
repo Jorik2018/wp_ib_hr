@@ -46,6 +46,10 @@ class EmployeeRestController extends Controller
             $o['uid_update'] = $current_user->ID;
             $o['user_update'] = $current_user->user_login;
             $o['update_date'] = current_time('mysql', 1);
+			
+			unset($o['surnames']);
+			unset($o['names']);
+			
             $updated = $wpdb->update('hr_employee', $o, array('id' => $o['id']));
         } else {
             unset($o['id']);
