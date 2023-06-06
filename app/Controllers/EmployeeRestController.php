@@ -38,7 +38,7 @@ class EmployeeRestController extends Controller
         $o = method_exists($request, 'get_params') ? $request->get_params() : $request;
         $current_user = wp_get_current_user();
         cfield($o, 'employeeId', 'employee_id');
-
+		cfield($o, 'code', 'employee_code');
         $tmpId = remove($o, 'tmpId');
         unset($o['synchronized']);
         $inserted = 0;
