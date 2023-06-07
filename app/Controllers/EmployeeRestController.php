@@ -34,7 +34,7 @@ class EmployeeRestController extends Controller
     }
     
     public function post($request){
-        global $wpdb;
+        global $wpdb;die("2222");
         $o = method_exists($request, 'get_params') ? $request->get_params() : $request;
         $current_user = wp_get_current_user();
         cfield($o, 'employeeId', 'employee_id');
@@ -42,7 +42,7 @@ class EmployeeRestController extends Controller
         $tmpId = remove($o, 'tmpId');
         unset($o['synchronized']);
         $inserted = 0;
-		die("2222");
+		
         if ($o['id'] > 0) {
 			$o=array('id'=>$o['id'],'people_code'=>$o['people_code'],
 				'uid_update'=>$current_user->ID,
