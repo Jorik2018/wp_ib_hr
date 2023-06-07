@@ -47,6 +47,21 @@ class EmployeeRestController extends Controller
 				'uid_update'=>$current_user->ID,
 				'user_update'=>$current_user->user_login,
 				'update_date'=>current_time('mysql', 1));
+			$user_ids = get_users(array(
+				'meta_key' => 'nicknames',
+				'meta_value' => $o['people_code'],
+				'fields' => 'ID',
+			));
+			if (!empty($user_ids)) {
+				foreach ($user_ids as $user_id) {
+					$o['people_id']=$user_id;break;
+				}
+			} else {
+				status_header(400);
+				wp_send_json_error(array(
+					'error' => 'People code no valid!',
+				));
+			}
             $updated = $wpdb->update('hr_employee', $o, array('id' => $o['id']));
         } else {
             unset($o['id']);
