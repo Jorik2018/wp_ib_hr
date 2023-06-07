@@ -36,7 +36,7 @@ function toCamelCase($data) {
 				$result->$newKey = $value;
 			}
 			return  $result;
-			}
+		}
     } else {
         return $data;
     }
