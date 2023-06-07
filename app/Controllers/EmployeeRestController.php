@@ -50,22 +50,10 @@ class EmployeeRestController extends Controller
 				'update_date'=>current_time('mysql', 1));
 			
 			$user_ids = get_users(array(
-				'meta_key' => 'nicknames',
+				'meta_key' => 'nickname',
 				'meta_value' => $o['people_code'],
 				'fields' => 'ID',
 			));
-			$user_ids = $wpdb->get_col(
-    $wpdb->prepare(
-        "
-        SELECT user_id
-        FROM $wpdb->usermeta
-        WHERE meta_key = %s
-        AND meta_value = %s
-        ",
-        'nicknames',
-        $o['people_code']
-    )
-);
 		$o['$user_ids']=$user_ids ;
 			if (!empty($user_ids)) {
 				foreach ($user_ids as $user_id) {
