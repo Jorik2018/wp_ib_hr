@@ -53,12 +53,14 @@ class EmployeeRestController extends Controller
 				'meta_key' => 'nicknames',
 				'meta_value' => $o['people_code'],
 				'fields' => 'ID',
-			));return $o;/*
+			));
 			if (!empty($user_ids)) {
 				foreach ($user_ids as $user_id) {
 					$o['people_id']=$user_id;break;
 				}
 			}
+			return $o;
+			/*
 			if(!isset($o['people_id'])){
 				status_header(400);
 				wp_send_json_error(array(
