@@ -63,6 +63,7 @@ class EmployeeRestController extends Controller
 					'error' => 'People code no valid!',
 				));
 			}*/
+			echo 1;die();
             $updated = $wpdb->update('hr_employee', $o, array('id' => $o['id']));
         } else {
             unset($o['id']);
