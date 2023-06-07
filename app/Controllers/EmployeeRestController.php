@@ -54,7 +54,6 @@ class EmployeeRestController extends Controller
 				'meta_value' => $o['people_code'],
 				'fields' => 'ID',
 			));
-			$o['$user_ids']=$user_ids ;
 			if (!empty($user_ids)) {
 				foreach ($user_ids as $user_id) {
 					$o['people_id']=$user_id;break;
