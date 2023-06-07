@@ -34,7 +34,7 @@ class EmployeeRestController extends Controller
     }
     
     public function post($request){
-        global $wpdb;die("2222");
+        global $wpdb;return ("2222");
         $o = method_exists($request, 'get_params') ? $request->get_params() : $request;
         $current_user = wp_get_current_user();
         cfield($o, 'employeeId', 'employee_id');
