@@ -88,7 +88,7 @@ class EmployeeRestController extends Controller
         global $wpdb;
         $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM hr_employee WHERE id=" . $request['id']), ARRAY_A);
 		if(isset($o['people_id'])){
-			$meta_values = get_user_meta($o['people_id'], array('first_name', 'last_name'), false);
+			$meta_values = get_user_meta(1*$o['people_id'], array('first_name', 'last_name'), false);
 			$o['meta_values']=$meta_values;
 			if (!empty($meta_values)) {
 				$o['names']=$meta_values[0];
