@@ -44,10 +44,10 @@ class EmployeeRestController extends Controller
         $inserted = 0;
 		
         if ($o['id'] > 0) {
-			$o=array('id'=>$o['id'],'people_code'=>$o['people_code'],
+			/*$o=array('id'=>$o['id'],'people_code'=>$o['people_code'],
 				'uid_update'=>$current_user->ID,
 				'user_update'=>$current_user->user_login,
-				'update_date'=>current_time('mysql', 1));
+				'update_date'=>current_time('mysql', 1));*/
 			/*$user_ids = get_users(array(
 				'meta_key' => 'nicknames',
 				'meta_value' => $o['people_code'],
@@ -64,8 +64,7 @@ class EmployeeRestController extends Controller
 					'error' => 'People code no valid!',
 				));
 			}*/
-			echo 1;die();
-            $updated = $wpdb->update('hr_employee', $o, array('id' => $o['id']));
+            //$updated = $wpdb->update('hr_employee', $o, array('id' => $o['id']));
         } else {
             unset($o['id']);
             $o['uid_insert'] = $current_user->ID;
