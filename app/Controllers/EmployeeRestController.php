@@ -43,13 +43,10 @@ class EmployeeRestController extends Controller
         unset($o['synchronized']);
         $inserted = 0;
         if ($o['id'] > 0) {
-            $o['uid_update'] = $current_user->ID;
-            $o['user_update'] = $current_user->user_login;
-            $o['update_date'] = current_time('mysql', 1);
-			
-			unset($o['surnames']);
-			unset($o['names']);
-			
+			$o=array('id'=>$o['id'],'people_code'=>$o['people_code'],
+				'uid_update'=>$current_user->ID,
+				'user_update'=>$current_user->user_login,
+				'update_date'=>current_time('mysql', 1));
             $updated = $wpdb->update('hr_employee', $o, array('id' => $o['id']));
         } else {
             unset($o['id']);
