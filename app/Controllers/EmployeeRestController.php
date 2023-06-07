@@ -87,6 +87,13 @@ class EmployeeRestController extends Controller
     public function get($request){    
         global $wpdb;
         $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM hr_employee WHERE id=" . $request['id']), ARRAY_A);
+		if(isset($o['people_id'])){
+			$meta_values = get_user_meta($user_id, array('first_name', 'last_name'), false);
+			if (!empty($meta_values)) {
+				$o['names']=$meta_values[0];
+				$o['surnames']=$meta_values[1];
+			} 
+		}
         if ($wpdb->last_error) return t_error();
 		cfield($o, 'people_code', 'code');
         return Util\toCamelCase($o);
