@@ -53,7 +53,7 @@ class EmployeeRestController extends Controller
 				'meta_key' => 'nicknames',
 				'meta_value' => $o['people_code'],
 				'fields' => 'ID',
-			));return $o;
+			));return $o;/*
 			if (!empty($user_ids)) {
 				foreach ($user_ids as $user_id) {
 					$o['people_id']=$user_id;break;
