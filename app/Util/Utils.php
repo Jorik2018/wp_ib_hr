@@ -15,11 +15,28 @@ function toCamelCase($data) {
         }
         return  $result;
     } elseif (is_array($data)) {
-        $result = array();
-        foreach ($data as $item) {
-            $result[] = toCamelCase($item);
-        }
-        return $result;
+		$keys = array_keys($data);
+		$isNumeric = false;
+		foreach ($keys as $key) {
+			if (is_int($key)) {
+				$isNumeric = true;
+			}
+			break;
+		}
+		if($isNumeric){
+			$result = array();
+			foreach ($data as $item) {
+				$result[] = toCamelCase($item);
+			}
+			return $result;
+		}else{
+			$result = new \stdClass();
+			foreach ($data as $key => $value) {
+				$newKey = lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $key))));
+				$result->$newKey = $value;
+			}
+			return  $result;
+			}
     } else {
         return $data;
     }
