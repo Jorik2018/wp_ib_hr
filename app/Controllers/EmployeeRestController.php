@@ -104,7 +104,6 @@ class EmployeeRestController extends Controller
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
     
         if ($wpdb->last_error) return t_error();
-		return $results;
         return $to > 0 ? array('data' => Util\toCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;    
     }
 
