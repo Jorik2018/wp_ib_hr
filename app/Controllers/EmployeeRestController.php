@@ -54,21 +54,19 @@ class EmployeeRestController extends Controller
 				'meta_value' => $o['people_code'],
 				'fields' => 'ID',
 			));
-		$o['$user_ids']=$user_ids ;
+			$o['$user_ids']=$user_ids ;
 			if (!empty($user_ids)) {
 				foreach ($user_ids as $user_id) {
 					$o['people_id']=$user_id;break;
 				}
 			}
-			return $o;
-			/*
 			if(!isset($o['people_id'])){
 				status_header(400);
 				wp_send_json_error(array(
 					'error' => 'People code no valid!',
 				));
-			}*/
-            //$updated = $wpdb->update('hr_employee', $o, array('id' => $o['id']));
+			}
+            $updated = $wpdb->update('hr_employee', $o, array('id' => $o['id']));
         } else {
             unset($o['id']);
             $o['uid_insert'] = $current_user->ID;
