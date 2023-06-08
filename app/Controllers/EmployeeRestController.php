@@ -100,6 +100,10 @@ class EmployeeRestController extends Controller
 		cfield($o, 'people_code', 'code');
 		$controller=new StudyRestController(array());
 		$o['study']=Util\toCamelCase($controller->pag(array('from'=>0,'to'=>0,'employee_id'=>$o['id'])));
+		$controller=new TrainingRestController(array());
+		$o['training']=Util\toCamelCase($controller->pag(array('from'=>0,'to'=>0,'employee_id'=>$o['id'])));
+		$controller=new ExperienceRestController(array());
+		$o['experience']=Util\toCamelCase($controller->pag(array('from'=>0,'to'=>0,'employee_id'=>$o['id'])));
         return Util\toCamelCase($o);
     }
 
