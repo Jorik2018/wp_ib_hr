@@ -66,10 +66,10 @@ class EmployeeRestController extends Controller
 					'error' => 'People code no valid!',
 				));
 			}
-			return array($o,$first_name,$last_name);
-            $updated = $wpdb->update('hr_employee', $o, array('id' => $o['id']));
+			$o['people_id']=intval($o['people_id']);
 			update_user_meta($o['people_id'], 'first_name', $first_name);
 			update_user_meta($o['people_id'], 'last_name', $last_name);
+            $updated = $wpdb->update('hr_employee', $o, array('id' => $o['id']));
         } else {
             unset($o['id']);
             $o['uid_insert'] = $current_user->ID;
