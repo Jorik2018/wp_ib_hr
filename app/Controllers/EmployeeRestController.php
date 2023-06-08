@@ -99,7 +99,7 @@ class EmployeeRestController extends Controller
         if ($wpdb->last_error) return t_error();
 		cfield($o, 'people_code', 'code');
 		$controller=new StudyRestController(array());
-		$o['study']=$controller->pag(array('from'=>0,'to'=>0));
+		$o['study']=Util\toCamelCase($controller->pag(array('from'=>0,'to'=>0,'employee_id'=>$o['id'])));
         return Util\toCamelCase($o);
     }
 
@@ -108,7 +108,6 @@ class EmployeeRestController extends Controller
         $from = $request['from'];
         $to = $request['to'];
         $people_id = method_exists($request, 'get_param') ? $request->get_param('people_id') : $request['people_id'];
-        $employee_id = method_exists($request, 'get_param') ? $request->get_param('employee_id') : $request['employee_id'];
         $current_user = wp_get_current_user();
         $wpdb->last_error = '';
         $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS o.* FROM hr_employee o " .
