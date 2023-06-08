@@ -90,7 +90,7 @@ class EmployeeRestController extends Controller
 		if(isset($o['people_id'])){
 			$o['people_id']=intval($o['people_id']);
 			foreach(array('names'=>'first_name','surnames'=>'last_name') as $key=>$value)
-				$o[$key] = get_user_meta($o['people_id'],$field, false);
+				$o[$key] = get_user_meta($o['people_id'],$field, true);
 		}
         if ($wpdb->last_error) return t_error();
 		cfield($o, 'people_code', 'code');
