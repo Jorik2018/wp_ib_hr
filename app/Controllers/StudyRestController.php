@@ -64,6 +64,7 @@ class StudyRestController extends Controller
             $updated = $wpdb->update('hr_study', $o, array('id' => $o['id']));
         } else {
             unset($o['id']);
+			
             $o['uid_insert'] = $current_user->ID;
             $o['user_insert'] = $current_user->user_login;
             $o['insert_date'] = current_time('mysql', 1);
