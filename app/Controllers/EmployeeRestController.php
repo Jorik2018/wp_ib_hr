@@ -40,9 +40,10 @@ class EmployeeRestController extends Controller
         cfield($o, 'employeeId', 'employee_id');
 		cfield($o, 'code', 'people_code');
         $tmpId = remove($o, 'tmpId');
+		$first_name=$o['names'];
+		$last_name=$o['surnames'];
         unset($o['synchronized']);
         $inserted = 0;
-		
         if ($o['id'] > 0) {
 			$o=array('id'=>$o['id'],'people_code'=>$o['people_code'],
 				'uid_update'=>$current_user->ID,
@@ -65,7 +66,10 @@ class EmployeeRestController extends Controller
 					'error' => 'People code no valid!',
 				));
 			}
+			return array($o,$first_name,$last_name);
             $updated = $wpdb->update('hr_employee', $o, array('id' => $o['id']));
+			update_user_meta($o['people_id'], 'first_name', $first_name);
+			update_user_meta($o['people_id'], 'last_name', $last_name);
         } else {
             unset($o['id']);
             $o['uid_insert'] = $current_user->ID;
