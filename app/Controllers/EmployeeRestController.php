@@ -89,7 +89,7 @@ class EmployeeRestController extends Controller
         $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM hr_employee WHERE id=" . $request['id']), ARRAY_A);
 		if(isset($o['people_id'])){
 			$o['people_id']=intval($o['people_id']);
-			foreach(array('names'=>'first_name','surnames'=>'last_name') as $key=>$value)
+			foreach(array('names'=>'first_name','surnames'=>'last_name') as $key=>$field)
 				$o[$key] = get_user_meta($o['people_id'],$field, true);
 		}
         if ($wpdb->last_error) return t_error();
