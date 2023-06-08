@@ -98,8 +98,8 @@ class EmployeeRestController extends Controller
 		}
         if ($wpdb->last_error) return t_error();
 		cfield($o, 'people_code', 'code');
-		
-		$o['study']=new StudyRestController(array())->pag(array('from'=>0,'to'=>0));
+		$c=new StudyRestController(array());
+		$o['study']=$c->pag(array('from'=>0,'to'=>0));
         return Util\toCamelCase($o);
     }
 
