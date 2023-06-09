@@ -95,10 +95,12 @@ class ExperienceRestController extends Controller
         $from = $request['from'];
         $to = $request['to'];
         $people_id = method_exists($request, 'get_param') ? $request->get_param('people_id') : $request['people_id'];
+		$employee_id = method_exists($request, 'get_param') ? $request->get_param('employee_id') : $request['employee_id'];
         $current_user = wp_get_current_user();
         $wpdb->last_error = '';
         $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS o.* FROM hr_experience o " .
-            "WHERE o.canceled=0 " . (isset($people_id) ? " AND o.people_id=$people_id " : "") .
+            "WHERE o.canceled=0 " . (isset($people_id) ? " AND o.people_id=$people_id " : "").
+			(isset($employee_id) ? " AND o.employee_id=$employee_id " : "").
             "ORDER BY o.id DESC " .
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), OBJECT);
     
