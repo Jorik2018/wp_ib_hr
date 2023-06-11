@@ -51,7 +51,9 @@ function cdfield(&$row,$key){
 
 function cbfield(&$row,$key){
     if(is_numeric($row[$key])){
-        $row[$key]=intval($row[$key])>0;
+		$v=$row[$key];
+		unset($row[$key]);
+        $row[$key]=intval($v)>0;
     }
     return $row;
 }
