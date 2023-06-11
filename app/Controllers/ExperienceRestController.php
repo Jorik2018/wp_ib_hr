@@ -41,7 +41,7 @@ class ExperienceRestController extends Controller
         $current_user = wp_get_current_user();
         cfield($o, 'employeeId', 'employee_id');
         cbfield($o, 'inProgress', 'in_progress');
-		remove($o,'canceled')
+		remove($o,'canceled');
         remove($o,'uidInsert');
         remove($o,'userInsert');
         remove($o,'insertDate');
