@@ -37,6 +37,7 @@ class EmployeeRestController extends Controller
         global $wpdb;
         $o = method_exists($request, 'get_params') ? $request->get_params() : $request;
         $current_user = wp_get_current_user();
+		remove($o,'canceled');
         cfield($o, 'employeeId', 'employee_id');
 		cfield($o, 'code', 'people_code');
         $tmpId = remove($o, 'tmpId');

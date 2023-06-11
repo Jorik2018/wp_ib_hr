@@ -38,6 +38,7 @@ class TrainingRestController extends Controller
         $o = method_exists($request, 'get_params') ? $request->get_params() : $request;
         $current_user = wp_get_current_user();
         cfield($o, 'employeeId', 'employee_id');
+		remove($o,'canceled');
         remove($o,'uidInsert');
         remove($o,'userInsert');
         remove($o,'insertDate');
