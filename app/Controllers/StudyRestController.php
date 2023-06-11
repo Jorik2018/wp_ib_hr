@@ -51,7 +51,6 @@ class StudyRestController extends Controller
         remove($o,'userDelete');
         remove($o,'deleteDate');
         cfield($o, 'expeditionDate', 'expedition_date');
-        cdfield($o,'expedition_date');
         if(isset($o['attachment'])&&is_array($o['attachment'])){
             $o['attachment']=$o['attachment']['tempFile'];
         }
@@ -62,6 +61,7 @@ class StudyRestController extends Controller
             $o['uid_update'] = $current_user->ID;
             $o['user_update'] = $current_user->user_login;
             $o['update_date'] = current_time('mysql', 1);
+			return $o;
             $updated = $wpdb->update('hr_study', $o, array('id' => $o['id']));
         } else {
             unset($o['id']);
@@ -79,7 +79,7 @@ class StudyRestController extends Controller
             $o['tmpId'] = $tmpId;
             $o['synchronized'] = 1;
         }
-        return $o;
+        return Util\toCamelCase($o);
     }
 
     public function get($request){    

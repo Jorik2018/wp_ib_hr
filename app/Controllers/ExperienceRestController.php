@@ -65,6 +65,7 @@ class ExperienceRestController extends Controller
             $o['uid_update'] = $current_user->ID;
             $o['user_update'] = $current_user->user_login;
             $o['update_date'] = current_time('mysql', 1);
+			
             $updated = $wpdb->update('hr_experience', $o, array('id' => $o['id']));
         } else {
             unset($o['id']);
@@ -81,7 +82,7 @@ class ExperienceRestController extends Controller
             $o['tmpId'] = $tmpId;
             $o['synchronized'] = 1;
         }
-        return $o;
+        return Util\toCamelCase($o);
     }
 
     public function get($request){    

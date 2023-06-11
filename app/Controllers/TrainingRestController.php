@@ -79,7 +79,7 @@ class TrainingRestController extends Controller
             $o['tmpId'] = $tmpId;
             $o['synchronized'] = 1;
         }
-        return $o;
+        return Util\toCamelCase($o);
     }
 
     public function get($request){    
