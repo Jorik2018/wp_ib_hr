@@ -46,6 +46,7 @@ class ExperienceRestController extends Controller
         remove($o,'insertDate');
         remove($o,'uidUpdate');
         remove($o,'userUpdate');
+		remove($o,'people');
         remove($o,'updateDate');
         remove($o,'uidDelete');
         remove($o,'userDelete');
@@ -85,7 +86,14 @@ class ExperienceRestController extends Controller
 
     public function get($request){    
         global $wpdb;
-        $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM hr_experience WHERE id=" . $request['id']), OBJECT);
+        $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM hr_experience WHERE id=" . $request['id']), ARRAY_A);
+		$e = $wpdb->get_row($wpdb->prepare("SELECT people_id FROM hr_employee WHERE id=" . $o['employee_id']), ARRAY_A);
+		if(isset($e['people_id'])){
+			$e['people_id']=intval($e['people_id']);
+			$o['people']=array();
+			foreach(array('names'=>'first_name','surnames'=>'last_name') as $key=>$field)
+				$o['people'][$key] = get_user_meta($e['people_id'],$field, true);
+		}
         if ($wpdb->last_error) return t_error();
         return Util\toCamelCase($o);
     }
