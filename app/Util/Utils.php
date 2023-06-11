@@ -49,6 +49,13 @@ function cdfield(&$row,$key){
     return $row;
 }
 
+function cbfield(&$row,$key){
+    if(is_numeric($row[$key])){
+        $row[$key]=intval($row[$key])>0;
+    }
+    return $row;
+}
+
 function cdfield2(&$row,$key){
     if(is_numeric($row[$key])){
         $row[$key]=date("Y-m-d H:i:s",$row[$key]/1000);

@@ -40,7 +40,8 @@ class ExperienceRestController extends Controller
         $o = method_exists($request, 'get_params') ? $request->get_params() : $request;
         $current_user = wp_get_current_user();
         cfield($o, 'employeeId', 'employee_id');
-        cfield($o, 'inProgress', 'in_progress');
+        cbfield($o, 'inProgress', 'in_progress');
+		remove($o,'canceled')
         remove($o,'uidInsert');
         remove($o,'userInsert');
         remove($o,'insertDate');
@@ -58,6 +59,7 @@ class ExperienceRestController extends Controller
         if(isset($o['attachment'])&&is_array($o['attachment'])){
             $o['attachment']=$o['attachment']['tempFile'];
         }
+
         $tmpId = remove($o, 'tmpId');
         unset($o['synchronized']);
         $inserted = 0;
