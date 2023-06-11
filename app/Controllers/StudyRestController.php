@@ -46,6 +46,7 @@ class StudyRestController extends Controller
         remove($o,'uidUpdate');
         remove($o,'userUpdate');
         remove($o,'updateDate');
+		remove($o,'people');
         remove($o,'uidDelete');
         remove($o,'userDelete');
         remove($o,'deleteDate');
