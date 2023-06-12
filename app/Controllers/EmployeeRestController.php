@@ -115,7 +115,7 @@ class EmployeeRestController extends Controller
         $people_id = method_exists($request, 'get_param') ? $request->get_param('people_id') : $request['people_id'];
         $current_user = wp_get_current_user();
         $wpdb->last_error = '';
-        $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS o.* FROM hr_employee o " .
+        $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS o.*,CONCAT(um.meta_value first_name,' ',umln.meta_value) fullName FROM hr_employee o LEFT JOIN $wpdb->usermeta um ON um.uid=o.people_id AND um.meta_key='first_name' LEFT JOIN $wpdb->usermeta umln ON umln.uid=o.people_id AND umln.meta_key='last_name'" .
             "WHERE o.canceled=0 " . (isset($people_id) ? " AND o.people_id=$people_id " : "") .
             "ORDER BY o.id DESC " .
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
