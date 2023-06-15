@@ -87,7 +87,7 @@ class ExperienceRestController extends Controller
             $o['tmpId'] = $tmpId;
             $o['synchronized'] = 1;
         }
-        return Util\toCamelCase($o);
+        return toCamelCase($o);
     }
 
     public function get($request){    
@@ -101,7 +101,7 @@ class ExperienceRestController extends Controller
 				$o['people'][$key] = get_user_meta($e['people_id'],$field, true);
 		}
         if ($wpdb->last_error) return t_error();
-        return Util\toCamelCase($o);
+        return toCamelCase($o);
     }
 
     public function pag($request){
@@ -121,7 +121,7 @@ class ExperienceRestController extends Controller
 
 
         if ($wpdb->last_error) return t_error();
-        return $to > 0 ? array('data' => Util\toCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;    
+        return $to > 0 ? array('data' => toCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;    
     }
 
     public function delete($data){
