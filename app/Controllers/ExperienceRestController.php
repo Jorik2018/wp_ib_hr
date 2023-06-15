@@ -3,9 +3,12 @@
 namespace IB\cv\Controllers;
 
 use WPMVC\MVC\Controller;
-use IB\cv\Util;
-require_once __DIR__ . '/../Util/Utils.php';
-//use function IB\cv\Util\toCamelCase;
+use function IB\cv\Util\cbfield;
+use function IB\cv\Util\toCamelCase;
+use function IB\cv\Util\remove;
+use function IB\cv\Util\cdfield;
+use function IB\cv\Util\cfield;
+
 
 class ExperienceRestController extends Controller
 {
