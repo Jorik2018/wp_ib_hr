@@ -16,6 +16,13 @@ use DiDom\Document;
 class RestController extends Controller
 {
 
+    private $background_process;
+
+    public function __construct($app) {
+        parent::__construct($app);
+        $this->background_process = new \IB\cv\My_Background_Process();
+    }
+
     function array_find($xs, $f) {
         foreach ($xs as $x) {
           if (call_user_func($f, $x) === true)
@@ -71,6 +78,8 @@ class RestController extends Controller
     public function deltron_import_get(){
         $products = [];
         $categories=[];
+        $current_category;
+        $current_product;
         $brands=[];
         $row=[];
         if (!file_exists($filename=wp_upload_dir()['basedir'].DIRECTORY_SEPARATOR ."DELTRON.csv")) {
@@ -79,85 +88,75 @@ class RestController extends Controller
         if (($handle = fopen(wp_upload_dir()['basedir'].DIRECTORY_SEPARATOR ."DELTRON.csv", "r")) !== FALSE) {
             while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
                 $num = count($data);
-
-               // echo "<p> $num fields in line $row: <br /></p>\n";
-                $row++;
-                if($num==9){
-                    
-                    if($data[1]=='CODIGO'){
-                        //$categories[]=$data[2];
-                        $row=[];
-                       // $products[]=$row;
-                    }else{
-                        //$row[]=$data;
-                        //,"CODIGO","Y PATCH CORD - COBRE","STOCK","PREC DISTRIB US $","PREC S/.","FLETE ","GARAN","MARCA"
-                        $products[]=[
-                            "category"=>sanitize_title($data[0]),
-                            "description"=>strtoupper($data[0])." ".strtoupper((explode("[@@@]",$data[2]))[0]),
-                            "code"=>$data[1],
-                            "name"=>strtoupper((explode("[@@@]",$data[2]))[0]),
-                            "stock"=>$data[3],
-                            "price_dist"=>$data[4],
-                            "price"=>$data[5],
-                            "flete"=>$data[6],
-                            "garan"=>$data[7],
-                            "brand"=>sanitize_title($data[8]),
-                        ];
-
-                        //$categories[]=$data[8];
-                        $slug=sanitize_title($data[8]);
-                        if (!$this->array_find($brands,function($e) use ($slug){return $e[0]==$slug;})) {
-                            $brands[]=[$slug,strtoupper($data[8])];
-                        }
-                        $slug=sanitize_title($data[0]);
+                if($num>10&&$data[0]&&$data[1]){
+                    if($data[0]=='CODIGO'){
+                        $slug=sanitize_title($data[1]);
                         if (!$this->array_find($categories,function($e) use ($slug){return $e[0]==$slug;})) {
-                            $categories[]=[$slug,$data[0]];
+                            $categories[]=[$slug, preg_replace('/[^[:print:]]/', '',$data[1])];
+                            $current_category=$slug;
                         }
-                        // ,"CODIGO","Y PATCH CORD - COBRE","STOCK","PREC DISTRIB US $","PREC S/.","FLETE ","GARAN","MARCA"
+                    } elseif ($data[10]){
+                        $product_name = strtoupper(preg_replace('/[^[:print:]]/', '',$data[1]));
+                        $brand = strtoupper(preg_replace('/[^[:print:]]/', '',$data[10]));
+                        $slug = sanitize_title($data[10]);
+                        $products[] = $current_product = [
+                            "category" => $current_category,
+                            "code" => $data[0],
+                            "name" => $product_name,
+                            "stock" => preg_replace('/[^[:print:]]/', '',$data[2]),
+                            "price_dist" => preg_replace('/[^[:print:]]/', '',$data[3]),
+                            "price" =>$data[4],
+                            "garan" => preg_replace('/[^[:print:]]/', '',$data[9]),
+                            "brand" => sanitize_title($slug),
+                        ];
+                        if (!$this -> array_find($brands,function($e) use ($slug){return $e[0]==$slug;})) {
+                            $brands[] = [$slug,$brand];
+                        }
+                    } else{
+                        $products[count($products)-1]["description"] = strtoupper((explode("[@@@]",$data[1]))[0]);
                     }
                 }
-                //for ($c=0; $c < $num; $c++) {
-                  //  echo $data[$c] . "<br />\n";
-                //}
             }
             fclose($handle);
         }
+        //return array('brands'=>$brands, 'categories'=>$categories,'products'=>$products );
         $categories_terms=array_map(function($e){return $e->slug;},get_terms(array(
             'taxonomy'   => 'product_cat',
             'hide_empty' => false,
         )));
-        $categories=array_values(array_filter($categories,function($e) use ($categories_terms){return !in_array($e[0],$categories_terms);}));
+        //return $categories_terms;
+        $categories = array_values(array_filter($categories,function($e) use ($categories_terms){return !in_array($e[0],$categories_terms);}));
+        //return $categories;
         //$categories=array_map(function($e){return /*strtoupper*/ $e[0];}, $categories);
         $count=0;
+        $inserted=[];
         foreach($categories as $item){
+            $inserted[] = $item;
             $count++;
-            if($count>20)break;
+            if($count > 50)break;
             wp_insert_term(strtoupper($item[1]), 'product_cat', array(
-                'description' => '', // optional
-                'parent' => 0, // optional
-                'slug' => $item[1] // optional
+                'description' => '',
+                'parent' => 0,
+                'slug' => $item[1]
             ));
         }
-        
-        $brands_terms=array_map(function($e){return $e->slug;},get_terms(array(
+        $brands_terms = array_map(function($e){return $e->slug;}, get_terms(array(
             'taxonomy'   => 'pwb-brand',
             'hide_empty' => false,
         )));
-        
-        
         $brands=array_values(array_filter($brands,function($e) use ($brands_terms){return !in_array($e[0],$brands_terms);}));
         $count=0;
+        $inserted=[];
         foreach($brands as $item){
             $count++;
-            if($count>20)break;
+            if($count>30)break;
+            $inserted[] = $item;
             wp_insert_term(strtoupper($item[1]), 'pwb-brand', array(
-                'description' => '', // optional
-                'parent' => 0, // optional
-                'slug' => $item[1] // optional
+                'description' => '',
+                'parent' => 0,
+                'slug' => $item[1]
             ));
         }
-
-        
         if(empty($categories)&&empty($brands)){
             global $wpdb;
             $count=0;
@@ -170,70 +169,14 @@ class RestController extends Controller
                 'taxonomy'   => 'pwb-brand',
                 'hide_empty' => false,
             ));
-
-            $querystr = "
-            SELECT $wpdb->posts.ID, $wpdb->posts.post_name
-            FROM $wpdb->posts
-            WHERE $wpdb->posts.post_status = 'publish' 
-            AND $wpdb->posts.post_type = 'product'
-            AND $wpdb->posts.post_date < NOW()
-            AND $wpdb->posts.post_name 
-            ORDER BY $wpdb->posts.post_date DESC
-            ";
-            
-            $posts =[];
-            foreach($wpdb->get_results($querystr, OBJECT) as $post){
-                $posts[(explode("_",$post->post_name))[0]]=$post->ID;
-            }
-            
             $out=[];
+            //return $products;
             foreach($products as $item){
-                if($item['code']!='acecor3otc')continue;
-                $product = $posts[$item['code']];
-                return [$posts,$product,$item];
-                //$product = get_page_by_path($item['code'], OBJECT, 'product' );
-                if (empty( $product ) ) {
-                    $out[]=$item;
-                    $count++;if($count>50)break;
-                    $product = new \WC_Product_Simple();
-                    $product->set_name($item['name']); // product title
-                    $product->set_slug($item['code']);
-                    $product->set_regular_price(round(((float)$item['price_dist'])*1.25,2)); // in current shop currency
-                    $product->set_short_description($item['description']);
-                    // you can also add a full product description
-                    // $product->set_description( 'long description here...' );
-                    //$product->set_image_id( 90 );
-                    // let's suppose that our 'Accessories' categories has ID = 19 
-                    $categories=array_map(function($e){return $e->term_id;},array_values(array_filter($categories_terms,function($e) use ($item){return $e->slug==$item['category'];})));
-                    $product->set_category_ids($categories);
-                    $brands=array_map(function($e){return $e->term_id;},array_values(array_filter($brands_terms,function($e) use ($item){return $e->slug==$item['brand'];})));
-                    
-                    //return [$brands,$item];
-                    // you can also use $product->set_tag_ids() for tags, brands etc
-                    $product->save();
-                    
-                    wp_set_object_terms($product->get_id(),$brands, 'pwb-brand' , false);
-                }else{
-                    //$_pf = new \WC_Product_Factory();  
-                    //$tag = array( 5 ); // Correct. This will add the tag with the id 5.
-                    //wp_set_post_terms( $post_id, $tag, $taxonomy );
-                    //return [get_the_terms( $product ->ID, 'product_cat' ),get_the_terms( $product ->ID, 'pwb-brand' )];
-                    //$product = $_pf->get_product($product ->ID);
-
-                    //return get_post_field('pwb-brand',$product ->ID);
-                    //return $product->get_slug();
-                    //$product_slug = get_post_field('post_name', $product_id);
-                    //$product = wc_get_product( $product ->ID);
-
-                    // Example of how to return the sale price if on sale.
-                    //$price = $product->get_price();
-
-                    //if ( $product->is_on_sale() ) {
-                    // $price = $product->get_sale_price();
-                    //}
-                }
-
+                $count++;
+                if($count>10)break;
+                $this->background_process->push_to_queue($item);
             }
+            $this->background_process->save()->dispatch();
             return $out;
         }
         return ['categories'=>$categories,'brands'=>$brands];
@@ -249,13 +192,11 @@ class RestController extends Controller
     {
         register_rest_route( 'api/deltron','/import', array(
             'methods' => 'GET',
-            'callback' =>//  __CLASS__ . '::get_deltron_import',
-            array($this,'deltron_import_get')
+            'callback' => array($this,'deltron_import_get')
         ));
         register_rest_route( 'api/deltron','/product', array(
             'methods' => 'GET',
-            'callback' =>//  __CLASS__ . '::get_deltron_import',
-            array($this,'deltron_product_get')
+            'callback' => array($this,'deltron_product_get')
         ));
     }
 

@@ -12,7 +12,9 @@
     "require": {
         "php": ">=5.4.0",
         "10quality/wpmvc-core": "^3.1",
-        "imangazaliev/didom": "^2.0"
+        "deliciousbrains/wp-background-processing": "^1.3",
+        "imangazaliev/didom": "^2.0",
+        "pusher/pusher-php-server": "^7.2"
     },
     "require-dev": {
         "10quality/wpmvc-commands": "1.1.*"
