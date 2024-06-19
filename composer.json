@@ -21,7 +21,8 @@
     },
     "config": {
         "optimize-autoloader": true,
-        "sort-packages": true
+        "sort-packages": true,
+        "vendor-dir": "../vendor"
     },
     "autoload": {
         "psr-4": {

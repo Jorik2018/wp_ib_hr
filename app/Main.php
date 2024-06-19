@@ -60,6 +60,7 @@ class My_Background_Process extends \WP_Background_Process {
             //}
             $product->save();
         }
+        $progress = $item;
         $this->send_websocket_message($progress);
         return false; // Return false to indicate the task is complete
     }
@@ -74,7 +75,7 @@ class My_Background_Process extends \WP_Background_Process {
             'cluster' => 'us3',
             'useTLS' => true
           );
-          $pusher = new \Pusher\Pusher(
+          /*$pusher = new \Pusher\Pusher(
             '640591c22ec9ff892849',
             '915183a78bbae04916ab',
             '1821284',
@@ -82,7 +83,7 @@ class My_Background_Process extends \WP_Background_Process {
           );
         
           $data = array('progress' => $progress);
-          $pusher->trigger('my-channel', 'my-event', $data);
+          $pusher->trigger('my-channel', 'my-event', $data);*/
     }
 }
 

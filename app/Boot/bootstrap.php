@@ -11,7 +11,7 @@ use WPMVC\Config;
  * @version 1.0.4
  */
 
-require_once( __DIR__ . '/../../vendor/autoload.php' );
+require_once( __DIR__ . '/../../autoload.php' );
 
 $config = include( plugin_dir_path( __FILE__ ) . '../Config/app.php' );
 
