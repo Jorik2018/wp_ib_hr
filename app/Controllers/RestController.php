@@ -188,8 +188,24 @@ class RestController extends Controller
      *
      * @return
      */
+    public function push_post($request)
+    {
+        $o = $request->get_params();
+        $pusher = new \Pusher\Pusher(
+            '640591c22ec9ff892849',
+            '915183a78bbae04916ab',
+            '1821284',
+            $options
+          );
+        $pusher->trigger('my-channel', 'my-event', $o);
+    }
+
     public function init()
     {
+        register_rest_route( 'api/deltron','/push', array(
+            'methods' => 'POST',
+            'callback' => array($this,'push_post')
+        ));
         register_rest_route( 'api/deltron','/import', array(
             'methods' => 'GET',
             'callback' => array($this,'deltron_import_get')
