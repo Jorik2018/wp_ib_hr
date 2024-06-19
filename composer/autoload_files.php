@@ -4,8 +4,7 @@
 
 $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir).'/wp_ib_hr';
-$vendorDir= "/vvv../../vendor"
-$baseDir = '/vvv../wp_ib_hr';
+
 return array(
     '7b11c4dc42b3b3023073cb14e519683c' => $vendorDir . '/ralouphie/getallheaders/src/getallheaders.php',
     '6e3fae29631ef280660b3cdad06f25a8' => $vendorDir . '/symfony/deprecation-contracts/function.php',

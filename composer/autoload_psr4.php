@@ -23,7 +23,7 @@ return array(
     'GuzzleHttp\\Psr7\\' => array($vendorDir . '/guzzlehttp/psr7/src'),
     'GuzzleHttp\\Promise\\' => array($vendorDir . '/guzzlehttp/promises/src'),
     'GuzzleHttp\\' => array($vendorDir . '/guzzlehttp/guzzle/src'),
-    'Gettext\\Scanner\\' => array($vendorDir . '/gettext/php-scanner/src', $vendorDir . '/gettext/js-scanner/src'),
+    'Gettext\\Scanner\\' => array($vendorDir . '/gettext/js-scanner/src', $vendorDir . '/gettext/php-scanner/src'),
     'Gettext\\Languages\\' => array($vendorDir . '/gettext/languages/src'),
     'Gettext\\' => array($vendorDir . '/gettext/gettext/src'),
     'DiDom\\' => array($vendorDir . '/imangazaliev/didom/src/DiDom'),
