@@ -190,6 +190,10 @@ class RestController extends Controller
      */
     public function push_post($request)
     {
+        $options = array(
+            'cluster' => 'us3',
+            'useTLS' => true
+          );
         $o = $request->get_params();
         $pusher = new \Pusher\Pusher(
             '640591c22ec9ff892849',
