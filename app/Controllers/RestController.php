@@ -32,9 +32,31 @@ class RestController extends Controller
     }
 
 
-    public function deltron_product_get(){
-        //CPILI313100F
+    public function deltron_product_get($request){
         global $wpdb;
+        $post_name = method_exists($request, 'get_params') ? $request->get_params()['id'] : $request;
+        if(isset($post_name)){
+            $document = new Document('https://www.deltron.com.pe/modulos/productos/items/producto.php?item_number='.strtoupper($post_name), true);
+            $imgs = $document->find('#imageGallery img');
+            $src=null;
+            foreach($imgs as $img) {
+                $src=$img->getAttribute('src');
+            }
+            if(!$src)$src="https://pics.freeicons.io/uploads/icons/png/18536323181658965919-512.png";
+            $attachment_file_type = wp_check_filetype($src, null);
+            $attachment_args = array(
+                'guid'           => $src,
+                'post_title'     => '',
+                'post_content'   => '',
+                'post_mime_type' => $attachment_file_type['type'],
+                'post_author'    => 7777777777
+            );
+            $attachment_id = wp_insert_attachment($attachment_args, $image, $post_id);
+            add_post_meta($post->ID, 'fifu_image_url', $src,true);
+            add_post_meta($post->ID, '_thumbnail_id',$attachment_id,true);
+            return $document->find('#contentProductItem > row');
+        }
+
         $querystr = "
         SELECT $wpdb->posts.ID, $wpdb->posts.post_name
         FROM $wpdb->posts LEFT JOIN $wpdb->postmeta ON $wpdb->posts.ID = $wpdb->postmeta.post_id AND $wpdb->postmeta.meta_key = 'fifu_image_url' 
@@ -50,29 +72,10 @@ class RestController extends Controller
         foreach($wpdb->get_results($querystr, OBJECT) as $post){
             if(($i++)>10)break;
             $posts[]=$post;
-            $document = new Document('https://www.deltron.com.pe/modulos/productos/items/producto.php?item_number='.strtoupper($post->post_name), true);
-            $imgs = $document->find('#imageGallery img');
-            $item=[];
-            $src=null;
-            foreach($imgs as $img) {
-                $src=$img->getAttribute('src');
-            }
-            if(!$src)$src="https://pics.freeicons.io/uploads/icons/png/18536323181658965919-512.png";
-            $attachment_file_type = wp_check_filetype($src, null);
-            $attachment_args = array(
-                'guid'           => $src,
-                'post_title'     => '',
-                'post_content'   =>'',
-                'post_mime_type' => $attachment_file_type['type'],
-                'post_author'    =>7777777777
-            );
-            $attachment_id = wp_insert_attachment($attachment_args, $image, $post_id);
-            add_post_meta($post->ID, 'fifu_image_url', $src,true);
-            add_post_meta($post->ID, '_thumbnail_id',$attachment_id,true);
-            // get_post_meta(10, 'age', true);
+            //$this->deltron_product_get();
         }
         //https://stackoverflow.com/questions/70405727/insert-wordpress-post-using-wp-insert-post-and-attach-the-featured-image
-        return $posts;        
+        return $posts;
     }
 
     public function deltron_import_get(){
@@ -213,6 +216,10 @@ class RestController extends Controller
         register_rest_route( 'api/deltron','/import', array(
             'methods' => 'GET',
             'callback' => array($this,'deltron_import_get')
+        ));
+        register_rest_route( 'api/deltron','/product/(?P<id>[a-zA-Z0-9-]+)', array(
+            'methods' => 'GET',
+            'callback' => array($this,'deltron_product_get')
         ));
         register_rest_route( 'api/deltron','/product', array(
             'methods' => 'GET',
