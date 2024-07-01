@@ -54,7 +54,7 @@ class RestController extends Controller
             $attachment_id = wp_insert_attachment($attachment_args, $image, $post_id);
             add_post_meta($post->ID, 'fifu_image_url', $src,true);
             add_post_meta($post->ID, '_thumbnail_id',$attachment_id,true);
-            return $document->find('#contentProductItem > row');
+            return $document->find('#contentProductItem');
         }
 
         $querystr = "
