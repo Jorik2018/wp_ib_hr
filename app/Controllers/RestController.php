@@ -36,6 +36,14 @@ class RestController extends Controller
         global $wpdb;
         $post_name = method_exists($request, 'get_params') ? $request->get_params()['id'] : $request;
         if(isset($post_name)){
+            $args = array(
+                'name'        => $post_name,
+                'post_type'   => 'product',
+                'post_status' => 'publish',
+                'numberposts' => 1
+            );
+            $post = get_posts($args);
+            return $post;
             $document = new Document('https://www.deltron.com.pe/modulos/productos/items/producto.php?item_number='.strtoupper($post_name), true);
             $imgs = $document->find('#imageGallery img');
             $src=null;
