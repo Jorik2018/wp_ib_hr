@@ -49,7 +49,7 @@ class RestController extends Controller
             if (!empty($e)) {
                 // Get the first element from the array
                 $e = $e[0];
-                
+                return die(111);
                 return die($e->html());
             }
             $imgs = $document->find('#imageGallery img');
