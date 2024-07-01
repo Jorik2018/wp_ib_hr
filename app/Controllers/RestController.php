@@ -43,7 +43,7 @@ class RestController extends Controller
                 'numberposts' => 1
             );
             $post = get_posts($args);
-            return $post;
+            $post = $post[0];
             $document = new Document('https://www.deltron.com.pe/modulos/productos/items/producto.php?item_number='.strtoupper($post_name), true);
             $imgs = $document->find('#imageGallery img');
             $src=null;
