@@ -45,19 +45,19 @@ class RestController extends Controller
             $post = get_posts($args);
             $post = $post[0];
             $document = new Document('https://www.deltron.com.pe/modulos/productos/items/producto.php?item_number='.strtoupper($post_name), true);
-            $imgs = $document->find('#imageGallery img');
-            $src=null;
-            foreach($imgs as $img) {
-                $src=$img->getAttribute('src');
-            }
             $e=$document->find('#contentProductItem');
             if (!empty($e)) {
                 // Get the first element from the array
                 $e = $e[0];
                 
-                // Return the HTML content of the element
                 return die($e->html());
             }
+            $imgs = $document->find('#imageGallery img');
+            $src=null;
+            foreach($imgs as $img) {
+                $src=$img->getAttribute('src');
+            }
+            
             if(!$src)$src="https://pics.freeicons.io/uploads/icons/png/18536323181658965919-512.png";
             $attachment_file_type = wp_check_filetype($src, null);
             $attachment_args = array(
