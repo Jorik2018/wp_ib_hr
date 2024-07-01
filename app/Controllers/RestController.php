@@ -56,7 +56,7 @@ class RestController extends Controller
                 $e = $e[0];
                 
                 // Return the HTML content of the element
-                return $e->html();
+                return die($e->html());
             }
             if(!$src)$src="https://pics.freeicons.io/uploads/icons/png/18536323181658965919-512.png";
             $attachment_file_type = wp_check_filetype($src, null);
