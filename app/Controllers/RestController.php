@@ -45,10 +45,10 @@ class RestController extends Controller
             $post = get_posts($args);
             $post = $post[0];
             $document = new Document('https://www.deltron.com.pe/modulos/productos/items/producto.php?item_number='.strtoupper($post_name='CSMSMAEST700LPZ'), true);
-            $e=$document->first('#contentProductItem > .row');
+            $e=$document->find('#contentProductItem > .row');
             if (!empty($e)) {
                 // Get the first element from the array
-                return die($e->html());
+                return die($e[1]->html());
             }
             $imgs = $document->find('#imageGallery img');
             $src=null;
