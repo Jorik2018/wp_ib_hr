@@ -44,7 +44,8 @@ class RestController extends Controller
             );
             $post = get_posts($args);
             $post = $post[0];
-            $document = new Document('https://www.deltron.com.pe/modulos/productos/items/producto.php?item_number='.strtoupper($post_name='CSMSMAEST700LPZ'), true);
+            $uri ='https://www.deltron.com.pe/modulos/productos/items/producto.php?item_number='.strtoupper($post_name);
+            $document = new Document($uri, true);
             $e=$document->find('#contentProductItem > .row');
             if (!empty($e)) {
                 $e = $e[1];
@@ -67,7 +68,7 @@ class RestController extends Controller
                 add_post_meta($post->ID, '_thumbnail_id',$attachment_id,true);
                 return $post;
             }else{
-                return "Not found!";
+                return "[$uri]-Not found!";
             }
         }
 
