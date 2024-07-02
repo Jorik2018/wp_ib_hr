@@ -45,7 +45,7 @@ class RestController extends Controller
             $post = get_posts($args);
             $post = $post[0];
             $document = new Document('https://www.deltron.com.pe/modulos/productos/items/producto.php?item_number='.strtoupper($post_name='CSMSMAEST700LPZ'), true);
-            $e=$document->first('#contentProductItem');
+            $e=$document->first('#contentProductItem > .row');
             if (!empty($e)) {
                 // Get the first element from the array
                 return die($e->html());
@@ -55,7 +55,6 @@ class RestController extends Controller
             foreach($imgs as $img) {
                 $src=$img->getAttribute('src');
             }
-            
             if(!$src)$src="https://pics.freeicons.io/uploads/icons/png/18536323181658965919-512.png";
             $attachment_file_type = wp_check_filetype($src, null);
             $attachment_args = array(
