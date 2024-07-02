@@ -44,8 +44,8 @@ class RestController extends Controller
             );
             $post = get_posts($args);
             $post = $post[0];
-            $document = new Document('https://www.deltron.com.pe/modulos/productos/items/producto.php?item_number='.strtoupper($post_name), true);
-            $e=$document;//->first('#contentProductItem');
+            $document = new Document('https://www.deltron.com.pe/modulos/productos/items/producto.php?item_number='.strtoupper($post_name='CSMSMAEST700LPZ'), true);
+            $e=$document->first('#contentProductItem');
             if (!empty($e)) {
                 // Get the first element from the array
                 return die($e->html());
