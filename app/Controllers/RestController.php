@@ -68,7 +68,7 @@ class RestController extends Controller
                 add_post_meta($post->ID, '_thumbnail_id',$attachment_id,true);
                 return $post;
             }else{
-                return array('uri'=>$uri,'found':0);
+                return array('uri'=>$uri,'found'=>false);
             }
         }
 
