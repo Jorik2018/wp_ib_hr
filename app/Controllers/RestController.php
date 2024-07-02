@@ -47,27 +47,28 @@ class RestController extends Controller
             $document = new Document('https://www.deltron.com.pe/modulos/productos/items/producto.php?item_number='.strtoupper($post_name='CSMSMAEST700LPZ'), true);
             $e=$document->find('#contentProductItem > .row');
             if (!empty($e)) {
-                // Get the first element from the array
-                return die($e[1]->html());
+                $e = $e[1];
+                $imgs = $e -> find('#imageGallery img');
+                $src=null;
+                foreach($imgs as $img) {
+                    $src=$img->getAttribute('src');
+                }
+                if(!$src)$src="https://pics.freeicons.io/uploads/icons/png/18536323181658965919-512.png";
+                $attachment_file_type = wp_check_filetype($src, null);
+                $attachment_args = array(
+                    'guid'           => $src,
+                    'post_title'     => '',
+                    'post_content'   => '',
+                    'post_mime_type' => $attachment_file_type['type'],
+                    'post_author'    => 7777777777
+                );
+                $attachment_id = wp_insert_attachment($attachment_args, $image, $post_id);
+                add_post_meta($post->ID, 'fifu_image_url', $src,true);
+                add_post_meta($post->ID, '_thumbnail_id',$attachment_id,true);
+                return $post;
+            }else{
+                return "Not found!";
             }
-            $imgs = $document->find('#imageGallery img');
-            $src=null;
-            foreach($imgs as $img) {
-                $src=$img->getAttribute('src');
-            }
-            if(!$src)$src="https://pics.freeicons.io/uploads/icons/png/18536323181658965919-512.png";
-            $attachment_file_type = wp_check_filetype($src, null);
-            $attachment_args = array(
-                'guid'           => $src,
-                'post_title'     => '',
-                'post_content'   => '',
-                'post_mime_type' => $attachment_file_type['type'],
-                'post_author'    => 7777777777
-            );
-            $attachment_id = wp_insert_attachment($attachment_args, $image, $post_id);
-            add_post_meta($post->ID, 'fifu_image_url', $src,true);
-            add_post_meta($post->ID, '_thumbnail_id',$attachment_id,true);
-            return $document->find('#contentProductItem');
         }
 
         $querystr = "
