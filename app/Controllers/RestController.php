@@ -222,8 +222,31 @@ class RestController extends Controller
         $pusher->trigger('my-channel', 'my-event', $o);
     }
 
+    public function generateCodeChallenge($request) {
+        $codeVerifier = $request->get_body();
+        // Generate SHA-256 hash
+        $hashedBytes = hash('sha256', $codeVerifier, true);
+        
+        // Convert the hashed bytes to Base64
+        $base64String = base64_encode($hashedBytes);
+        
+        // Convert to Base64URL format: replace + with -, / with _, and remove padding
+        $codeChallenge = str_replace(
+            ['+', '/', '='],
+            ['-', '_', ''],
+            $base64String
+        );
+    
+        return $codeChallenge;
+    }
+
     public function init()
     {
+        register_rest_route( 'api/crypto','/code-challenge', array(
+            'methods' => 'POST',
+            'callback' => array($this,'generateCodeChallenge')
+        ));
+
         register_rest_route( 'api/deltron','/push', array(
             'methods' => 'POST',
             'callback' => array($this,'push_post')
