@@ -243,7 +243,13 @@ class RestController extends Controller
     public function redirect($request) {
         $url = $request->get_body();
         header("Location: " . $url);
-        exit; 
+        exit;
+    }
+
+    public function redirect_get($request) {
+        $url = $request['url'];
+        header("Location: " . $url);
+        exit;
     }
 
     public function init()
@@ -251,6 +257,10 @@ class RestController extends Controller
         register_rest_route( 'api/crypto','/code-challenge', array(
             'methods' => 'POST',
             'callback' => array($this,'generateCodeChallenge')
+        ));
+        register_rest_route( 'api/crypto','/redirect', array(
+            'methods' => 'GET',
+            'callback' => array($this,'redirect_get')
         ));
         register_rest_route( 'api/crypto','/redirect', array(
             'methods' => 'POST',
