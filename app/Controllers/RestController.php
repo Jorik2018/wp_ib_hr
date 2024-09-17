@@ -240,13 +240,22 @@ class RestController extends Controller
         return $codeChallenge;
     }
 
+    public function redirect($request) {
+        $url = $request->get_body();
+        header("Location: " . $url);
+        exit; 
+    }
+
     public function init()
     {
         register_rest_route( 'api/crypto','/code-challenge', array(
             'methods' => 'POST',
             'callback' => array($this,'generateCodeChallenge')
         ));
-
+        register_rest_route( 'api/crypto','/redirect', array(
+            'methods' => 'POST',
+            'callback' => array($this,'redirect')
+        ));
         register_rest_route( 'api/deltron','/push', array(
             'methods' => 'POST',
             'callback' => array($this,'push_post')
