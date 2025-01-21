@@ -138,11 +138,12 @@ class EmployeeRestController extends Controller
         $query = method_exists($request, 'get_param') ? $request->get_param('query') : $request['query'];
         $current_user = wp_get_current_user();
         $wpdb->last_error = '';
+
         /*$results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS o.*,CONCAT(um.meta_value,' ',umln.meta_value) fullName FROM hr_employee o LEFT OUTER JOIN $wpdb->usermeta um ON um.user_id=o.people_id AND um.meta_key='first_name' LEFT OUTER JOIN $wpdb->usermeta umln ON umln.user_id=o.people_id AND umln.meta_key='last_name'" .
             "WHERE o.canceled=0 " . (isset($people_id) ? " AND o.people_id=$people_id " : "") .
             "ORDER BY o.id DESC " .
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);*/
-        $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS o.* FROM grupoipe_erp.drt_people2 o " .
+        $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS o.* FROM grupoipe_erp.drt_people o " .
             "WHERE 1=1 " . (isset($query) ? " AND (o.fullname LIKE '%$query%' OR o.code LIKE '%$query%') " : "") .
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
 
