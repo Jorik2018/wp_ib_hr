@@ -45,14 +45,16 @@ class EmployeeRestController extends Controller
         cfield($o, 'lastSurname', 'last_surname');
 
         $original_db = $wpdb->dbname;
+        $wpdb->select('grupoipe_erp');
         if ($o['id'] > 0) {
-            $updated = $wpdb->update('grupoipe_erp.drt_people', $o, array('id' => $o['id']));
+            $updated = $wpdb->update('drt_people', $o, array('id' => $o['id']));
         } else {
             $o['full_name'] = $o['first_surname'] . ' ' . $o['last_surname'] . ' ' . $o['names'];
             $ruc = remove($o, 'ruc');
-            $updated = $wpdb->insert('grupoipe_erp.drt_people', $o);
+            $updated = $wpdb->insert('drt_people', $o);
             $o['id'] = $wpdb->insert_id;
         }
+        $wpdb->select($original_db);
         if (false === $updated) return t_error();
 
 
