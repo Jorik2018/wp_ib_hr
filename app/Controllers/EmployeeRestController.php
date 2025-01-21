@@ -4,40 +4,59 @@ namespace IB\cv\Controllers;
 
 use WPMVC\MVC\Controller;
 use IB\cv\Util;
-require_once __DIR__ . '/../Util/Utils.php';
+use function IB\directory\Util\remove;
+use function IB\directory\Util\cfield;
+use function IB\directory\Util\camelCase;
+use function IB\directory\Util\cdfield;
+use function IB\directory\Util\t_error;
 
 class EmployeeRestController extends Controller
 {
 
     public function init()
     {
-        register_rest_route( 'api/hr','/employee/(?P<from>\d+)/(?P<to>\d+)', array(
+        register_rest_route('api/hr', '/employee/(?P<from>\d+)/(?P<to>\d+)', array(
             'methods' => 'GET',
-            'callback' => array($this,'pag')
+            'callback' => array($this, 'pag')
         ));
 
-        register_rest_route( 'api/hr','/employee/(?P<id>\d+)', array(
+        register_rest_route('api/hr', '/employee/(?P<id>\d+)', array(
             'methods' => 'GET',
-            'callback' => array($this,'get')
+            'callback' => array($this, 'get')
         ));
 
-        register_rest_route( 'api/hr','/employee', array(
+        register_rest_route('api/hr', '/employee', array(
             'methods' => 'POST',
-            'callback' => array($this,'post')
+            'callback' => array($this, 'post')
         ));
 
-        register_rest_route( 'api/hr', '/employee/(?P<id>)',array(
+        register_rest_route('api/hr', '/employee/(?P<id>)', array(
             'methods' => 'DELETE',
-            'callback' => array($this,'delete')
+            'callback' => array($this, 'delete')
         ));
-
     }
-    
-    public function post($request){
+
+    public function post($request)
+    {
         global $wpdb;
         $o = method_exists($request, 'get_params') ? $request->get_params() : $request;
         $current_user = wp_get_current_user();
-		remove($o,'canceled');
+        cfield($o, 'paternalSurname', 'paternal_surname');
+        cfield($o, 'maternalSurname', 'maternal_surname');
+
+
+        if ($o['id'] > 0) {
+            $updated = $wpdb->update('drt_people', $o, array('id' => $o['id']));
+        } else {
+            $o['fullname'] = $o['paternal_surname'] . ' ' . $o['maternal_surname'] . ' ' . $o['names'];
+            $ruc = remove($o, 'ruc');
+            $updated = $wpdb->insert('drt_people', $o);
+            $o['id'] = $wpdb->insert_id;
+        }
+        if (false === $updated) return t_error();
+
+
+        /*remove($o,'canceled');
         cfield($o, 'employeeId', 'employee_id');
 		cfield($o, 'code', 'people_code');
         $tmpId = remove($o, 'tmpId');
@@ -85,46 +104,53 @@ class EmployeeRestController extends Controller
         if ($tmpId) {
             $o['tmpId'] = $tmpId;
             $o['synchronized'] = 1;
-        }
+        }*/
         return $o;
     }
 
-    public function get($request){    
+    public function get($request)
+    {
         global $wpdb;
         $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM hr_employee WHERE id=" . $request['id']), ARRAY_A);
-		if(isset($o['people_id'])){
-			$o['people_id']=intval($o['people_id']);
-			foreach(array('names'=>'first_name','surnames'=>'last_name') as $key=>$field)
-				$o[$key] = get_user_meta($o['people_id'],$field, true);
-		}
+        if (isset($o['people_id'])) {
+            $o['people_id'] = intval($o['people_id']);
+            foreach (array('names' => 'first_name', 'surnames' => 'last_name') as $key => $field)
+                $o[$key] = get_user_meta($o['people_id'], $field, true);
+        }
         if ($wpdb->last_error) return t_error();
-		cfield($o, 'people_code', 'code');
-		$controller=new StudyRestController(array());
-		$o['study']=Util\toCamelCase($controller->pag(array('from'=>0,'to'=>0,'employee_id'=>$o['id'])));
-		$controller=new TrainingRestController(array());
-		$o['training']=Util\toCamelCase($controller->pag(array('from'=>0,'to'=>0,'employee_id'=>$o['id'])));
-		$controller=new ExperienceRestController(array());
-		$o['experience']=Util\toCamelCase($controller->pag(array('from'=>0,'to'=>0,'employee_id'=>$o['id'])));
+        cfield($o, 'people_code', 'code');
+        $controller = new StudyRestController(array());
+        $o['study'] = Util\toCamelCase($controller->pag(array('from' => 0, 'to' => 0, 'employee_id' => $o['id'])));
+        $controller = new TrainingRestController(array());
+        $o['training'] = Util\toCamelCase($controller->pag(array('from' => 0, 'to' => 0, 'employee_id' => $o['id'])));
+        $controller = new ExperienceRestController(array());
+        $o['experience'] = Util\toCamelCase($controller->pag(array('from' => 0, 'to' => 0, 'employee_id' => $o['id'])));
         return Util\toCamelCase($o);
     }
 
-    public function pag($request){
+    public function pag($request)
+    {
         global $wpdb;
         $from = $request['from'];
         $to = $request['to'];
-        $people_id = method_exists($request, 'get_param') ? $request->get_param('people_id') : $request['people_id'];
+        $query = method_exists($request, 'get_param') ? $request->get_param('query') : $request['query'];
         $current_user = wp_get_current_user();
         $wpdb->last_error = '';
-        $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS o.*,CONCAT(um.meta_value,' ',umln.meta_value) fullName FROM hr_employee o LEFT OUTER JOIN $wpdb->usermeta um ON um.user_id=o.people_id AND um.meta_key='first_name' LEFT OUTER JOIN $wpdb->usermeta umln ON umln.user_id=o.people_id AND umln.meta_key='last_name'" .
+        /*$results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS o.*,CONCAT(um.meta_value,' ',umln.meta_value) fullName FROM hr_employee o LEFT OUTER JOIN $wpdb->usermeta um ON um.user_id=o.people_id AND um.meta_key='first_name' LEFT OUTER JOIN $wpdb->usermeta umln ON umln.user_id=o.people_id AND umln.meta_key='last_name'" .
             "WHERE o.canceled=0 " . (isset($people_id) ? " AND o.people_id=$people_id " : "") .
             "ORDER BY o.id DESC " .
+            ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);*/
+        $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS o.* FROM drt_people o " .
+            "WHERE 1=1 " . (isset($query) ? " AND (o.fullname LIKE '%$query%' OR o.code LIKE '%$query%') " : "") .
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
-    
+
         if ($wpdb->last_error) return t_error();
-        return $to > 0 ? array('data' => Util\toCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;    
+        return $to > 0 ? array('data' => Util\toCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
     }
 
-    public function delete($data){
+
+    public function delete($data)
+    {
         global $wpdb;
         $wpdb->query('START TRANSACTION');
         $result = array_map(function ($id) use ($wpdb) {
