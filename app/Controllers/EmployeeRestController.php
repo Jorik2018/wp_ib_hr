@@ -41,18 +41,20 @@ class EmployeeRestController extends Controller
         global $wpdb;
         $o = method_exists($request, 'get_params') ? $request->get_params() : $request;
         $current_user = wp_get_current_user();
-        cfield($o, 'paternalSurname', 'paternal_surname');
-        cfield($o, 'maternalSurname', 'maternal_surname');
+        cfield($o, 'firstSurname', 'first_surname');
+        cfield($o, 'lastSurname', 'last_surname');
 
-
+        $original_db = $wpdb->dbname;
+        $wpdb->select('grupoipe_erp');
         if ($o['id'] > 0) {
             $updated = $wpdb->update('drt_people', $o, array('id' => $o['id']));
         } else {
-            $o['fullname'] = $o['paternal_surname'] . ' ' . $o['maternal_surname'] . ' ' . $o['names'];
+            $o['full_name'] = $o['first_surname'] . ' ' . $o['last_surname'] . ' ' . $o['names'];
             $ruc = remove($o, 'ruc');
             $updated = $wpdb->insert('drt_people', $o);
             $o['id'] = $wpdb->insert_id;
         }
+        $wpdb->select($original_db);
         if (false === $updated) return t_error();
 
 
@@ -140,7 +142,7 @@ class EmployeeRestController extends Controller
             "WHERE o.canceled=0 " . (isset($people_id) ? " AND o.people_id=$people_id " : "") .
             "ORDER BY o.id DESC " .
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);*/
-        $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS o.* FROM drt_people o " .
+        $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS o.* FROM grupoipe_erp.drt_people o " .
             "WHERE 1=1 " . (isset($query) ? " AND (o.fullname LIKE '%$query%' OR o.code LIKE '%$query%') " : "") .
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
 
