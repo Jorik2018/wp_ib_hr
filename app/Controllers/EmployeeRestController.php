@@ -143,8 +143,8 @@ class EmployeeRestController extends Controller
             "WHERE o.canceled=0 " . (isset($people_id) ? " AND o.people_id=$people_id " : "") .
             "ORDER BY o.id DESC " .
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);*/
-        $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS o.* FROM grupoipe_erp.drt_people o " .
-            "WHERE 1=1 " . (isset($query) ? " AND (o.fullname LIKE '%$query%' OR o.code LIKE '%$query%') " : "") .
+        $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS o.*, o.full_name as fullName FROM grupoipe_erp.drt_people o " .
+            "WHERE 1=1 " . (isset($query) ? " AND (o.full_name LIKE '%$query%' OR o.code LIKE '%$query%') " : "") .
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
 
 
