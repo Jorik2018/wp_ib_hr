@@ -46,75 +46,54 @@ class EmployeeRestController extends Controller
 
         $original_db = $wpdb->dbname;
         $wpdb->select('grupoipe_erp');
-        if ($o['id'] > 0) {
-            $updated = $wpdb->update('drt_people', $o, array('id' => $o['id']));
+        if (isset($o['id'])) {
+            $employee = $wpdb->get_row($wpdb->prepare("SELECT * FROM hr_employee WHERE id=%d", $request['id']), ARRAY_A);
+            $people['ruc'] = $o['ruc'];
+            $people = $wpdb->get_row($wpdb->prepare("SELECT * FROM drt_people WHERE id=%d", $employee['people_id']), ARRAY_A);
+            $people['names'] = $o['names'];
+            $people['first_surname'] = $o['first_surname'];
+            $people['last_surname'] = $o['last_surname'];
+            $people['full_name'] = $people['first_surname'] . ' ' . $people['last_surname'] . ' ' . $people['names'];
+            $people['code'] = $o['code'];
+            $updated = $wpdb->update('drt_people', $people, array('id' => $people['id']));
+            $updated = $wpdb->update('hr_employee', $employee, array('id' => $employee['id']));
         } else {
-            $o['full_name'] = $o['first_surname'] . ' ' . $o['last_surname'] . ' ' . $o['names'];
-            $ruc = remove($o, 'ruc');
-            $updated = $wpdb->insert('drt_people', $o);
-            $o['id'] = $wpdb->insert_id;
+            $people = array(
+                'document_type_id' => 1,
+                'code' => $o['code'],
+                'names' => $o['names'],
+                'first_surname' => $o['first_surname'],
+                'last_surname' => $o['last_surname'],
+                'full_name' => $o['first_surname'] . ' ' . $o['last_surname'] . ' ' . $o['names']
+            );
+            $updated = $wpdb->insert('drt_people', $people);
+            if ($updated) {
+                $employee = array('people_id' => $wpdb->insert_id, 'ruc' => $o['ruc'], 'people_code' => $people['code']);
+                $updated = $wpdb->insert('hr_employee', $employee);
+                $o['id'] = $wpdb->insert_id;
+            }
         }
         $wpdb->select($original_db);
         if (false === $updated) return t_error();
-
-
-        /*remove($o,'canceled');
-        cfield($o, 'employeeId', 'employee_id');
-		cfield($o, 'code', 'people_code');
-        $tmpId = remove($o, 'tmpId');
-		$first_name=$o['names'];
-		$last_name=$o['surnames'];
-        unset($o['synchronized']);
-        $inserted = 0;
-        if ($o['id'] > 0) {
-			$o=array('id'=>$o['id'],'people_code'=>$o['people_code'],
-				'uid_update'=>$current_user->ID,
-				'user_update'=>$current_user->user_login,
-				'update_date'=>current_time('mysql', 1));
-			
-			$user_ids = get_users(array(
-				'meta_key' => 'nickname',
-				'meta_value' => $o['people_code'],
-				'fields' => 'ID',
-			));
-			if (!empty($user_ids)) {
-				foreach ($user_ids as $user_id) {
-					$o['people_id']=$user_id;break;
-				}
-			}
-			if(!isset($o['people_id'])){
-				status_header(400);
-				wp_send_json_error(array(
-					'error' => 'People code no valid!',
-				));
-			}
-			$o['people_id']=intval($o['people_id']);
-			update_user_meta($o['people_id'], 'first_name', $first_name);
-			update_user_meta($o['people_id'], 'last_name', $last_name);
-            $updated = $wpdb->update('hr_employee', $o, array('id' => $o['id']));
-        } else {
-            unset($o['id']);
-            $o['uid_insert'] = $current_user->ID;
-            $o['user_insert'] = $current_user->user_login;
-            $o['insert_date'] = current_time('mysql', 1);
-            if ($tmpId) $o['offline'] = $tmpId;
-            $updated = $wpdb->insert('hr_employee', $o);
-            $o['id'] = $wpdb->insert_id;
-            $inserted = 1;
-        }
-        if (false === $updated) return t_error();
-        if ($tmpId) {
-            $o['tmpId'] = $tmpId;
-            $o['synchronized'] = 1;
-        }*/
         return $o;
     }
 
     public function get($request)
     {
         global $wpdb;
-        $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM hr_employee WHERE id=" . $request['id']), ARRAY_A);
-        if (isset($o['people_id'])) {
+        $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM grupoipe_erp.hr_employee WHERE id=%d" , $request['id']), ARRAY_A);
+        if ($wpdb->last_error) return t_error();
+        $people = $wpdb->get_row($wpdb->prepare("SELECT * FROM grupoipe_erp.drt_people WHERE id=%d" , $o['people_id']), ARRAY_A);
+        cfield($people, 'first_surname', 'firstSurname');
+        cfield($people, 'last_surname', 'lastSurname');
+        cfield($people, 'full_name', 'fullName');
+        $o['names']=$people['names'];
+        $o['firstSurname']=$people['firstSurname'];
+        $o['lastSurname']=$people['lastSurname'];
+        $o['fullName']=$people['fullName'];
+        $o['code']=$people['code'];
+
+        /*if (isset($o['people_id'])) {
             $o['people_id'] = intval($o['people_id']);
             foreach (array('names' => 'first_name', 'surnames' => 'last_name') as $key => $field)
                 $o[$key] = get_user_meta($o['people_id'], $field, true);
@@ -127,7 +106,8 @@ class EmployeeRestController extends Controller
         $o['training'] = Util\toCamelCase($controller->pag(array('from' => 0, 'to' => 0, 'employee_id' => $o['id'])));
         $controller = new ExperienceRestController(array());
         $o['experience'] = Util\toCamelCase($controller->pag(array('from' => 0, 'to' => 0, 'employee_id' => $o['id'])));
-        return Util\toCamelCase($o);
+        return Util\toCamelCase($o);*/
+        return $o;
     }
 
     public function pag($request)
@@ -138,13 +118,12 @@ class EmployeeRestController extends Controller
         $query = method_exists($request, 'get_param') ? $request->get_param('query') : $request['query'];
         $current_user = wp_get_current_user();
         $wpdb->last_error = '';
-
         /*$results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS o.*,CONCAT(um.meta_value,' ',umln.meta_value) fullName FROM hr_employee o LEFT OUTER JOIN $wpdb->usermeta um ON um.user_id=o.people_id AND um.meta_key='first_name' LEFT OUTER JOIN $wpdb->usermeta umln ON umln.user_id=o.people_id AND umln.meta_key='last_name'" .
             "WHERE o.canceled=0 " . (isset($people_id) ? " AND o.people_id=$people_id " : "") .
             "ORDER BY o.id DESC " .
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);*/
-        $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS o.*, o.full_name as fullName FROM grupoipe_erp.drt_people o " .
-            "WHERE 1=1 " . (isset($query) ? " AND (o.full_name LIKE '%$query%' OR o.code LIKE '%$query%') " : "") .
+        $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS em.*, pe.full_name as fullName,pe.code FROM grupoipe_erp.hr_employee em LEFT JOIN grupoipe_erp.drt_people pe ON pe.id=em.people_id " .
+            "WHERE 1=1 " . (isset($query) ? " AND (pe.full_name LIKE '%$query%' OR pe.code LIKE '%$query%') " : "") .
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
 
 
