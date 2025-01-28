@@ -30,11 +30,39 @@ class EmployeeRestController extends Controller
             'callback' => array($this, 'post')
         ));
 
+        register_rest_route('api/hr', '/employee/position', array(
+            'methods' => 'POST',
+            'callback' => array($this, 'position')
+        ));
+
         register_rest_route('api/hr', '/employee/(?P<id>)', array(
             'methods' => 'DELETE',
             'callback' => array($this, 'delete')
         ));
     }
+
+    public function position($request)
+    {
+        global $wpdb;
+        $original_db = $wpdb->dbname;
+        $o = method_exists($request, 'get_params') ? $request->get_params() : $request;
+        $wpdb->select('grupoipe_erp');
+        cfield($o, 'employeeId', 'employee_id');
+        cfield($o, 'startDate', 'start_date');
+        cdfield($o,'start_date');
+        cfield($o, 'endDate', 'end_date');
+        cdfield($o,'end_date');
+        if (isset($o['id'])) {
+            $updated = $wpdb->update('hr_experience', $o, array('id' => $o['id']));
+        } else {
+            $updated = $wpdb->insert('hr_experience', $o);
+            $o['id'] = $wpdb->insert_id;
+        }
+        $wpdb->select($original_db);
+        if (false === $updated) return t_error();
+        return $o;
+    }
+
 
     public function post($request)
     {
@@ -47,9 +75,9 @@ class EmployeeRestController extends Controller
         $original_db = $wpdb->dbname;
         $wpdb->select('grupoipe_erp');
         if (isset($o['id'])) {
-            $employee = $wpdb->get_row($wpdb->prepare("SELECT * FROM hr_employee WHERE id=%d", $request['id']), ARRAY_A);
+            $employee = $wpdb->get_row($wpdb->prepare("SELECT * FROM grupoipe_erp.hr_employee WHERE id=%d", $request['id']), ARRAY_A);
             $people['ruc'] = $o['ruc'];
-            $people = $wpdb->get_row($wpdb->prepare("SELECT * FROM drt_people WHERE id=%d", $employee['people_id']), ARRAY_A);
+            $people = $wpdb->get_row($wpdb->prepare("SELECT * FROM grupoipe_erp.drt_people WHERE id=%d", $employee['people_id']), ARRAY_A);
             $people['names'] = $o['names'];
             $people['first_surname'] = $o['first_surname'];
             $people['last_surname'] = $o['last_surname'];
@@ -81,17 +109,17 @@ class EmployeeRestController extends Controller
     public function get($request)
     {
         global $wpdb;
-        $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM grupoipe_erp.hr_employee WHERE id=%d" , $request['id']), ARRAY_A);
+        $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM grupoipe_erp.hr_employee WHERE id=%d", $request['id']), ARRAY_A);
         if ($wpdb->last_error) return t_error();
-        $people = $wpdb->get_row($wpdb->prepare("SELECT * FROM grupoipe_erp.drt_people WHERE id=%d" , $o['people_id']), ARRAY_A);
+        $people = $wpdb->get_row($wpdb->prepare("SELECT * FROM grupoipe_erp.drt_people WHERE id=%d", $o['people_id']), ARRAY_A);
         cfield($people, 'first_surname', 'firstSurname');
         cfield($people, 'last_surname', 'lastSurname');
         cfield($people, 'full_name', 'fullName');
-        $o['names']=$people['names'];
-        $o['firstSurname']=$people['firstSurname'];
-        $o['lastSurname']=$people['lastSurname'];
-        $o['fullName']=$people['fullName'];
-        $o['code']=$people['code'];
+        $o['names'] = $people['names'];
+        $o['firstSurname'] = $people['firstSurname'];
+        $o['lastSurname'] = $people['lastSurname'];
+        $o['fullName'] = $people['fullName'];
+        $o['code'] = $people['code'];
 
         /*if (isset($o['people_id'])) {
             $o['people_id'] = intval($o['people_id']);
@@ -104,10 +132,10 @@ class EmployeeRestController extends Controller
         $o['study'] = Util\toCamelCase($controller->pag(array('from' => 0, 'to' => 0, 'employee_id' => $o['id'])));
         $controller = new TrainingRestController(array());
         $o['training'] = Util\toCamelCase($controller->pag(array('from' => 0, 'to' => 0, 'employee_id' => $o['id'])));
+        */
         $controller = new ExperienceRestController(array());
         $o['experience'] = Util\toCamelCase($controller->pag(array('from' => 0, 'to' => 0, 'employee_id' => $o['id'])));
-        return Util\toCamelCase($o);*/
-        return $o;
+        return Util\toCamelCase($o);
     }
 
     public function pag($request)
