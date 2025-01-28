@@ -128,7 +128,7 @@ class ExperienceRestController extends Controller
         $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS o.* FROM grupoipe_erp.hr_experience o " .
             "WHERE o.canceled=0 " . (isset($people_id) ? " AND o.people_id=$people_id " : "") .
             (isset($employee_id) ? " AND o.employee_id=$employee_id " : "") .
-            "ORDER BY o.id DESC " .
+            "ORDER BY o.start_date DESC " .
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), OBJECT);
 
         if ($wpdb->last_error) return t_error();
