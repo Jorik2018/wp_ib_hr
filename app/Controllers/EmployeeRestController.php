@@ -25,6 +25,11 @@ class EmployeeRestController extends Controller
             'callback' => array($this, 'get')
         ));
 
+        register_rest_route('api/hr', '/concept/(?P<from>\d+)/(?P<to>\d+)', array(
+            'methods' => 'GET',
+            'callback' => array($this, 'concept_get')
+        ));
+
         register_rest_route('api/hr', '/employee', array(
             'methods' => 'POST',
             'callback' => array($this, 'post')
@@ -49,9 +54,9 @@ class EmployeeRestController extends Controller
         $wpdb->select('grupoipe_erp');
         cfield($o, 'employeeId', 'employee_id');
         cfield($o, 'startDate', 'start_date');
-        cdfield($o,'start_date');
+        cdfield($o, 'start_date');
         cfield($o, 'endDate', 'end_date');
-        cdfield($o,'end_date');
+        cdfield($o, 'end_date');
         if (isset($o['id'])) {
             $updated = $wpdb->update('hr_experience', $o, array('id' => $o['id']));
         } else {
@@ -136,6 +141,25 @@ class EmployeeRestController extends Controller
         $controller = new ExperienceRestController(array());
         $o['experience'] = Util\toCamelCase($controller->pag(array('from' => 0, 'to' => 0, 'employee_id' => $o['id'])));
         return Util\toCamelCase($o);
+    }
+
+
+    public function concept_get($request)
+    {
+        global $wpdb;
+        $from = $request['from'];
+        $to = $request['to'];
+        $query = method_exists($request, 'get_param') ? $request->get_param('query') : $request['query'];
+        $type = method_exists($request, 'get_param') ? $request->get_param('type') : $request['type'];
+        $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS em.* FROM grupoipe_erp.rem_concept em " .
+            "WHERE 1=1 " . (isset($query) ? " AND (em.name LIKE '%$query%') " : "") .
+         (isset($type) ? " AND (em.type_id = $type) " : "") .
+         " ORDER BY em.name".
+            ($to > 0 ? (" LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
+
+
+        if ($wpdb->last_error) return t_error();
+        return $to > 0 ? array('data' => Util\toCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
     }
 
     public function pag($request)
