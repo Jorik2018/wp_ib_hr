@@ -29,7 +29,7 @@ class DocumentRestController extends Controller
             'callback' => array($this,'get')
         ));
 
-        register_rest_route( 'api/hr', '/document/(?P<id>)',array(
+        register_rest_route( 'api/hr', '/document/(?P<ids>[0-9,]+)',array(
             'methods' => 'DELETE',
             'callback' => array($this,'delete')
         ));
@@ -51,7 +51,7 @@ class DocumentRestController extends Controller
             'callback' => array($this,'inventory_get')
         ));
 
-        register_rest_route( 'api/inventory', '/item/(?P<id>)',array(
+        register_rest_route('api/inventory', '/item/(?P<ids>[0-9,]+)', array(
             'methods' => 'DELETE',
             'callback' => array($this,'inventory_delete')
         ));
@@ -202,6 +202,8 @@ class DocumentRestController extends Controller
 
     public function inventory_delete($data){
         global $wpdb;
+        $original_db = $wpdb->dbname;
+        $wpdb->select('grupoipe_erp');
         $wpdb->query('START TRANSACTION');
         $result = array_map(function ($id) use ($wpdb) {
             return $wpdb->update('inv_inventory', array('canceled' => 1, 'delete_date' => current_time('mysql')), array('id' => $id));
@@ -212,6 +214,7 @@ class DocumentRestController extends Controller
         } else {
             $wpdb->query('ROLLBACK');
         }
+        $wpdb->select($original_db);
         return $success;
     }
 
