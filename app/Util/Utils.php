@@ -16,7 +16,8 @@ function toCamelCase($data) {
         return  $result;
     } elseif (is_array($data)) {
 		$keys = array_keys($data);
-		$isNumeric = false;
+		$isNumeric = empty($keys);
+        if(!$isNumeric )
 		foreach ($keys as $key) {
 			if (is_int($key)) {
 				$isNumeric = true;

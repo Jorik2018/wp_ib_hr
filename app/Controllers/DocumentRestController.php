@@ -189,10 +189,15 @@ class DocumentRestController extends Controller
         global $wpdb;
         $from = $request['from'];
         $to = $request['to'];
+        $usuario_responsable=$request['usuario_responsable'];
+        $usuario_area=$request['usuario_area'];
+        
         $current_user = wp_get_current_user();
         $wpdb->last_error = '';
         $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS o.* FROM grupoipe_erp.inv_inventory o " .
             "WHERE o.canceled=0 ".
+            (isset($usuario_responsable)?" AND UPPER(o.usuario_responsable) LIKE '%".strtoupper($usuario_responsable)."%' ":"").
+            (isset($usuario_area)?" AND UPPER(o.usuario_area) LIKE '%".strtoupper($usuario_area)."%' ":"").
             "ORDER BY o.id DESC " .
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), OBJECT);
     
