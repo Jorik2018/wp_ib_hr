@@ -210,9 +210,11 @@ class DocumentRestController extends Controller
         $original_db = $wpdb->dbname;
         $wpdb->select('grupoipe_erp');
         $wpdb->query('START TRANSACTION');
+
         $result = array_map(function ($id) use ($wpdb) {
             return $wpdb->update('inv_inventory', array('canceled' => 1, 'delete_date' => current_time('mysql')), array('id' => $id));
-        }, explode(",", $data['id']));
+        }, explode(",", $data['ids']));
+
         $success = !in_array(false, $result, true);
         if ($success) {
             $wpdb->query('COMMIT');
