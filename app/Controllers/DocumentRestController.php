@@ -188,28 +188,34 @@ class DocumentRestController extends Controller
     }
 
 
-    public function inventory_pag($request){
+    public function inventory_pag($request) {
         global $wpdb;
-        $from = get_param($request,'from');
-        $to = get_param($request,'to');
-        $usuario_responsable=get_param($request,'usuario_responsable');
-        $usuario_area=get_param($request,'usuario_area');
-        $codigo_patrimonial=get_param($request,'codigo_patrimonial');
-        $codigo_inventario=get_param($request,'codigo_inventario');
-        $current_user = wp_get_current_user();
-        $wpdb->last_error = '';
-        $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS o.* FROM grupoipe_erp.inv_inventory o " .
-            "WHERE o.canceled=0 ".
-            (isset($usuario_responsable)?" AND UPPER(o.usuario_responsable) LIKE '%".strtoupper($usuario_responsable)."%' ":"").
-            (isset($usuario_area)?" AND UPPER(o.usuario_area) LIKE '%".strtoupper($usuario_area)."%' ":"").
-            ($codigo_patrimonial?" AND UPPER(o.codigo_patrimonial) LIKE '%".strtoupper($codigo_patrimonial)."%' ":"").
-            ($codigo_inventario?" AND UPPER(o.codigo_inventario) LIKE '%".strtoupper($codigo_inventario)."%' ":"").
-            "ORDER BY o.id DESC " .
-            ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), OBJECT);
+        $params = [
+            'usuario_responsable' => strtoupper(get_param($request, 'usuario_responsable')),
+            'usuario_area' => strtoupper(get_param($request, 'usuario_area')),
+            'codigo_patrimonial' => strtoupper(get_param($request, 'codigo_patrimonial')),
+            'codigo_inventario' => strtoupper(get_param($request, 'codigo_inventario'))
+        ];
+        $from = get_param($request, 'from');
+        $to = get_param($request, 'to');
+    
+        $query = "SELECT SQL_CALC_FOUND_ROWS o.* FROM grupoipe_erp.inv_inventory o WHERE o.canceled=0";
+        foreach ($params as $key => $value) {
+            if ($value) {
+                $query .= " AND UPPER(o.$key) LIKE '%$value%'";
+            }
+        }
+        $query .= " ORDER BY o.id DESC";
+        if ($to > 0) {
+            $query .= " LIMIT $from, $to";
+        }
+    
+        $results = $wpdb->get_results($query, OBJECT);
     
         if ($wpdb->last_error) return t_error();
-        return $to > 0 ? array('data' => $results, 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;    
+        return $to > 0 ? ['data' => $results, 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')] : $results;
     }
+    
 
     public function inventory_delete($data){
         global $wpdb;
