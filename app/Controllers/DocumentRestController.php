@@ -3,10 +3,12 @@
 namespace IB\cv\Controllers;
 
 use WPMVC\MVC\Controller;
-use IB\cv\Util;
-use function IB\directory\Util\t_error;
-use function IB\directory\Util\remove;
-require_once __DIR__ . '/../Util/Utils.php';
+use function IB\cv\Util\remove;
+use function IB\cv\Util\cfield;
+use function IB\cv\Util\cdfield;
+use function IB\cv\Util\t_error;
+use function IB\cv\Util\get_param;
+use function IB\cv\Util\toCamelCase;
 
 class DocumentRestController extends Controller
 {
@@ -106,7 +108,7 @@ class DocumentRestController extends Controller
         global $wpdb;
         $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM hr_document WHERE id=" . $request['id']), OBJECT);
         if ($wpdb->last_error) return t_error();
-        return Util\toCamelCase($o);
+        return toCamelCase($o);
     }
 
     public function pag($request){
@@ -122,7 +124,7 @@ class DocumentRestController extends Controller
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), OBJECT);
     
         if ($wpdb->last_error) return t_error();
-        return $to > 0 ? array('data' => Util\toCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;    
+        return $to > 0 ? array('data' => toCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;    
     }
 
     public function delete($data){
@@ -185,19 +187,23 @@ class DocumentRestController extends Controller
         return $o;//Util\toCamelCase($o);
     }
 
+
     public function inventory_pag($request){
         global $wpdb;
-        $from = $request['from'];
-        $to = $request['to'];
-        $usuario_responsable=$request['usuario_responsable'];
-        $usuario_area=$request['usuario_area'];
-        
+        $from = get_param($request,'from');
+        $to = get_param($request,'to');
+        $usuario_responsable=get_param($request,'usuario_responsable');
+        $usuario_area=get_param($request,'usuario_area');
+        $codigo_patrimonial=get_param($request,'codigo_patrimonial');
+        $codigo_inventario=get_param($request,'codigo_inventario');
         $current_user = wp_get_current_user();
         $wpdb->last_error = '';
         $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS o.* FROM grupoipe_erp.inv_inventory o " .
             "WHERE o.canceled=0 ".
             (isset($usuario_responsable)?" AND UPPER(o.usuario_responsable) LIKE '%".strtoupper($usuario_responsable)."%' ":"").
             (isset($usuario_area)?" AND UPPER(o.usuario_area) LIKE '%".strtoupper($usuario_area)."%' ":"").
+            ($codigo_patrimonial?" AND UPPER(o.codigo_patrimonial) LIKE '%".strtoupper($codigo_patrimonial)."%' ":"").
+            ($codigo_inventario?" AND UPPER(o.codigo_inventario) LIKE '%".strtoupper($codigo_inventario)."%' ":"").
             "ORDER BY o.id DESC " .
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), OBJECT);
     
