@@ -123,7 +123,9 @@ class Main extends Bridge
         $this->add_action('rest_api_init', 'TrainingRestController@init');
         $this->add_action('rest_api_init', 'ExperienceRestController@init');
         $this->add_action('rest_api_init', 'DocumentRestController@init');
-        $this->add_action('rest_api_init', 'PeopleRestController@init');
+        
+        $this->add_action('rest_api_init', 'PeopleRestController@rest_api_init');
+        $this->add_action('init','PeopleRestController@init');
         $this->add_action('rest_api_init', 'AttentionRestController@init');
         $this->add_action('plugins_loaded', 'AdminController@activate');
     }

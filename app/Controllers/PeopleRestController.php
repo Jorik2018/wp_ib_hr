@@ -15,6 +15,49 @@ class PeopleRestController extends Controller
 
     public function init()
     {
+                remove_role('emed_admin');
+        remove_role('emed_register');
+        remove_role('emed_inst');
+        remove_role('emed_read');
+        add_role(
+            'emed_read',
+            'emed_read',
+            array(
+                'EMED_READ' => true
+            )
+        );
+        add_role(
+            'ds_people_admin',
+            'ds_people_admin',
+            array(
+                'DS_PEOPLE_REGISTER' => true,
+                'DS_PEOPLE_ADMIN' => true,
+                'DS_PEOPLE_READ' => true,
+                'DS_PEOPLE_DET' => true
+            )
+        );
+        add_role(
+            'ds_people_register',
+            'ds_people_register',
+            array(
+                'DS_PEOPLE_REGISTER' => true,
+                'DS_PEOPLE_READ' => true,
+                'DS_PEOPLE_DET' => true
+            )
+        );
+        add_role(
+            'ds_people_inst',
+            'ds_people_inst',
+            array(
+                'DS_PEOPLE_REGISTER' => true,
+                'DS_PEOPLE_ADMIN' => true,
+                'DS_PEOPLE_READ' => true
+            )
+        );
+    }
+
+    public function rest_api_init()
+    {
         register_rest_route('api/desarrollo-social', '/people', array(
             'methods' => 'POST',
             'callback' => array($this, 'post')
