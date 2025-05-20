@@ -6,6 +6,43 @@ namespace IB\cv\Util;
 
 use WPMVC\Bridge;
 
+function toLowerCase($data) {
+    if (is_object($data)) {
+        $result = new \stdClass();
+        foreach ($data as $key => $value) {
+            $newKey = strtolower($key);
+            $result->$newKey = toCamelCase($value);
+        }
+        return  $result;
+    } elseif (is_array($data)) {
+		$keys = array_keys($data);
+		$isNumeric = empty($keys);
+        if(!$isNumeric )
+		foreach ($keys as $key) {
+			if (is_int($key)) {
+				$isNumeric = true;
+			}
+			break;
+		}
+		if($isNumeric){
+			$result = array();
+			foreach ($data as $item) {
+				$result[] = toCamelCase($item);
+			}
+			return $result;
+		}else{
+			$result = new \stdClass();
+			foreach ($data as $key => $value) {
+				$newKey = strtolower($key);
+				$result->$newKey = $value;
+			}
+			return  $result;
+		}
+    } else {
+        return $data;
+    }
+}
+
 function toCamelCase($data) {
     if (is_object($data)) {
         $result = new \stdClass();
@@ -66,11 +103,11 @@ function cdfield2(&$row,$key){
     return $row;
 }
 
-function get_param($request, $param_name) {
+function get_param($request, $param_name=null) {
     if (is_object($request) && method_exists($request, 'get_param')) {
-        return $request->get_param($param_name);
+        return $param_name?$request->get_param($param_name):$param_name;
     }
-    return isset($request[$param_name]) ? $request[$param_name] : null;
+    return $param_name?(isset($request[$param_name]) ? $request[$param_name] : null):$request;
 }
 
 function cfield(&$row,$from,$to){
@@ -92,7 +129,8 @@ function remove(array &$arr, $key) {
 
 function t_error($msg=false){
     global $wpdb;
-    $error=new WP_Error(500,$msg?$msg:$wpdb->last_error, array('status'=>500));
+
+    $error=new \WP_Error(500,$msg?$msg:$wpdb->last_error, array('status'=>500));
     $wpdb->query('ROLLBACK');
     return $error;
 }
