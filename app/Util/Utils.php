@@ -27,7 +27,7 @@ function toLowerCase($data) {
 		if($isNumeric){
 			$result = array();
 			foreach ($data as $item) {
-				$result[] = toCamelCase($item);
+				$result[] = toLowerCase($item);
 			}
 			return $result;
 		}else{

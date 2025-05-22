@@ -98,7 +98,7 @@ class AttentionRestController extends Controller
         if ($to > 0) {
             $query .= " LIMIT $from, $to";
         }
-        $results = $wpdb->get_results($query, OBJECT);
+        $results = toLowerCase($wpdb->get_results($query, OBJECT));
         if ($wpdb->last_error) return t_error();
         return $to > 0 ? ['data' => $results, 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')] : $results;
     }
