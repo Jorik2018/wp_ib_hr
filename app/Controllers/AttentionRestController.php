@@ -74,7 +74,15 @@ class AttentionRestController extends Controller
     public function get($request)
     {
         global $wpdb;
-        $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM grupoipe_erp.mon_atenciones WHERE id=" . $request['id']), OBJECT);
+        $o = (array)$wpdb->get_row($wpdb->prepare("SELECT * FROM grupoipe_erp.mon_atenciones WHERE id=" . $request['id']), OBJECT);
+        if ($wpdb->last_error) return t_error();
+        $o = (array)toLowerCase($o);
+        $o['people'] = $wpdb->get_row($wpdb->prepare("SELECT documento_tipo,documento_nro,ape_paterno,ape_materno,nombres FROM grupoipe_erp.matm_persona p WHERE id=" . $o['persona_id']), OBJECT);
+
+        $ipress = $wpdb->get_row($wpdb->prepare("SELECT codigo_microred,codigo_red,codigo_cocadenado FROM grupoipe_master.ipress_eess p WHERE Codigo_Unico=" . $o['codigo_unico']), OBJECT);
+        $ipress =(array)toLowerCase( $ipress);
+        $o['red'] =$ipress['codigo_red'];
+        $o['microred'] =$ipress['codigo_cocadenado'];
         if ($wpdb->last_error) return t_error();
         return toLowerCase($o);
     }
