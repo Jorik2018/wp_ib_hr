@@ -121,7 +121,7 @@ class PeopleRestController extends Controller
     public function get($request)
     {
         global $wpdb;
-        $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM grupoipe_erp.matm_persona WHERE id=" . $request['id']), OBJECT);
+        $o = $wpdb->get_row($wpdb->prepare("SELECT p.*,1 editable FROM grupoipe_erp.matm_persona p WHERE id=" . $request['id']), OBJECT);
         if ($wpdb->last_error) return t_error();
         return $o; //Util\toCamelCase($o);
     }
