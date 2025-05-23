@@ -15,7 +15,7 @@ class PeopleRestController extends Controller
 
     public function init()
     {
-                remove_role('emed_admin');
+        remove_role('emed_admin');
         remove_role('emed_register');
         remove_role('emed_inst');
         remove_role('emed_read');
@@ -89,6 +89,9 @@ class PeopleRestController extends Controller
         $tmpId = remove($o, 'tmpId');
         unset($o['synchronized']);
         cdfield($o, 'fecha_nacimiento');
+        $o['ape_paterno'] = strtoupper($o['ape_paterno']);
+        $o['ape_materno'] = strtoupper($o['ape_materno']);
+        $o['nombres'] = strtoupper($o['nombres']);
         $inserted = 0;
         if ($o['id'] > 0) {
             $o['update_uid'] = $current_user->ID;
