@@ -45,6 +45,7 @@ class AttentionRestController extends Controller
         $wpdb->select('grupoipe_erp');
         $tmpId = remove($o, 'tmpId');
         unset($o['synchronized']);
+        cdfield($o, 'fecha_atencion');
         $inserted = 0;
         if ($o['id'] > 0) {
             $o['update_uid'] = $current_user->ID;
