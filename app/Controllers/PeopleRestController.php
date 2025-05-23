@@ -121,8 +121,20 @@ class PeopleRestController extends Controller
     public function get($request)
     {
         global $wpdb;
-        $o = $wpdb->get_row($wpdb->prepare("SELECT p.*,1 editable FROM grupoipe_erp.matm_persona p WHERE id=" . $request['id']), OBJECT);
+        $o = (array)$wpdb->get_row($wpdb->prepare("SELECT p.*,1 editable FROM grupoipe_erp.matm_persona p WHERE id=" . $request['id']), OBJECT);
         if ($wpdb->last_error) return t_error();
+        $ccpp = (array)$wpdb->get_row("SELECT distinct Ubigeo_Centropoblado AS id,
+        Ubigeo_Centropoblado AS codccpp,
+        Ubigeo_Distrito,
+        Distrito AS distrito,
+        Provincia AS provincia,
+        Nombre_Centro_Poblado AS name FROM drt_ccpp 
+        WHERE Ubigeo_Centropoblado='" . $o['ubigeo'] . $o['ubigeo_ccpp'] . "' order by Ubigeo_Distrito,3");
+
+        $o['provincia'] = $ccpp['provincia'];
+        $o['ubigeo_distrito'] = $ccpp['Ubigeo_Distrito'];
+        $o['distrito'] = $ccpp['distrito'];
+        $o['ccpp'] = $ccpp['name'];
         return $o; //Util\toCamelCase($o);
     }
 
