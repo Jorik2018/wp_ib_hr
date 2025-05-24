@@ -142,10 +142,12 @@ class PeopleRestController extends Controller
     {
         global $wpdb;
         $params = [
-            'usuario_responsable' => get_param($request, 'usuario_responsable'),
-            'usuario_area' => get_param($request, 'usuario_area'),
-            'codigo_patrimonial' => get_param($request, 'codigo_patrimonial'),
-            'codigo_inventario' => get_param($request, 'codigo_inventario')
+            "UPPER(CONCAT(o.ape_paterno,' ', o.ape_materno,' ',o.nombres))" => get_param($request, 'apellidos_nombres'),
+            'o.dni' => get_param($request, 'dni'),
+            'o.usuario_responsable' => get_param($request, 'usuario_responsable'),
+            'o.usuario_area' => get_param($request, 'usuario_area'),
+            'o.codigo_patrimonial' => get_param($request, 'codigo_patrimonial'),
+            'o.codigo_inventario' => get_param($request, 'codigo_inventario')
         ];
         $from = get_param($request, 'from');
         $to = get_param($request, 'to');
@@ -153,7 +155,7 @@ class PeopleRestController extends Controller
         foreach ($params as $key => $value) {
             if ($value) {
                 $value = strtoupper($value);
-                $query .= " AND UPPER(o.$key) LIKE '%$value%'";
+                $query .= " AND UPPER($key) LIKE '%$value%'";
             }
         }
         $query .= " ORDER BY o.id DESC";
