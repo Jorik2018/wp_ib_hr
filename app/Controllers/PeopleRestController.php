@@ -143,7 +143,7 @@ class PeopleRestController extends Controller
         global $wpdb;
         $params = [
             "UPPER(CONCAT(o.ape_paterno,' ', o.ape_materno,' ',o.nombres))" => get_param($request, 'apellidos_nombres'),
-            'o.dni' => get_param($request, 'dni'),
+            'o.documento_nro' => get_param($request, 'dni'),
             'o.usuario_responsable' => get_param($request, 'usuario_responsable'),
             'o.usuario_area' => get_param($request, 'usuario_area'),
             'o.codigo_patrimonial' => get_param($request, 'codigo_patrimonial'),
