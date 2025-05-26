@@ -15,15 +15,15 @@ class PeopleRestController extends Controller
 
     public function init()
     {
-        remove_role('emed_admin');
-        remove_role('emed_register');
-        remove_role('emed_inst');
-        remove_role('emed_read');
+        remove_role('ds_people_admin');
+        remove_role('ds_people_register');
+        remove_role('ds_people_inst');
+        remove_role('ds_people_read');
         add_role(
-            'emed_read',
-            'emed_read',
+            'ds_people_read',
+            'ds_people_read',
             array(
-                'EMED_READ' => true
+                'DS_PEOPLE_READ' => true
             )
         );
         add_role(
@@ -147,7 +147,7 @@ class PeopleRestController extends Controller
             'o.usuario_responsable' => get_param($request, 'usuario_responsable'),
             'o.usuario_area' => get_param($request, 'usuario_area'),
             'o.codigo_patrimonial' => get_param($request, 'codigo_patrimonial'),
-            'o.codigo_inventario' => get_param($request, 'codigo_inventario')
+            'o.direccion' => get_param($request, 'direccion')
         ];
         $from = get_param($request, 'from');
         $to = get_param($request, 'to');
