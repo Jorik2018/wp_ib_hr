@@ -1,0 +1,24 @@
+name: Deploy wp_ib_hr Plugin to FTP
+
+on:
+  push:
+    branches:
+      - main  # O la rama que usas para este plugin
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Upload Plugin to FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./  # Asumiendo que el contenido del plugin está en la raíz del repo
+          server-dir: /wp-content/plugins/wp_ib_hr/
+          dangerous-clean-slate: true  # Opcional, elimina archivos antiguos
