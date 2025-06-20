@@ -85,7 +85,7 @@ class PeopleRestController extends Controller
         $o = method_exists($request, 'get_params') ? $request->get_params() : $request;
         $current_user = wp_get_current_user();
         $original_db = $wpdb->dbname;
-        $wpdb->select('grupoipe_erp');
+        $wpdb->select(get_option("db_erp"));
         $tmpId = remove($o, 'tmpId');
         unset($o['synchronized']);
         cdfield($o, 'fecha_nacimiento');
@@ -121,7 +121,8 @@ class PeopleRestController extends Controller
     public function get($request)
     {
         global $wpdb;
-        $o = (array)$wpdb->get_row($wpdb->prepare("SELECT p.*,1 editable FROM grupoipe_erp.matm_persona p WHERE id=" . $request['id']), OBJECT);
+        $db = get_option("db_erp");
+        $o = (array)$wpdb->get_row($wpdb->prepare("SELECT p.*,1 editable FROM $db.matm_persona p WHERE id=" . $request['id']), OBJECT);
         if ($wpdb->last_error) return t_error();
         $ccpp = (array)$wpdb->get_row("SELECT distinct Ubigeo_Centropoblado AS id,
         Ubigeo_Centropoblado AS codccpp,
@@ -151,7 +152,8 @@ class PeopleRestController extends Controller
         ];
         $from = get_param($request, 'from');
         $to = get_param($request, 'to');
-        $query = "SELECT SQL_CALC_FOUND_ROWS o.* FROM grupoipe_erp.matm_persona o WHERE o.canceled=0";
+        $db = get_option("db_erp");
+        $query = "SELECT SQL_CALC_FOUND_ROWS o.* FROM $db.matm_persona o WHERE o.canceled=0";
         foreach ($params as $key => $value) {
             if ($value) {
                 $value = strtoupper($value);
