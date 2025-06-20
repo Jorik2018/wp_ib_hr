@@ -169,7 +169,6 @@ class PeopleRestController extends Controller
         return $to > 0 ? ['data' => $results, 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')] : $results;
     }
 
-    
     public function delete($data)
     {
         global $wpdb;
