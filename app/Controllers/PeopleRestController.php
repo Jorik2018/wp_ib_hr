@@ -174,7 +174,8 @@ class PeopleRestController extends Controller
         global $wpdb;
         $original_db = $wpdb->dbname;
         $current_user = wp_get_current_user();
-        $wpdb->select('grupoipe_erp');
+        $db = get_option("db_erp");
+        $wpdb->select($db);
         $wpdb->query('START TRANSACTION');
         $result = array_map(function ($id) use ($wpdb, $current_user) {
             return $wpdb->update('matm_persona', array('canceled' => 1, 'delete_user' => $current_user->user_login, 'delete_uid' => $current_user->ID, 'delete_date' => current_time('mysql')), array('id' => $id));
