@@ -42,7 +42,8 @@ class AttentionRestController extends Controller
         $o = method_exists($request, 'get_params') ? $request->get_params() : $request;
         $current_user = wp_get_current_user();
         $original_db = $wpdb->dbname;
-        $wpdb->select('grupoipe_erp');
+        $erp=get_option('db_erp');
+        $wpdb->select($erp);
         $tmpId = remove($o, 'tmpId');
         unset($o['synchronized']);
         cdfield($o, 'fecha_atencion');
@@ -52,14 +53,14 @@ class AttentionRestController extends Controller
             $o['update_user'] = $current_user->user_login;
             $o['update_date'] = current_time('mysql', 1);
             $o['canceled'] = $o['canceled'] == "1";
-            $updated = $wpdb->update('mon_atenciones', $o, array('id' => $o['id']));
+            $updated = $wpdb->update('matm_atenciones', $o, array('id' => $o['id']));
         } else {
             unset($o['id']);
             $o['insert_uid'] = $current_user->ID;
             $o['insert_user'] = $current_user->user_login;
             $o['insert_date'] = current_time('mysql', 1);
             if ($tmpId) $o['offline'] = $tmpId;
-            $updated = $wpdb->insert('mon_atenciones', $o);
+            $updated = $wpdb->insert('matm_atenciones', $o);
             $o['id'] = $wpdb->insert_id;
             $inserted = 1;
         }
@@ -75,10 +76,11 @@ class AttentionRestController extends Controller
     public function get($request)
     {
         global $wpdb;
-        $o = (array)$wpdb->get_row($wpdb->prepare("SELECT * FROM grupoipe_erp.mon_atenciones WHERE id=" . $request['id']), OBJECT);
+        $erp=get_option('db_erp');
+        $o = (array)$wpdb->get_row($wpdb->prepare("SELECT * FROM $erp.matm_atenciones WHERE id=" . $request['id']), OBJECT);
         if ($wpdb->last_error) return t_error();
         $o = (array)toLowerCase($o);
-        $o['people'] = $wpdb->get_row($wpdb->prepare("SELECT documento_tipo,documento_nro,ape_paterno,ape_materno,nombres FROM grupoipe_erp.matm_persona p WHERE id=" . $o['persona_id']), OBJECT);
+        $o['people'] = $wpdb->get_row($wpdb->prepare("SELECT documento_tipo,documento_nro,ape_paterno,ape_materno,nombres FROM $erp.matm_persona p WHERE id=" . $o['persona_id']), OBJECT);
 
         $ipress = $wpdb->get_row($wpdb->prepare("SELECT codigo_microred,codigo_red,codigo_cocadenado FROM grupoipe_master.ipress_eess p WHERE Codigo_Unico=" . $o['codigo_unico']), OBJECT);
         $ipress =(array)toLowerCase( $ipress);
@@ -96,7 +98,8 @@ class AttentionRestController extends Controller
         ];
         $from = get_param($request, 'from');
         $to = get_param($request, 'to');
-        $query = "SELECT SQL_CALC_FOUND_ROWS o.* FROM grupoipe_erp.mon_atenciones o WHERE o.canceled=0";
+        $erp=get_option('db_erp');
+        $query = "SELECT SQL_CALC_FOUND_ROWS o.* FROM $erp.matm_atenciones o WHERE o.canceled=0";
         foreach ($params as $key => $value) {
             if ($value) {
                 $value = strtoupper($value);
@@ -117,10 +120,11 @@ class AttentionRestController extends Controller
         global $wpdb;
         $original_db = $wpdb->dbname;
         $current_user = wp_get_current_user();
-        $wpdb->select('grupoipe_erp');
+        $erp=get_option('db_erp');
+        $wpdb->select($erp);
         $wpdb->query('START TRANSACTION');
         $result = array_map(function ($id) use ($wpdb, $current_user) {
-            return $wpdb->update('mon_atenciones', array('canceled' => 1, 'delete_user' => $current_user->user_login, 'delete_uid' => $current_user->ID,  'delete_date' => current_time('mysql')), array('id' => $id));
+            return $wpdb->update('matm_atenciones', array('canceled' => 1, 'delete_user' => $current_user->user_login, 'delete_uid' => $current_user->ID,  'delete_date' => current_time('mysql')), array('id' => $id));
         }, explode(",", $data['ids']));
         $success = !in_array(false, $result, true);
         if ($success) {
