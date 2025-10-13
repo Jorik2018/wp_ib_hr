@@ -127,17 +127,9 @@ class ServiceRestController extends Controller
         global $wpdb;
         $from = $request['from'];
         $to = $request['to'];
-        $personal = $request['personal'];
         $query = method_exists($request, 'get_param') ? $request->get_param('query') : $request['query'];
-        $personal = method_exists($request, 'get_param') ? $request->get_param('personal') : $request['personal'];
-        
         $current_user = wp_get_current_user();
         $db_erp = get_option("db_erp");
-        $db_erp = "bwgvinpi_ofis";
-
-
-        $people = $wpdb->get_row($wpdb->prepare("SELECT dni FROM $db_erp.m_personal WHERE n=%s", $personal), ARRAY_A);
-        
         $wpdb->last_error = '';
         $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS em.* FROM $db_erp.t_servicios em " .
             "WHERE 1=1 " . (isset($query) ? " AND (pe.apellidos_nombres LIKE '%$query%') " : "") .
