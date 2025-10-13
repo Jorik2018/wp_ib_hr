@@ -122,7 +122,7 @@ class PersonalRestController extends Controller
         global $wpdb;
         $db_erp = get_option("db_erp");
         $db_erp = "bwgvinpi_ofis";
-        $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM $db_erp.m_personal WHERE id=%d", $request['id']), ARRAY_A);
+        $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM $db_erp.m_personal WHERE n=%d", $request['id']), ARRAY_A);
         $o['editable'] = true;
         //if ($wpdb->last_error) return t_error();
         /*$people = $wpdb->get_row($wpdb->prepare("SELECT * FROM $db_erp.drt_people WHERE id=%d", $o['people_id']), ARRAY_A);
