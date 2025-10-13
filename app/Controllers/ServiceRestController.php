@@ -94,6 +94,7 @@ class ServiceRestController extends Controller
         $original_db = $wpdb->dbname;
         $people = $o;
         $db_erp = get_option("db_erp");
+        $db_erp = "bwgvinpi_ofis";
         $wpdb->select($db_erp);
 
         if (isset($o['id'])) {
@@ -111,6 +112,7 @@ class ServiceRestController extends Controller
     {
         global $wpdb;
         $db_erp = get_option("db_erp");
+        $db_erp = "bwgvinpi_ofis";
         $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM $db_erp.t_servicios WHERE id=%d", $request['id']), ARRAY_A);
         $o['editable'] = true;
         if ($wpdb->last_error) return t_error();
@@ -128,6 +130,7 @@ class ServiceRestController extends Controller
         $query = method_exists($request, 'get_param') ? $request->get_param('query') : $request['query'];
         $current_user = wp_get_current_user();
         $db_erp = get_option("db_erp");
+        $db_erp = "bwgvinpi_ofis";
         $wpdb->last_error = '';
         $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS em.* FROM $db_erp.t_servicios em " .
             "WHERE 1=1 " . (isset($query) ? " AND (pe.apellidos_nombres LIKE '%$query%') " : "") .

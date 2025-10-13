@@ -75,28 +75,6 @@ class PersonalRestController extends Controller
         ));
     }
 
-    public function position($request)
-    {
-        global $wpdb;
-        $original_db = $wpdb->dbname;
-        $o = method_exists($request, 'get_params') ? $request->get_params() : $request;
-        $wpdb->select('grupoipe_erp');
-        cfield($o, 'employeeId', 'employee_id');
-        cfield($o, 'startDate', 'start_date');
-        cdfield($o, 'start_date');
-        cfield($o, 'endDate', 'end_date');
-        cdfield($o, 'end_date');
-        if (isset($o['id'])) {
-            $updated = $wpdb->update('hr_experience', $o, array('id' => $o['id']));
-        } else {
-            $updated = $wpdb->insert('hr_experience', $o);
-            $o['id'] = $wpdb->insert_id;
-        }
-        $wpdb->select($original_db);
-        if (false === $updated) return t_error();
-        return $o;
-    }
-
     private const FIELD_MAP = [
         'firstSurname' => 'first_surname',
         'lastSurname' => 'last_surname',
@@ -125,6 +103,7 @@ class PersonalRestController extends Controller
         unset($o['editable']);
         $original_db = $wpdb->dbname;
         $db_erp = get_option("db_erp");
+        $db_erp = "bwgvinpi_ofis";
         $wpdb->select($db_erp);
         $people = $o;
 
@@ -142,6 +121,7 @@ class PersonalRestController extends Controller
     {
         global $wpdb;
         $db_erp = get_option("db_erp");
+        $db_erp = "bwgvinpi_ofis";
         $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM $db_erp.m_personal WHERE id=%d", $request['id']), ARRAY_A);
         $o['editable'] = true;
         //if ($wpdb->last_error) return t_error();
@@ -168,7 +148,7 @@ class PersonalRestController extends Controller
         $current_user = wp_get_current_user();
         $db_erp = get_option("db_erp");
         $wpdb->last_error = '';
-        $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS em.* FROM $db_erp.m_personal em " .
+        $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS em.*, em.n id FROM $db_erp.m_personal em " .
             "WHERE 1=1 " . (isset($query) ? " AND (pe.apellidos_nombres LIKE '%$query%') " : "") .
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
         if ($wpdb->last_error) return t_error();

@@ -86,6 +86,7 @@ class ResourceRestController extends Controller
         $o = renameFields($o, self::FIELD_MAP);
         $original_db = $wpdb->dbname;
         $db_erp = get_option("db_erp");
+        $db_erp = "bwgvinpi_ofis";
         $wpdb->select($db_erp);
 
         if (isset($o['id'])) {
@@ -104,6 +105,7 @@ class ResourceRestController extends Controller
     {
         global $wpdb;
         $db_erp = get_option("db_erp");
+        $db_erp = "bwgvinpi_ofis";
         $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM $db_erp.t_recursos WHERE id=%d", $request['id']), ARRAY_A);
         $o['editable'] = true;
                 $o['editable'] = true;
@@ -122,6 +124,7 @@ class ResourceRestController extends Controller
         $query = method_exists($request, 'get_param') ? $request->get_param('query') : $request['query'];
         $current_user = wp_get_current_user();
         $db_erp = get_option("db_erp");
+        $db_erp = "bwgvinpi_ofis";
         $wpdb->last_error = '';
         $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS em.* FROM $db_erp.t_recursos em " .
             "WHERE 1=1 " . (isset($query) ? " AND (pe.apellidos_nombres LIKE '%$query%') " : "") .
