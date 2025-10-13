@@ -133,11 +133,11 @@ class ServiceRestController extends Controller
         $current_user = wp_get_current_user();
         $db_erp = get_option("db_erp");
         $db_erp = "bwgvinpi_ofis";
-        $people = $wpdb->get_row($wpdb->prepare("SELECT * FROM $db_erp.m_personal WHERE n=%s", $personal), ARRAY_A);
+        $people = $wpdb->get_row($wpdb->prepare("SELECT dni FROM $db_erp.m_personal WHERE n=%s", $personal), ARRAY_A);
         return $people;
         $wpdb->last_error = '';
         $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS em.* FROM $db_erp.t_servicios em " .
-            "WHERE 1=1 " . (isset($query) ? " AND (pe.apellidos_nombres LIKE '%$query%') " : "") .
+            "WHERE 1=1 AND dni='".$people['dni']."' " . (isset($query) ? " AND (pe.apellidos_nombres LIKE '%$query%') " : "") .
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
         if ($wpdb->last_error) return t_error();
         return $to > 0 ? array('data' => Util\toCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
