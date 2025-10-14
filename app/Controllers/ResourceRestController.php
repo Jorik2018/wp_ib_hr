@@ -112,7 +112,8 @@ class ResourceRestController extends Controller
         if ($wpdb->last_error) return t_error();
         $people = $wpdb->get_row($wpdb->prepare("SELECT * FROM $db_erp.m_personal WHERE dni=%s", $o['dni']), ARRAY_A);
         if ($wpdb->last_error) return t_error();
-        $o['apellidosNombres']=$people['apellidos_nombres'];
+        $o['apellidosNombres'] = $people['apellidos_nombres'];
+        $o['personal'] = $people['id'];
         return Util\toCamelCase($o);
     }
 
