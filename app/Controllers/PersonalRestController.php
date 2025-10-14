@@ -146,12 +146,15 @@ class PersonalRestController extends Controller
         $from = $request['from'];
         $to = $request['to'];
         $query = method_exists($request, 'get_param') ? $request->get_param('query') : $request['query'];
+        $dni = method_exists($request, 'get_param') ? $request->get_param('dni') : $request['dni'];
         $current_user = wp_get_current_user();
         $db_erp = get_option("db_erp");
         $db_erp = "bwgvinpi_ofis";
         $wpdb->last_error = '';
         $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS em.*, em.n id FROM $db_erp.m_personal em " .
-            "WHERE 1=1 " . (isset($query) ? " AND (pe.apellidos_nombres LIKE '%$query%') " : "") .
+            "WHERE 1=1 " . 
+            (isset($query) ? " AND (pe.apellidos_nombres LIKE '%$query%') " : "") .
+            (isset($dni) ? " AND (pe.dni LIKE '%$dni%') " : "") .
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
         if ($wpdb->last_error) return t_error();
         return $to > 0 ? array('data' => Util\toCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
