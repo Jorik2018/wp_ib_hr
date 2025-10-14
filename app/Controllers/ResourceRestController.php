@@ -91,7 +91,7 @@ class ResourceRestController extends Controller
         $wpdb->select($db_erp);
 
         if (isset($o['id'])) {
-            $updated = $wpdb->update('t_recursos', $o, array('n' => $o['id']));
+            $updated = $wpdb->update('t_recursos', $o, array('id' => $o['id']));
         } else {
             $updated = $wpdb->insert('t_recursos', $o);
             $o['id'] = $wpdb->insert_id;
