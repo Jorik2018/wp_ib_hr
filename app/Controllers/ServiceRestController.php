@@ -121,7 +121,7 @@ class ServiceRestController extends Controller
         $people = $wpdb->get_row($wpdb->prepare("SELECT * FROM $db_erp.m_personal WHERE dni=%s", $o['dni']), ARRAY_A);
         if ($wpdb->last_error) return t_error();
         $o['apellidosNombres'] = $people['apellidos_nombres'];
-        $o['personal'] = $people['id'];
+        $o['personal'] = $people['n'];
         return Util\toCamelCase($o);
     }
 
