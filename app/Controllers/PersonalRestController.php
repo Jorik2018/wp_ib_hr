@@ -151,7 +151,7 @@ class PersonalRestController extends Controller
         $db_erp = get_option("db_erp");
         $db_erp = "bwgvinpi_ofis";
         $wpdb->last_error = '';
-        $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS em.*, em.n id FROM $db_erp.m_personal em " .
+        $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS pe.*, pe.n id FROM $db_erp.m_personal pe " .
             "WHERE 1=1 " . 
             (isset($query) ? " AND (pe.apellidos_nombres LIKE '%$query%') " : "") .
             (isset($dni) ? " AND (pe.dni LIKE '%$dni%') " : "") .
