@@ -73,7 +73,7 @@ class ServiceRestController extends Controller
     private const FIELD_MAP = [
         'usuarioDeRed' => 'usuario_de_red',
         'correoInstitucional' => 'correo_institucional',
-        'correoDeGrupo' => 'correo_de_grupo',
+        'correoGrupo' => 'correo_grupo',
         'numeroCelular' => 'numero_celular',
         'numeroAnexo' => 'numero_anexo',
         'otrosRecursos' => 'otros_recursos',
