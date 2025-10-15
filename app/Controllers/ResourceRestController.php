@@ -80,7 +80,7 @@ class ResourceRestController extends Controller
     public function post($request)
     {
         global $wpdb;
-        $o = get_params($request);
+        $o = get_param($request);
         $current_user = wp_get_current_user();
         unset($o['apellidosNombres']);
         unset($o['personal']);
