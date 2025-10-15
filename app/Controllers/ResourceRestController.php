@@ -15,7 +15,9 @@ class ResourceRestController extends Controller
 {
 
     private const FIELD_MAP = [
-        'usuarioDeRed' => 'usuario_de_red'
+        'usuarioDeRed' => 'usuario_de_red',
+        'fechaAsignacion' => 'fecha_asignacion',
+        'fechaDevolucion' => 'fecha_devolucion'
     ];
 
     public function init()
