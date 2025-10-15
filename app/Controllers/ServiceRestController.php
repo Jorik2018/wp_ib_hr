@@ -120,13 +120,11 @@ class ServiceRestController extends Controller
     public function get($request)
     {
         global $wpdb;
-
-        $db_erp = get_option("db_erp");
-        $db_erp = "bwgvinpi_ofis";
-        $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM $db_erp.t_servicios WHERE id=%d", $request['id']), ARRAY_A);
+        $db = get_option("db_ofis");
+        $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM $db.t_servicios WHERE id=%d", $request['id']), ARRAY_A);
         $o['editable'] = true;
         if ($wpdb->last_error) return t_error();
-        $people = $wpdb->get_row($wpdb->prepare("SELECT * FROM $db_erp.m_personal WHERE dni=%s", $o['dni']), ARRAY_A);
+        $people = $wpdb->get_row($wpdb->prepare("SELECT * FROM $db.m_personal WHERE dni=%s", $o['dni']), ARRAY_A);
         if ($wpdb->last_error) return t_error();
         $o['apellidosNombres'] = $people['apellidos_nombres'];
         $o['personal'] = $people['n'];
