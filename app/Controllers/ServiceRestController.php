@@ -72,6 +72,9 @@ class ServiceRestController extends Controller
 
     private const FIELD_MAP = [
         'usuarioDeRed' => 'usuario_de_red',
+        'usuarioDeSgd' => 'usuario_de_sgd',
+        'usuarioDeSiaf' => 'usuario_de_siaf',
+        'usuarioDeSiga' => 'usuario_de_siga',
         'correoInstitucional' => 'correo_institucional',
         'correoGrupo' => 'correo_grupo',
         'numeroCelular' => 'numero_celular',
@@ -138,7 +141,8 @@ class ServiceRestController extends Controller
         $people = $wpdb->get_row($wpdb->prepare("SELECT dni FROM $db_erp.m_personal WHERE n=%s", $personal), ARRAY_A);
         $wpdb->last_error = '';
         $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS em.* FROM $db_erp.t_servicios em " .
-            "WHERE 1=1 AND dni='".$people['dni']."' " . (isset($query) ? " AND (pe.apellidos_nombres LIKE '%$query%') " : "") .
+            "WHERE 1=1 AND dni='".$people['dni']."' " 
+            . (isset($query) ? " AND (pe.apellidos_nombres LIKE '%$query%') " : "") .
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
         if ($wpdb->last_error) return t_error();
         return $to > 0 ? array('data' => Util\toCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
