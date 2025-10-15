@@ -93,6 +93,8 @@ class ServiceRestController extends Controller
         unset($o['fechaCrea']);
         unset($o['fechaModifica']);
         unset($o['editable']);
+        unset($o['insertDate']);
+        unset($o['updateDate']);
         $o = renameFields($o, self::FIELD_MAP);
         $current_user = wp_get_current_user();
         $original_db = $wpdb->dbname;

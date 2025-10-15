@@ -85,6 +85,8 @@ class ResourceRestController extends Controller
         unset($o['personal']);
         unset($o['fechaCrea']);
         unset($o['fechaModifica']);
+        unset($o['insertDate']);
+        unset($o['updateDate']);
         unset($o['editable']);
         $o = renameFields($o, self::FIELD_MAP);
         $original_db = $wpdb->dbname;
