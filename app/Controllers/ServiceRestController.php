@@ -136,8 +136,8 @@ class ServiceRestController extends Controller
         global $wpdb;
         $from = $request['from'];
         $to = $request['to'];
-        $query = method_exists($request, 'get_param') ? $request->get_param('query') : $request['query'];
-        $personal = method_exists($request, 'get_param') ? $request->get_param('personal') : $request['personal'];
+        $query = get_param('query');
+        $personal = get_param('personal');
         $current_user = wp_get_current_user();
         $db_erp = get_option("db_erp");
         $db_erp = "bwgvinpi_ofis";
