@@ -95,8 +95,10 @@ class ResourceRestController extends Controller
         $db_erp = "bwgvinpi_ofis";
         $wpdb->select($db_erp);
         if (isset($o['id'])) {
+            $o['update_date'] = current_time('mysql', 1);
             $updated = $wpdb->update('t_recursos', $o, array('id' => $o['id']));
         } else {
+            $o['insert_date'] = current_time('mysql', 1);
             $updated = $wpdb->insert('t_recursos', $o);
             $o['id'] = $wpdb->insert_id;
         }

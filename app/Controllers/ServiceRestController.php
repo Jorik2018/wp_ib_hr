@@ -105,8 +105,10 @@ class ServiceRestController extends Controller
         $wpdb->select($db_erp);
 
         if (isset($o['id'])) {
+            $o['update_date'] = current_time('mysql', 1);
             $updated = $wpdb->update('t_servicios', $people, array('id' => $people['id']));
         } else {
+            $o['insert_date'] = current_time('mysql', 1);
             $updated = $wpdb->insert('t_servicios', $o);
             $o['id'] = $wpdb->insert_id;
         }
