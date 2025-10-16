@@ -127,9 +127,9 @@ class ResourceRestController extends Controller
         global $wpdb;
         $from = $request['from'];
         $to = $request['to'];
-            $query = get_param($request, 'query');
+        $query = get_param($request, 'query');
         $personal = get_param($request, 'personal');
-$current_user = wp_get_current_user();
+        $current_user = wp_get_current_user();
         $db_erp = get_option("db_ofis");
         $people = $wpdb->get_row($wpdb->prepare("SELECT dni FROM $db_erp.m_personal WHERE n=%s", $personal), ARRAY_A);
         $wpdb->last_error = '';
@@ -138,7 +138,8 @@ $current_user = wp_get_current_user();
             . (isset($query) ? " AND (pe.apellidos_nombres LIKE '%$query%') " : "") .
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
         if ($wpdb->last_error) return t_error();
-        return $to > 0 ? array('data' => Util\toCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
+        $results = Util\toCamelCase($results);
+        return $to > 0 ? array('data' => $results, 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
     }
 
 
