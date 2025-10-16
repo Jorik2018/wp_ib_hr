@@ -9,6 +9,7 @@ use function IB\directory\Util\cfield;
 use function IB\directory\Util\camelCase;
 use function IB\directory\Util\cdfield;
 use function IB\directory\Util\t_error;
+use function IB\directory\Util\get_param;
 use function IB\directory\Util\renameFields;
 
 class PersonalRestController extends Controller
@@ -146,7 +147,7 @@ class PersonalRestController extends Controller
         $from = $request['from'];
         $to = $request['to'];
         $query = method_exists($request, 'get_param') ? $request->get_param('query') : $request['query'];
-        $dni = method_exists($request, 'get_param') ? $request->get_param('dni') : $request['dni'];
+        $dni = get_param($request, 'dni');
         $current_user = wp_get_current_user();
         $db_erp = get_option("db_erp");
         $db_erp = "bwgvinpi_ofis";
