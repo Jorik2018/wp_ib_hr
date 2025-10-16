@@ -105,8 +105,7 @@ class ResourceRestController extends Controller
         }
         if (false === $updated) return t_error();
         $wpdb->select($original_db);
-        
-        return $o;
+        return Util\toCamelCase($o);
     }
 
     public function get($request)
