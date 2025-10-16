@@ -142,7 +142,6 @@ class ServiceRestController extends Controller
         $current_user = wp_get_current_user();
         $db_erp = get_option("db_ofis");
         $people = $wpdb->get_row($wpdb->prepare("SELECT dni FROM $db_erp.m_personal WHERE n=%s", $personal), ARRAY_A);
-        return array('0'=>$people, $personal,$query);
         $wpdb->last_error = '';
         $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS em.* FROM $db_erp.t_servicios em " .
             "WHERE 1=1 AND dni='".$people['dni']."' " 
