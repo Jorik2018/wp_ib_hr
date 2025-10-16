@@ -148,6 +148,7 @@ class PersonalRestController extends Controller
         $to = $request['to'];
         $query = method_exists($request, 'get_param') ? $request->get_param('query') : $request['query'];
         $dni = get_param($request, 'dni');
+        $apellidosNombres = get_param($request, 'apellidosNombres');
         $current_user = wp_get_current_user();
         $db_erp = get_option("db_erp");
         $db_erp = "bwgvinpi_ofis";
@@ -155,6 +156,7 @@ class PersonalRestController extends Controller
         $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS pe.*, pe.n id FROM $db_erp.m_personal pe " .
             "WHERE 1=1 " . 
             (isset($query) ? " AND (pe.apellidos_nombres LIKE '%$query%') " : "") .
+            (isset($apellidosNombres) ? " AND (pe.apellidos_nombres LIKE '%$apellidosNombres%') " : "") .
             (isset($dni) ? " AND (pe.dni LIKE '%$dni%') " : "") .
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
         if ($wpdb->last_error) return t_error();
