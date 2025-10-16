@@ -82,6 +82,8 @@ class ResourceRestController extends Controller
         global $wpdb;
         $o = get_param($request);
         $current_user = wp_get_current_user();
+        cdfield($o, 'fechaAsignacion');
+        cdfield($o, 'fechaDevolucion');
         unset($o['apellidosNombres']);
         unset($o['personal']);
         unset($o['fechaCrea']);
