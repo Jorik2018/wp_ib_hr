@@ -146,17 +146,20 @@ class PersonalRestController extends Controller
         global $wpdb;
         $from = $request['from'];
         $to = $request['to'];
-        $query = method_exists($request, 'get_param') ? $request->get_param('query') : $request['query'];
+        $query = get_param($request, 'query');
         $dni = get_param($request, 'dni');
         $apellidosNombres = get_param($request, 'apellidosNombres');
+        $tipoDeContrato = get_param($request, 'tipoDeContrato');
+        $afpOnp = get_param($request, 'afpOnp');
         $current_user = wp_get_current_user();
-        $db_erp = get_option("db_erp");
-        $db_erp = "bwgvinpi_ofis";
+        $db_erp = get_option("db_ofis");
         $wpdb->last_error = '';
         $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS pe.*, pe.n id FROM $db_erp.m_personal pe " .
             "WHERE 1=1 " . 
             (isset($query) ? " AND (pe.apellidos_nombres LIKE '%$query%') " : "") .
             (isset($apellidosNombres) ? " AND (pe.apellidos_nombres LIKE '%$apellidosNombres%') " : "") .
+            (isset($tipoDeContrato) ? " AND (pe.tipo_de_contrato LIKE '%$tipoDeContrato%') " : "") .
+            (isset($afpOnp) ? " AND (pe.afp_onp LIKE '%$afpOnp%') " : "") .
             (isset($dni) ? " AND (pe.dni LIKE '%$dni%') " : "") .
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
         if ($wpdb->last_error) return t_error();
