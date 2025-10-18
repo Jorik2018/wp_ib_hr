@@ -75,6 +75,11 @@ class ResourceRestController extends Controller
             'methods' => 'DELETE',
             'callback' => array($this, 'delete')
         ));
+
+        register_rest_route('api/hr', '/personal/type-resource/(?P<from>\d+)/(?P<to>\d+)', array(
+            'methods' => 'GET',
+            'callback' => array($this, 'pag_type_resource')
+        ));
     }
 
     public function post($request)
@@ -120,6 +125,22 @@ class ResourceRestController extends Controller
         $o['apellidosNombres'] = $people['apellidos_nombres'];
         $o['personal'] = $people['n'];
         return Util\toCamelCase($o);
+    }
+    
+    public function pag_type_resource($request)
+    {
+        global $wpdb;
+        $from = $request['from'];
+        $to = $request['to'];
+        $current_user = wp_get_current_user();
+        $db_erp = get_option("db_ofis");
+        $wpdb->last_error = '';
+        $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS em.id code, em.tipo name FROM $db_erp.maestro_tipo_bien em " .
+            "WHERE 1=1 ".
+            ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
+        if ($wpdb->last_error) return t_error();
+        $results = Util\toCamelCase($results);
+        return $to > 0 ? array('data' => $results, 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
     }
 
     public function pag($request)
