@@ -137,7 +137,7 @@ class ResourceRestController extends Controller
         $wpdb->last_error = '';
         $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS em.id code, upper(em.tipo) name FROM $db_erp.maestro_tipo_bien em " .
             "WHERE 1=1 ".
-            ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A)." ORDER BY 2";
+            ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : "")." ORDER BY 2", ARRAY_A);
         if ($wpdb->last_error) return t_error();
         $results = Util\toCamelCase($results);
         return $to > 0 ? array('data' => $results, 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
