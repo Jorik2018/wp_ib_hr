@@ -131,6 +131,12 @@ class StatsRestController extends Controller
             'callback' => array($this, 'get_ind_3_anemia_mr_mes_linea_tiempo_diagnosticado_recuperado')
         ));
 
+        register_rest_route('api/stats', '/ind_3_anemia_mr_mes_variable_barra_diagnosticado_recuperado', array(
+            'methods' => 'GET',
+            'callback' => array($this, 'get_ind_3_anemia_mr_mes_variable_barra_diagnosticado_recuperado')
+        ));
+        
+
         register_rest_route('api/stats', '/seguimiento', array(
             'methods' => 'GET',
             'callback' => array($this, 'pag_seguimiento')
