@@ -214,7 +214,7 @@ class StatsRestController extends Controller
 
         return $result;
     }
-    
+    //coment
     public function get_ind_1_seguimiento_red_menor1a_menor_avance_tabla($request){
         $microred = get_param($request, 'microred');
         $establishment = get_param($request, 'establishment');
