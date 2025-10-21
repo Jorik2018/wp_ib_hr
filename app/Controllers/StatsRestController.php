@@ -359,11 +359,91 @@ class StatsRestController extends Controller
         return $result;
     }
 
+    function generarNumeroAleatorio($longitud = 8) {
+        $cadena = '';
+        for ($i = 0; $i < $longitud; $i++) {
+            $cadena .= rand(0, 9); // genera un dígito aleatorio entre 0 y 9
+        }
+        return $cadena;
+    }
+
+    function generarNombreAleatorio() {
+    // Letras para construir sílabas
+    $consonantes = ['B','C','D','F','G','H','J','K','L','M','N','P','Q','R','S','T','V','W','X','Y','Z'];
+    $vocales = ['A','E','I','O','U'];
+
+    // Función interna para crear una “palabra” aleatoria
+    $generarPalabra = function($longitud) use ($consonantes, $vocales) {
+        $palabra = '';
+        for ($i = 0; $i < $longitud; $i++) {
+            if ($i % 2 == 0) {
+                // consonante
+                $palabra .= $consonantes[array_rand($consonantes)];
+            } else {
+                // vocal
+                $palabra .= $vocales[array_rand($vocales)];
+            }
+        }
+        return $palabra;
+    };
+
+    // Generar dos apellidos y un nombre
+    $apellido1 = $generarPalabra(rand(4, 7));
+    $apellido2 = $generarPalabra(rand(4, 7));
+    $nombre = $generarPalabra(rand(4, 7));
+
+    return "$apellido1 $apellido2 $nombre";
+}
+
+function generarArrayAleatorio() {
+    // Cantidad aleatoria de elementos (entre 0 y 6)
+    $cantidad = rand(0, 6);
+
+    $array = [];
+    for ($i = 0; $i < $cantidad; $i++) {
+        $array[] = rand(1, 9); // valor aleatorio entre 1 y 9
+    }
+
+    return $array;
+}
     public function pag_seguimiento($request){
         $microred = get_param($request, 'microred');
         $establishment = get_param($request, 'establishment');
         $period = get_param($request, 'period');
-        return [];
+
+        $patient = array();
+        for ($i = 0; $i < 16; $i++) {
+            $citados = mt_rand(500, 5000);
+            $asistieron = mt_rand(0000, $citados);
+            $porcentaje = ($asistieron/$citados)*100;
+            $patient[] = array(
+                "fullName" => $this->generarNombreAleatorio(),
+                "dni" => $this->generarNumeroAleatorio(),
+                "fechaNac" => '2025-04-05',
+                "age" => '6M 15D',
+                'mother' => array(
+                    "fullName" => $this->generarNombreAleatorio(),
+                    "code" => $this->generarNumeroAleatorio(),
+                    "phone" => $this->generarNumeroAleatorio(9)
+                ),
+                'paquete_integral' => array('T.N.'=>array(), 'V.D.'=>array()),
+                'RN' => array(array('Fecha Atensión' => '', 'HIS' => '')),
+                'year_less_1' => $this->generarArrayAleatorio(),
+                'year_1' => $this->generarArrayAleatorio(),
+                'year_2' => $this->generarArrayAleatorio(),
+                'year_3' => $this->generarArrayAleatorio(),
+                'year_4' => $this->generarArrayAleatorio()
+            );
+        }
+        return array(
+            "stats" => array(
+                array( "value" => rand(4, 300), "label" => "Niñas y Niños menores de 5 años", "color" => "rgb(172, 128, 238)" ),
+                array( "value" => rand(4, 300), "label" => "Niñas y Niños menores de 1 año", "color" => "hsl(var(--primary))" ),
+                array( "value" => rand(4, 300), "label" => "Menores de 1 año que asistieron al CRED en Octubre", "color" => "hsl(142, 76%, 36%)" ),
+                array( "value" => rand(4, 300), "label" => "Niñas y Niños con Factor de Riesgo", "color" => "hsl(0, 84%, 60%)" ),
+            ),
+            'data' => $patient
+        );
     }
     
     public function get_microred(){
