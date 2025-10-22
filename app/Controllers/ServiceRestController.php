@@ -82,7 +82,8 @@ class ServiceRestController extends Controller
         'numeroAnexo' => 'numero_anexo',
         'otrosRecursos' => 'otros_recursos',
         'insertDate' => 'insert_date',
-        'updatedDate' => 'updated_date'
+        'updatedDate' => 'updated_date',
+        'certificadoDigital' => 'certificado_digital'
     ];
 
     public function post($request)
