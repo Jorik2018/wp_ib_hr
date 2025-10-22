@@ -80,6 +80,12 @@ class ResourceRestController extends Controller
             'methods' => 'GET',
             'callback' => array($this, 'pag_type_resource')
         ));
+
+        register_rest_route('api/hr', '/personal/unidad/(?P<from>\d+)/(?P<to>\d+)', array(
+            'methods' => 'GET',
+            'callback' => array($this, 'pag_maestro_unidad')
+        ));
+        
     }
 
     public function post($request)
@@ -138,6 +144,22 @@ class ResourceRestController extends Controller
         $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS em.id code, upper(em.tipo) name FROM $db_erp.maestro_tipo_bien em " .
             "WHERE 1=1 ".
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : "")." ORDER BY 2", ARRAY_A);
+        if ($wpdb->last_error) return t_error();
+        $results = Util\toCamelCase($results);
+        return $to > 0 ? array('data' => $results, 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
+    }
+
+    public function pag_maestro_unidad($request)
+    {
+        global $wpdb;
+        $from = $request['from'];
+        $to = $request['to'];
+        $current_user = wp_get_current_user();
+        $db_erp = get_option("db_ofis");
+        $wpdb->last_error = '';
+        $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS em.id code, id_organo organo, upper(em.unidad_organica) name FROM $db_erp.maestro_unidad em " .
+            "WHERE 1=1 ".
+            ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : "")." ORDER BY 3", ARRAY_A);
         if ($wpdb->last_error) return t_error();
         $results = Util\toCamelCase($results);
         return $to > 0 ? array('data' => $results, 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
