@@ -85,6 +85,7 @@ class ServiceRestController extends Controller
         'updatedDate' => 'updated_date',
         'certificadoDigital' => 'certificado_digital',
         'vpnAnydesk' => 'vpn_anydesk',
+        'acCompartido' => 'ac_compartido'
     ];
 
     public function post($request)
