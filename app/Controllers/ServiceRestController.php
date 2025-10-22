@@ -83,7 +83,8 @@ class ServiceRestController extends Controller
         'otrosRecursos' => 'otros_recursos',
         'insertDate' => 'insert_date',
         'updatedDate' => 'updated_date',
-        'certificadoDigital' => 'certificado_digital'
+        'certificadoDigital' => 'certificado_digital',
+        'vpnAnydesk' => 'vpn_anydesk',
     ];
 
     public function post($request)
