@@ -86,7 +86,7 @@ class ResourceRestController extends Controller
             'callback' => array($this, 'pag_maestro_unidad')
         ));
 
-        register_rest_route('api/hr', '/personal/organo/(?P<from>\d+)/(?P<to>\d+)', array(
+        register_rest_route('api/hr', '/personal/organ/(?P<from>\d+)/(?P<to>\d+)', array(
             'methods' => 'GET',
             'callback' => array($this, 'pag_maestro_organo')
         ));
