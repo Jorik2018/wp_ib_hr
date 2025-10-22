@@ -154,7 +154,7 @@ class ResourceRestController extends Controller
         $db_erp = get_option("db_ofis");
         $people = $wpdb->get_row($wpdb->prepare("SELECT dni FROM $db_erp.m_personal WHERE n=%s", $personal), ARRAY_A);
         $wpdb->last_error = '';
-        $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS em.*, tb.tipo type_name FROM $db_erp.t_recursos em LEFT JOIN $db_erp.maestro_tipo_bien tb ON tb.id=em.tipo " .
+        $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS em.*, upper(tb.tipo) type_name FROM $db_erp.t_recursos em LEFT JOIN $db_erp.maestro_tipo_bien tb ON tb.id=em.tipo " .
             "WHERE 1=1 AND dni='".$people['dni']."' " 
             . (isset($query) ? " AND (pe.apellidos_nombres LIKE '%$query%') " : "") .
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
