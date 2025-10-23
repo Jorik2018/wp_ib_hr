@@ -162,7 +162,7 @@ class ResourceRestController extends Controller
         $current_user = wp_get_current_user();
         $db_erp = get_option("db_ofis");
         $wpdb->last_error = '';
-        $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS em.id code, id_organo organo, upper(em.unidad_organica) name FROM $db_erp.maestro_unidad em " .
+        $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS em.id code, id_organo organo, em.unidad_organica name FROM $db_erp.maestro_unidad em " .
             "WHERE 1=1 ".
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : "")." ORDER BY 3", ARRAY_A);
         if ($wpdb->last_error) return t_error();
