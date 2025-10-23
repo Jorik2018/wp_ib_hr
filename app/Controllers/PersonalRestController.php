@@ -89,6 +89,8 @@ class PersonalRestController extends Controller
         'clasificadorDeGastoContrato' => 'clasificador_de_gasto_contrato',
         'afpOnp' => 'afp_onp',
         'nCuspp' => 'n_cuspp',
+        'organoId' => 'organo_id',
+        'unidadId' => 'unidad_id',
         'insertDate' => 'insert_date',
         'updatedDate' => 'updated_date'
     ];
