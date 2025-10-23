@@ -98,18 +98,32 @@ class PersonalRestController extends Controller
     public function post($request)
     {
         global $wpdb;
+        $original_db = $wpdb->dbname;
+        $db_erp = get_option("db_ofis");
         $o = method_exists($request, 'get_params') ? $request->get_params() : $request;
         $current_user = wp_get_current_user();
         cdfield($o, 'fechaDeInicioContrato');
         cdfield($o, 'fechaDeInicioOfis');
+
+        if (!empty($o['organoId'])) {
+            $o['organo'] = $wpdb->get_var(
+                $wpdb->prepare("SELECT organo FROM $db_erp.maestro_organo WHERE id = %d", $o['organoId'])
+            );
+            if (false === $updated) return t_error();
+        }
+        if (!empty($o['unidadId'])) {
+            $o['unidadOrganica'] = $wpdb->get_var(
+                $wpdb->prepare("SELECT unidad_organica FROM $db_erp.maestro_unidad WHERE id = %d", $o['unidadId'])
+            );
+            if (false === $updated) return t_error();
+        }
         $o = renameFields($o, self::FIELD_MAP);
         unset($o['editable']);
-        $original_db = $wpdb->dbname;
-        $db_erp = get_option("db_erp");
-        $db_erp = "bwgvinpi_ofis";
+
         $wpdb->select($db_erp);
         $people = $o;
 
+        //llenar organo y unidad usando organo_id y unidad_id respectivamante usando las tablas 
         if (isset($o['id'])) {
             $updated = $wpdb->update('m_personal', $people, array('id' => $people['id']));
         } else {
@@ -123,8 +137,7 @@ class PersonalRestController extends Controller
     public function get($request)
     {
         global $wpdb;
-        $db_erp = get_option("db_erp");
-        $db_erp = "bwgvinpi_ofis";
+        $db_erp = get_option("db_ofis");
         $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM $db_erp.m_personal WHERE n=%d", $request['id']), ARRAY_A);
         $o['editable'] = true;
         $o['id'] = $o['n'];
