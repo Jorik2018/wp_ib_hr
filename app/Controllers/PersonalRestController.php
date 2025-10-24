@@ -90,12 +90,12 @@ class PersonalRestController extends Controller
 
     public function post_upload($request)
     {
-        if (empty($_FILES['archivo']) || $_FILES['archivo']['error'] !== UPLOAD_ERR_OK) {
+        if (empty($_FILES['file']) || $_FILES['file']['error'] !== UPLOAD_ERR_OK) {
             return ['error' => 'No se recibió archivo o hubo un error.'];
         }
 
-        $tmpName = $_FILES['archivo']['tmp_name'];
-        $originalName = $_FILES['archivo']['name'];
+        $tmpName = $_FILES['file']['tmp_name'];
+        $originalName = $_FILES['file']['name'];
 
         // Carpeta temporal
         $tempDir = WP_CONTENT_DIR . '/uploads/temp/';
