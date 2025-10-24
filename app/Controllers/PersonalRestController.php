@@ -74,6 +74,43 @@ class PersonalRestController extends Controller
             'methods' => 'DELETE',
             'callback' => array($this, 'delete')
         ));
+
+        register_rest_route('api/file', '/upload', array(
+            'methods' => 'POST',
+            'callback' => array($this, 'post_upload'),
+            'permission_callback' => '__return_true' // o usa una función de permisos
+        ));
+    }
+
+    public function post_upload($request)
+    {
+        if (empty($_FILES['archivo']) || $_FILES['archivo']['error'] !== UPLOAD_ERR_OK) {
+            return ['error' => 'No se recibió archivo o hubo un error.'];
+        }
+
+        $tmpName = $_FILES['archivo']['tmp_name'];
+        $originalName = $_FILES['archivo']['name'];
+
+        // Carpeta temporal
+        $tempDir = WP_CONTENT_DIR . '/uploads/temp/';
+        if (!is_dir($tempDir)) mkdir($tempDir, 0777, true);
+
+        $tempFile = $tempDir . uniqid() . '_' . basename($originalName);
+
+        if (move_uploaded_file($tmpName, $tempFile)) {
+            // Guardar info en session para submit final
+            if (!session_id()) session_start();
+            $_SESSION['temp_file'] = $tempFile;
+            $_SESSION['temp_file_name'] = $originalName;
+
+            return [
+                'success' => true,
+                'temp_file_name' => $originalName,
+                'message' => 'Archivo subido temporalmente.'
+            ];
+        } else {
+            return ['error' => 'Error al mover el archivo a la carpeta temporal.'];
+        }
     }
 
     private const FIELD_MAP = [
