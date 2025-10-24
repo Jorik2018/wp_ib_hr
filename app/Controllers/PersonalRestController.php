@@ -80,6 +80,12 @@ class PersonalRestController extends Controller
             'callback' => array($this, 'post_upload'),
             'permission_callback' => '__return_true' // o usa una función de permisos
         ));
+
+        register_rest_route('api/media', '/upload', array(
+            'methods' => 'POST',
+            'callback' => array($this, 'post_upload'),
+            'permission_callback' => '__return_true' // o usa una función de permisos
+        ));
     }
 
     public function post_upload($request)
