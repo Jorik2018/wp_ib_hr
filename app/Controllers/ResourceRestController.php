@@ -151,6 +151,7 @@ class ResourceRestController extends Controller
         $o['apellidosNombres'] = $people['apellidos_nombres'];
         $o['personal'] = $people['n'];
         $o['db'] = $db;
+        $o['queri'] = $wpdb->prepare("SELECT * FROM $db.t_recursos WHERE id=%d", $request['id']));
         return Util\toCamelCase($o);
     }
     
