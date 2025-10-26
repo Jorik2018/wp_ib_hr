@@ -60,6 +60,16 @@ class ResourceRestController extends Controller
             'methods' => 'GET',
             'callback' => array($this, 'pag')
         ));
+        
+        register_rest_route('api/hr', '/resource/(?P<from>\d+)/(?P<to>\d+)', array(
+            'methods' => 'GET',
+            'callback' => array($this, 'pag')
+        ));
+
+        register_rest_route('api/hr', '/resource/(?P<id>\d+)', array(
+            'methods' => 'GET',
+            'callback' => array($this, 'get')
+        ));
 
         register_rest_route('api/hr', '/personal/resource/(?P<id>\d+)', array(
             'methods' => 'GET',
@@ -71,6 +81,11 @@ class ResourceRestController extends Controller
             'callback' => array($this, 'post')
         ));
 
+        register_rest_route('api/hr', '/resource', array(
+            'methods' => 'POST',
+            'callback' => array($this, 'post')
+        ));
+        
         register_rest_route('api/hr', '/personal/resource/(?P<id>)', array(
             'methods' => 'DELETE',
             'callback' => array($this, 'delete')
