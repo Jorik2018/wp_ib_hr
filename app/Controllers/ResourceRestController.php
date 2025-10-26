@@ -143,7 +143,7 @@ class ResourceRestController extends Controller
     {
         global $wpdb;
         $db = get_option("db_ofis");
-        $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM $db.t_recursos_22 WHERE id=%d", $request['id']), ARRAY_A);
+        $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM $db.t_recursos WHERE id=%d", $request['id']), ARRAY_A);
         $o['editable'] = true;
         if ($wpdb->last_error) return t_error();
         $people = $wpdb->get_row($wpdb->prepare("SELECT * FROM $db.m_personal WHERE dni=%s", $o['dni']), ARRAY_A);
