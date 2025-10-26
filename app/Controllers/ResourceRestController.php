@@ -150,6 +150,7 @@ class ResourceRestController extends Controller
         if ($wpdb->last_error) return t_error();
         $o['apellidosNombres'] = $people['apellidos_nombres'];
         $o['personal'] = $people['n'];
+        $o['db'] = $db;
         return Util\toCamelCase($o);
     }
     
