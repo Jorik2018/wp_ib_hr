@@ -129,6 +129,7 @@ class MovimientoRestController extends Controller
         $o = get_param($request);
         $resources = remove($o, 'resources');
         $personal  = remove($o, 'personal');
+        $active  = remove($o, 'active');
         $o['dni'] = $personal['dni'];
         $wpdb->select($db_erp);
         if (isset($o['id'])) {
@@ -166,7 +167,7 @@ class MovimientoRestController extends Controller
             }
         }
 
-        if (!empty($o['active']) && $o['active'] === true) {
+        if (!empty($active) && $active === true) {
             foreach ($resourcesOut as $row) {
                 if (!empty($row['id']) && empty($row['deleted'])) {
                     $wpdb->update(
