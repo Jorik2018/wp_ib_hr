@@ -133,6 +133,8 @@ class Main extends Bridge
         $this->add_action('rest_api_init', 'ResourceRestController@rest_api_init');
         $this->add_action('rest_api_init', 'ServiceRestController@rest_api_init');
         $this->add_action('rest_api_init', 'StatsRestController@rest_api_init');
+        $this->add_action('rest_api_init', 'MovimientoRestController@rest_api_init');
+        
         $this->add_action('init','PersonalRestController@init');
     }
 

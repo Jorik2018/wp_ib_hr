@@ -18,7 +18,8 @@ class ResourceRestController extends Controller
     private const FIELD_MAP = [
         'usuarioDeRed' => 'usuario_de_red',
         'fechaAsignacion' => 'fecha_asignacion',
-        'fechaDevolucion' => 'fecha_devolucion'
+        'fechaDevolucion' => 'fecha_devolucion',
+        'id' => 'n'
     ];
 
     public function init()
@@ -126,9 +127,9 @@ class ResourceRestController extends Controller
         $original_db = $wpdb->dbname;
         $db_erp = get_option("db_ofis");
         $wpdb->select($db_erp);
-        if (isset($o['id'])) {
+        if (isset($o['n'])) {
             $o['update_date'] = current_time('mysql', 1);
-            $updated = $wpdb->update('t_recursos', $o, array('id' => $o['id']));
+            $updated = $wpdb->update('t_recursos', $o, array('n' => $o['n']));
         } else {
             $o['insert_date'] = current_time('mysql', 1);
             $updated = $wpdb->insert('t_recursos', $o);
@@ -146,12 +147,18 @@ class ResourceRestController extends Controller
         $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM $db.t_recursos WHERE id=%d", $request['id']), ARRAY_A);
         $o['editable'] = true;
         if ($wpdb->last_error) return t_error();
-        $people = $wpdb->get_row($wpdb->prepare("SELECT * FROM $db.m_personal WHERE dni=%s", $o['dni']), ARRAY_A);
-        if ($wpdb->last_error) return t_error();
-        $o['apellidosNombres'] = $people['apellidos_nombres'];
-        $o['personal'] = $people['n'];
-        $o['db'] = $db;
-        $o['queri'] = $wpdb->prepare("SELECT * FROM $db.t_recursos WHERE id=%d", $request['id']);
+        $people = null;
+        if (!empty($o['dni'])) {
+            $people = $wpdb->get_row(
+                $wpdb->prepare("SELECT * FROM $db.m_personal WHERE dni = %s", $o['dni']),
+                ARRAY_A
+            );
+            if ($wpdb->last_error) return t_error();
+            if ($people) {
+                $o['apellidosNombres'] = $people['apellidos_nombres'];
+                $o['personal'] = $people['n'];
+            }
+        }
         return Util\toCamelCase($o);
     }
     
@@ -213,12 +220,16 @@ class ResourceRestController extends Controller
         $personal = get_param($request, 'personal');
         $current_user = wp_get_current_user();
         $db_erp = get_option("db_ofis");
-        $people = $wpdb->get_row($wpdb->prepare("SELECT dni FROM $db_erp.m_personal WHERE n=%s", $personal), ARRAY_A);
+        $people = null;
+        if(isset($personal)) {
+            $people = $wpdb->get_row($wpdb->prepare("SELECT dni FROM $db_erp.m_personal WHERE n=%s", $personal), ARRAY_A);
+        }
         $wpdb->last_error = '';
         $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS em.*, upper(tb.tipo) type_name FROM $db_erp.t_recursos em LEFT JOIN $db_erp.maestro_tipo_bien tb ON tb.id=em.tipo " .
-            "WHERE 1=1 AND dni='".$people['dni']."' " 
-            . (isset($query) ? " AND (pe.apellidos_nombres LIKE '%$query%') " : "") .
-            ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
+            "WHERE 1=1  "
+            . (isset($people) ? " AND dni='".$people['dni']."' " : "") 
+            . (isset($query) ? " AND (em.codpatrimonio LIKE '%$query%') " : "")
+            . ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
         if ($wpdb->last_error) return t_error();
         $results = Util\toCamelCase($results);
         return $to > 0 ? array('data' => $results, 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;

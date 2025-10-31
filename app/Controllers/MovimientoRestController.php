@@ -12,7 +12,7 @@ use function IB\directory\Util\t_error;
 use function IB\directory\Util\get_param;
 use function IB\directory\Util\renameFields;
 
-class PersonalRestController extends Controller
+class MovimientoRestController extends Controller
 {
 
     public function init()
@@ -50,41 +50,24 @@ class PersonalRestController extends Controller
 
     public function rest_api_init()
     {
-        register_rest_route('api/hr', '/personal/(?P<from>\d+)/(?P<to>\d+)', array(
+        register_rest_route('api/hr', '/movement/(?P<from>\d+)/(?P<to>\d+)', array(
             'methods' => 'GET',
             'callback' => array($this, 'pag')
         ));
 
-        register_rest_route('api/hr', '/personal/(?P<id>\d+)', array(
+        register_rest_route('api/hr', '/movement/(?P<id>\d+)', array(
             'methods' => 'GET',
             'callback' => array($this, 'get')
         ));
 
-        register_rest_route('api/hr', '/personal', array(
+        register_rest_route('api/hr', '/movement', array(
             'methods' => 'POST',
             'callback' => array($this, 'post')
         ));
 
-        register_rest_route('api/hr', '/personal/position', array(
-            'methods' => 'POST',
-            'callback' => array($this, 'position')
-        ));
-
-        register_rest_route('api/hr', '/personal/(?P<id>)', array(
+        register_rest_route('api/hr', '/movement/(?P<id>)', array(
             'methods' => 'DELETE',
             'callback' => array($this, 'delete')
-        ));
-
-        register_rest_route('api/file', '/upload', array(
-            'methods' => 'POST',
-            'callback' => array($this, 'post_upload'),
-            'permission_callback' => '__return_true' // o usa una función de permisos
-        ));
-
-        register_rest_route('alter/api/file', '/upload', array(
-            'methods' => 'POST',
-            'callback' => array($this, 'post_upload'),
-            'permission_callback' => '__return_true' // o usa una función de permisos
         ));
     }
 
@@ -135,8 +118,7 @@ class PersonalRestController extends Controller
         'organoId' => 'organo_id',
         'unidadId' => 'unidad_id',
         'insertDate' => 'insert_date',
-        'updatedDate' => 'updated_date',
-        'id' => 'n'
+        'updatedDate' => 'updated_date'
     ];
 
     public function post($request)
@@ -144,60 +126,97 @@ class PersonalRestController extends Controller
         global $wpdb;
         $original_db = $wpdb->dbname;
         $db_erp = get_option("db_ofis");
-        $o = method_exists($request, 'get_params') ? $request->get_params() : $request;
-        $current_user = wp_get_current_user();
-        cdfield($o, 'fechaDeInicioContrato');
-        cdfield($o, 'fechaDeInicioOfis');
-
-        if (!empty($o['organoId'])) {
-            $o['organo'] = $wpdb->get_var(
-                $wpdb->prepare("SELECT organo FROM $db_erp.maestro_organo WHERE id = %d", $o['organoId'])
-            );
-            if (false === $updated) return t_error();
-        }
-        if (!empty($o['unidadId'])) {
-            $o['unidadOrganica'] = $wpdb->get_var(
-                $wpdb->prepare("SELECT unidad_organica FROM $db_erp.maestro_unidad WHERE id = %d", $o['unidadId'])
-            );
-            if (false === $updated) return t_error();
-        }
-        $o = renameFields($o, self::FIELD_MAP);
-        unset($o['editable']);
-
+        $o = get_param($request);
+        $resources = remove($o, 'resources');
+        $personal  = remove($o, 'personal');
+        $o['dni'] = $personal['dni'];
         $wpdb->select($db_erp);
-        $people = $o;
-
-        //llenar organo y unidad usando organo_id y unidad_id respectivamante usando las tablas 
-        if (isset($o['n'])) {
-            $updated = $wpdb->update('m_personal', $people, array('n' => $people['n']));
+        if (isset($o['id'])) {
+            $o['update_date'] = current_time('mysql', 1);
+            $updated = $wpdb->update('r_actas', $o, ['id' => $o['id']]);
         } else {
-            $wpdb->insert('m_personal', $o);
+            $o['insert_date'] = current_time('mysql', 1);
+            $updated = $wpdb->insert('r_actas', $o);
             $o['id'] = $wpdb->insert_id;
         }
+        if ($updated === false ) return t_error();
+        $id = $o['id'];
+        $resourcesOut = [];
+        foreach ($resources as $row) {
+            $detalleId  = $row['id'] ?? null;
+            if (!empty($row['delete'])) {
+                if ($detalleId) {
+                    $wpdb->delete('r_actas_det', ['id' => $detalleId]);
+                }
+                $resourcesOut[] = [
+                    'id' => $detalleId,
+                    'deleted' => true
+                ];
+            } else if ($detalleId) {
+                $resourcesOut[] = $row;
+                continue;
+            } else {
+                $updated = $wpdb->insert('r_actas_det', [
+                    'movement_id' => $id,
+                    'resource_id' => $row['resourceId']
+                ]);
+                if ($updated === false ) return t_error();
+                $row['id'] = $wpdb->insert_id;
+                $resourcesOut[] = $row;
+            }
+        }
+
+        if (!empty($o['active']) && $o['active'] === true) {
+            foreach ($resourcesOut as $row) {
+                if (!empty($row['id']) && empty($row['deleted'])) {
+                    $wpdb->update(
+                        't_recursos',
+                        ['dni' => $personal['dni']], 
+                        ['id' => $row['resourceId']]
+                    );
+                    if ($wpdb->last_error) return t_error();
+                }
+            }
+        }
+
         $wpdb->select($original_db);
-        if (false === $updated) return t_error();
-        return Util\toCamelCase($o);
+        $o['resources'] = $resourcesOut;
+        return $o;
     }
+
 
     public function get($request)
     {
         global $wpdb;
+        $original_db = $wpdb->dbname;
         $db_erp = get_option("db_ofis");
-        $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM $db_erp.m_personal WHERE n=%d", $request['id']), ARRAY_A);
+        $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM $db_erp.r_actas WHERE id=%d", $request['id']), ARRAY_A);
+        $o['personal'] = $wpdb->get_row($wpdb->prepare("SELECT * FROM $db_erp.m_personal WHERE dni=%d", $o['dni']), ARRAY_A);
+        if ($wpdb->last_error) return t_error();
+        $wpdb->select($original_db);
         $o['editable'] = true;
-        $o['id'] = $o['n'];
-        //if ($wpdb->last_error) return t_error();
-        /*$people = $wpdb->get_row($wpdb->prepare("SELECT * FROM $db_erp.drt_people WHERE id=%d", $o['people_id']), ARRAY_A);
-        cfield($people, 'first_surname', 'firstSurname');
-        cfield($people, 'last_surname', 'lastSurname');
-        cfield($people, 'full_name', 'fullName');*/
-        /*$o['names'] = $people['names'];
-        $o['firstSurname'] = $people['firstSurname'];
-        $o['lastSurname'] = $people['lastSurname'];
-        $o['fullName'] = $people['fullName'];
-        $o['code'] = $people['code'];*/
-        //$controller = new ExperienceRestController(array());
-        //$o['experience'] = Util\toCamelCase($controller->pag(array('from' => 0, 'to' => 0, 'employee_id' => $o['id'])));
+        $o['resources'] = $wpdb->get_results($wpdb->prepare("SELECT 
+                d.id AS id,
+                d.resource_id AS resourceId,
+                r.tipo,
+                r.codpatrimonio,
+                r.codigo,
+                r.modelo,
+                r.marca,
+                r.observaciones,
+                tb.tipo AS typeName
+            FROM 
+                $db_erp.r_actas_det d
+            INNER JOIN 
+                $db_erp.t_recursos r ON r.id = d.resource_id
+            INNER JOIN 
+                $db_erp.maestro_tipo_bien tb ON tb.id = r.tipo
+            WHERE 
+                d.movement_id = %d
+            ORDER BY d.id ASC", $o['id']),
+            ARRAY_A
+        );
+        if ($wpdb->last_error) return t_error();
         return Util\toCamelCase($o);
     }
 
