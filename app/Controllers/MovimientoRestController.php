@@ -229,19 +229,16 @@ class MovimientoRestController extends Controller
         $dni = get_param($request, 'dni');
         $apellidosNombres = get_param($request, 'apellidosNombres');
         $organo = get_param($request, 'organo');
-        $tipoDeContrato = get_param($request, 'tipoDeContrato');
         $afpOnp = get_param($request, 'afpOnp');
         $current_user = wp_get_current_user();
         $db_erp = get_option("db_ofis");
         $wpdb->last_error = '';
-        $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS pe.*, pe.n id FROM $db_erp.m_personal pe " .
+        $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS ac.*, pe.apellidos_nombres FROM $db_erp.r_actas ac LEFT JOIN m_personal pe ON pe.dni=ac.dni " .
             "WHERE 1=1 " . 
             (isset($query) ? " AND (pe.apellidos_nombres LIKE '%$query%') " : "") .
             (isset($apellidosNombres) ? " AND (pe.apellidos_nombres LIKE '%$apellidosNombres%') " : "").
             (isset($organo) ? " AND (pe.organo LIKE '%$organo%') " : "").
-            (isset($tipoDeContrato) ? " AND (pe.tipo_de_contrato LIKE '%$tipoDeContrato%') " : "").
-            (isset($afpOnp) ? " AND (pe.afp_onp LIKE '%$afpOnp%') " : "").
-            (isset($dni) ? " AND (pe.dni LIKE '%$dni%') " : "").
+            (isset($dni) ? " AND (ac.dni LIKE '%$dni%') " : "").
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
         if ($wpdb->last_error) return t_error();
         $results = Util\toCamelCase($results);
