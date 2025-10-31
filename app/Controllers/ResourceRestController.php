@@ -225,10 +225,10 @@ class ResourceRestController extends Controller
             $people = $wpdb->get_row($wpdb->prepare("SELECT dni FROM $db_erp.m_personal WHERE n=%s", $personal), ARRAY_A);
         }
         $wpdb->last_error = '';
-        $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS em.*, upper(tb.tipo) type_name FROM $db_erp.t_recursos em LEFT JOIN $db_erp.maestro_tipo_bien tb ON tb.id=em.tipo " .
+        $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS re.*, upper(tb.tipo) type_name, pe.apellidos_nombres  FROM $db_erp.t_recursos re LEFT JOIN $db_erp.maestro_tipo_bien tb ON tb.id=re.tipo LEFT JOIN $db_erp.m_personal pe ON pe.dni=re.dni " .
             "WHERE 1=1  "
-            . (isset($people) ? " AND dni='".$people['dni']."' " : "") 
-            . (isset($query) ? " AND (em.codpatrimonio LIKE '%$query%') " : "")
+            . (isset($people) ? " AND re.dni='".$people['dni']."' " : "") 
+            . (isset($query) ? " AND (re.codpatrimonio LIKE '%$query%') " : "")
             . ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
         if ($wpdb->last_error) return t_error();
         $results = Util\toCamelCase($results);
