@@ -233,7 +233,7 @@ class MovimientoRestController extends Controller
         $current_user = wp_get_current_user();
         $db_erp = get_option("db_ofis");
         $wpdb->last_error = '';
-        $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS ac.*, pe.apellidos_nombres FROM $db_erp.r_actas ac LEFT JOIN m_personal pe ON pe.dni=ac.dni " .
+        $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS ac.*, pe.apellidos_nombres FROM $db_erp.r_actas ac LEFT JOIN $db_erp.m_personal pe ON pe.dni=ac.dni " .
             "WHERE 1=1 " . 
             (isset($query) ? " AND (pe.apellidos_nombres LIKE '%$query%') " : "") .
             (isset($apellidosNombres) ? " AND (pe.apellidos_nombres LIKE '%$apellidosNombres%') " : "").
