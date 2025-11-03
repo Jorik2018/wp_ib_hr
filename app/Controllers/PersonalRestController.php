@@ -110,9 +110,8 @@ class PersonalRestController extends Controller
             $_SESSION['temp_file_name'] = $originalName;
 
             return [
-                'success' => true,
-                'temp_file_name' => $originalName,
-                'message' => 'Archivo subido temporalmente.'
+                'tempFile' => $tempFile,
+                'filename' => $originalName
             ];
         } else {
             return ['error' => 'Error al mover el archivo a la carpeta temporal.'];
