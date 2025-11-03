@@ -196,7 +196,7 @@ class MovimientoRestController extends Controller
         if ($wpdb->last_error) return t_error();
         $wpdb->select($original_db);
         $o['editable'] = true;
-        $o['resources'] = $wpdb->get_results($wpdb->prepare("SELECT 
+        $o['resources'] = Util\toCamelCase($wpdb->get_results($wpdb->prepare("SELECT 
                 d.id AS id,
                 d.resource_id AS resourceId,
                 r.tipo,
@@ -216,7 +216,7 @@ class MovimientoRestController extends Controller
                 d.movement_id = %d
             ORDER BY d.id ASC", $o['id']),
             ARRAY_A
-        );
+        ));
         if ($wpdb->last_error) return t_error();
         return Util\toCamelCase($o);
     }
