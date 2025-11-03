@@ -192,7 +192,7 @@ class MovimientoRestController extends Controller
         $original_db = $wpdb->dbname;
         $db_erp = get_option("db_ofis");
         $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM $db_erp.r_actas WHERE id=%d", $request['id']), ARRAY_A);
-        $o['personal'] = $wpdb->get_row($wpdb->prepare("SELECT * FROM $db_erp.m_personal WHERE dni=%d", $o['dni']), ARRAY_A);
+        $o['personal'] = Util\toCamelCase($wpdb->get_row($wpdb->prepare("SELECT * FROM $db_erp.m_personal WHERE dni=%d", $o['dni']), ARRAY_A));
         if ($wpdb->last_error) return t_error();
         $wpdb->select($original_db);
         $o['editable'] = true;
