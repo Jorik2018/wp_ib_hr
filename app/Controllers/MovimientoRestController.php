@@ -130,6 +130,8 @@ class MovimientoRestController extends Controller
         remove($o, '_vts');
         remove($o, 'n');
         remove($o, 'isTrusted');
+        remove($o, 'filename');
+        
         
         cdfield($o, 'fechaAsignacion');
         $o['dni'] = $personal['dni'];
