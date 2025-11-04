@@ -125,6 +125,10 @@ class MovimientoRestController extends Controller
         remove($o, 'insertDate');
         remove($o, 'updateDate');
         remove($o, 'editable');
+        remove($o, '_vts');
+        remove($o, 'n');
+        remove($o, 'isTrusted');
+        
         cdfield($o, 'fechaAsignacion');
         $o['dni'] = $personal['dni'];
         $o = renameFields($o, self::FIELD_MAP);
