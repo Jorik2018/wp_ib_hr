@@ -101,16 +101,17 @@ class PersonalRestController extends Controller
         $tempDir = WP_CONTENT_DIR . '/uploads/temp/';
         if (!is_dir($tempDir)) mkdir($tempDir, 0777, true);
 
-        $tempFile = $tempDir . uniqid() . '_' . basename($originalName);
+        $tempFilename = uniqid() . '_' . basename($originalName);
+        $tempFile = $tempDir . $tempFilename;
 
         if (move_uploaded_file($tmpName, $tempFile)) {
             // Guardar info en session para submit final
             if (!session_id()) session_start();
-            $_SESSION['temp_file'] = $tempFile;
+            $_SESSION['temp_file'] = $tempFilename;
             $_SESSION['temp_file_name'] = $originalName;
 
             return [
-                'tempFile' => $tempFile,
+                'tempFile' => $tempFilename,
                 'filename' => $originalName
             ];
         } else {
