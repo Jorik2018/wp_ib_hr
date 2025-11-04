@@ -115,8 +115,6 @@ class MovimientoRestController extends Controller
 
     public function post($request)
     {
-
-                return $_SESSION['temp_file'];
         global $wpdb;
         $original_db = $wpdb->dbname;
         $db_erp = get_option("db_ofis");
