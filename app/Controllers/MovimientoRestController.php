@@ -110,7 +110,7 @@ class MovimientoRestController extends Controller
         'actaDevolucion' => 'acta_devolucion',
         'unidadOrganica' => 'unidad_organica',
         'insertDate' => 'insert_date',
-        'updatedDate' => 'updated_date'
+        'updateDate' => 'update_date'
     ];
 
     public function post($request)
@@ -122,6 +122,8 @@ class MovimientoRestController extends Controller
         $resources = remove($o, 'resources');
         $personal  = remove($o, 'personal');
         $active  = remove($o, 'active');
+        remove($o, 'insertDate');
+        remove($o, 'updateDate');
         cdfield($o, 'fechaAsignacion');
         $o['dni'] = $personal['dni'];
         $o = renameFields($o, self::FIELD_MAP);
