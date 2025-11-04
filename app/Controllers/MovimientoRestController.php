@@ -105,18 +105,10 @@ class MovimientoRestController extends Controller
     private const FIELD_MAP = [
         'firstSurname' => 'first_surname',
         'lastSurname' => 'last_surname',
-        'secuenciaFuncional' => 'secuencia_funcional',
+        'actaAsignacion' => 'acta_asignacion',
+        'fechaAsignacion' => 'fecha_asignacion',
         'codigoAirhsp' => 'codigo_airhsp',
         'unidadOrganica' => 'unidad_organica',
-        'apellidosNombres' => 'apellidos_nombres',
-        'fechaDeInicioContrato' => 'fecha_de_inicio_contrato',
-        'fechaDeInicioOfis' => 'fecha_de_inicio_ofis',
-        'tipoDeContrato' => 'tipo_de_contrato',
-        'clasificadorDeGastoContrato' => 'clasificador_de_gasto_contrato',
-        'afpOnp' => 'afp_onp',
-        'nCuspp' => 'n_cuspp',
-        'organoId' => 'organo_id',
-        'unidadId' => 'unidad_id',
         'insertDate' => 'insert_date',
         'updatedDate' => 'updated_date'
     ];
@@ -130,7 +122,9 @@ class MovimientoRestController extends Controller
         $resources = remove($o, 'resources');
         $personal  = remove($o, 'personal');
         $active  = remove($o, 'active');
+        cdfield($o, 'fechaAsignacion');
         $o['dni'] = $personal['dni'];
+        $o = renameFields($o, self::FIELD_MAP);
         $wpdb->select($db_erp);
         if (isset($o['id'])) {
             $o['update_date'] = current_time('mysql', 1);
