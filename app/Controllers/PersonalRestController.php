@@ -170,6 +170,7 @@ class PersonalRestController extends Controller
         //llenar organo y unidad usando organo_id y unidad_id respectivamante usando las tablas 
         if (isset($o['n'])) {
             $updated = $wpdb->update('m_personal', $people, array('n' => $people['n']));
+            $o['id'] = $o['n'];
         } else {
             $wpdb->insert('m_personal', $o);
             $o['id'] = $wpdb->insert_id;
