@@ -107,7 +107,7 @@ class MovimientoRestController extends Controller
         'lastSurname' => 'last_surname',
         'actaAsignacion' => 'acta_asignacion',
         'fechaAsignacion' => 'fecha_asignacion',
-        'codigoAirhsp' => 'codigo_airhsp',
+        'actaDevolucion' => 'acta_devolucion',
         'unidadOrganica' => 'unidad_organica',
         'insertDate' => 'insert_date',
         'updatedDate' => 'updated_date'
