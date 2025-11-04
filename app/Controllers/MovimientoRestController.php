@@ -122,7 +122,6 @@ class MovimientoRestController extends Controller
         $resources = remove($o, 'resources');
         $personal  = remove($o, 'personal');
         $active  = remove($o, 'active');
-        $tempFile  = remove($o, 'tempFile');
         
         remove($o, 'insertDate');
         remove($o, 'updateDate');
@@ -130,8 +129,21 @@ class MovimientoRestController extends Controller
         remove($o, '_vts');
         remove($o, 'n');
         remove($o, 'isTrusted');
-        remove($o, 'filename');
         
+        $tempFile = remove($o, 'tempFile');
+        $filename = remove($o, 'filename');
+        if (!empty($tempFile)) {
+            $tempDir = WP_CONTENT_DIR . '/uploads/temp/';
+            $finalDir = WP_CONTENT_DIR . '/uploads/final/';
+            if (!is_dir($finalDir)) mkdir($finalDir, 0777, true);
+            $moved = rename($tempDir . $tempFile, $finalDir . $filename);
+            if ($moved) {
+                unset($tempFile, $filename);
+                $o['filename'] = $filename;
+            } else {
+                return ['error' => 'No se pudo mover el archivo a la carpeta final.'];
+            }
+        }        
 
 
         
@@ -189,19 +201,7 @@ class MovimientoRestController extends Controller
 
 
 
-if (!empty($_SESSION['temp_file'])) {
-    $tempFile = $_SESSION['temp_file'];
-    $finalDir = WP_CONTENT_DIR . '/uploads/final/';
-    if (!is_dir($finalDir)) mkdir($finalDir, 0777, true);
 
-    $finalPath = $finalDir . $_SESSION['temp_file_name'];
-    rename($tempFile, $finalPath);
-
-    // Limpiar session
-    unset($_SESSION['temp_file'], $_SESSION['temp_file_name']);
-
-    $o['archivo_path'] = $finalPath; // guardar en base de datos si quieres
-}
 
         $wpdb->select($original_db);
 
