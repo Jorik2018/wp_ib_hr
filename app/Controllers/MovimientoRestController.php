@@ -124,6 +124,7 @@ class MovimientoRestController extends Controller
         $active  = remove($o, 'active');
         remove($o, 'insertDate');
         remove($o, 'updateDate');
+        remove($o, 'editable');
         cdfield($o, 'fechaAsignacion');
         $o['dni'] = $personal['dni'];
         $o = renameFields($o, self::FIELD_MAP);
