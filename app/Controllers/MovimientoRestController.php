@@ -115,6 +115,8 @@ class MovimientoRestController extends Controller
 
     public function post($request)
     {
+
+                return $_SESSION['temp_file'];
         global $wpdb;
         $original_db = $wpdb->dbname;
         $db_erp = get_option("db_ofis");
@@ -133,7 +135,7 @@ class MovimientoRestController extends Controller
         remove($o, 'filename');
         
 
-        return $_SESSION;
+
         
         cdfield($o, 'fechaAsignacion');
         $o['dni'] = $personal['dni'];
