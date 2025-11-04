@@ -132,6 +132,8 @@ class MovimientoRestController extends Controller
         remove($o, 'isTrusted');
         remove($o, 'filename');
         
+
+        return $_SESSION;
         
         cdfield($o, 'fechaAsignacion');
         $o['dni'] = $personal['dni'];
@@ -185,7 +187,26 @@ class MovimientoRestController extends Controller
             }
         }
 
+
+
+if (!empty($_SESSION['temp_file'])) {
+    $tempFile = $_SESSION['temp_file'];
+    $finalDir = WP_CONTENT_DIR . '/uploads/final/';
+    if (!is_dir($finalDir)) mkdir($finalDir, 0777, true);
+
+    $finalPath = $finalDir . $_SESSION['temp_file_name'];
+    rename($tempFile, $finalPath);
+
+    // Limpiar session
+    unset($_SESSION['temp_file'], $_SESSION['temp_file_name']);
+
+    $o['archivo_path'] = $finalPath; // guardar en base de datos si quieres
+}
+
         $wpdb->select($original_db);
+
+
+
         $o['resources'] = $resourcesOut;
         return $o;
     }
