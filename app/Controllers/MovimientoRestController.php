@@ -122,6 +122,8 @@ class MovimientoRestController extends Controller
         $resources = remove($o, 'resources');
         $personal  = remove($o, 'personal');
         $active  = remove($o, 'active');
+        $tempFile  = remove($o, 'tempFile');
+        
         remove($o, 'insertDate');
         remove($o, 'updateDate');
         remove($o, 'editable');
