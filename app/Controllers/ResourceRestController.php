@@ -124,6 +124,8 @@ class ResourceRestController extends Controller
         unset($o['updateDate']);
         unset($o['editable']);
         $o = renameFields($o, self::FIELD_MAP);
+
+        return $o;
         $original_db = $wpdb->dbname;
         $db_erp = get_option("db_ofis");
         $wpdb->select($db_erp);
