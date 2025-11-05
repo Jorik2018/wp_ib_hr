@@ -131,6 +131,7 @@ class ResourceRestController extends Controller
         if (isset($o['n'])) {
             $o['update_date'] = current_time('mysql', 1);
             $updated = $wpdb->update('t_recursos', $o, array('n' => $o['n']));
+            $o['id'] = $o['n'];
         } else {
             $o['insert_date'] = current_time('mysql', 1);
             $updated = $wpdb->insert('t_recursos', $o);
