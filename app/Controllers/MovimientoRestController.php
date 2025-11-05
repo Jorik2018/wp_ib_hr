@@ -223,7 +223,7 @@ class MovimientoRestController extends Controller
 
         $wpdb->select($original_db);
 
-
+        $o = Util\toCamelCase($o);
 
         $o['resources'] = $resourcesOut;
         return $o;
