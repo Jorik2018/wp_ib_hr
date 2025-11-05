@@ -18,8 +18,7 @@ class ResourceRestController extends Controller
     private const FIELD_MAP = [
         'usuarioDeRed' => 'usuario_de_red',
         'fechaAsignacion' => 'fecha_asignacion',
-        'fechaDevolucion' => 'fecha_devolucion',
-        'id' => 'n'
+        'fechaDevolucion' => 'fecha_devolucion'
     ];
 
     public function init()
@@ -116,7 +115,6 @@ class ResourceRestController extends Controller
         $current_user = wp_get_current_user();
         cdfield($o, 'fechaAsignacion');
         cdfield($o, 'fechaDevolucion');
-        remove($o, 'n');
         unset($o['apellidosNombres']);
         unset($o['personal']);
         unset($o['fechaCrea']);
@@ -128,10 +126,9 @@ class ResourceRestController extends Controller
         $original_db = $wpdb->dbname;
         $db_erp = get_option("db_ofis");
         $wpdb->select($db_erp);
-        if (isset($o['n'])) {
+        if (isset($o['id'])) {
             $o['update_date'] = current_time('mysql', 1);
-            $updated = $wpdb->update('t_recursos', $o, array('n' => $o['n']));
-            $o['id'] = $o['n'];
+            $updated = $wpdb->update('t_recursos', $o, array('id' => $o['id']));
         } else {
             $o['insert_date'] = current_time('mysql', 1);
             $updated = $wpdb->insert('t_recursos', $o);
@@ -247,7 +244,7 @@ class ResourceRestController extends Controller
         $wpdb->query('START TRANSACTION');
         $result = array_map(function ($id) use ($wpdb) {
             //return $wpdb->update('hr_employee', array('canceled' => 1, 'delete_date' => current_time('mysql')), array('id' => $id));
-            return $wpdb->delete('t_recursos', array('n' => $id));
+            return $wpdb->delete('t_recursos', array('id' => $id));
         }, explode(",", $data['id']));
         if ($wpdb->last_error) return t_error();
         $success = !in_array(false, $result, true);
