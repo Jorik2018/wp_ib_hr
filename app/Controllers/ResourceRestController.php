@@ -228,7 +228,7 @@ class ResourceRestController extends Controller
         $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS re.*, upper(tb.tipo) type_name, pe.apellidos_nombres  FROM $db_erp.t_recursos re LEFT JOIN $db_erp.maestro_tipo_bien tb ON tb.id=re.tipo LEFT JOIN $db_erp.m_personal pe ON pe.dni=re.dni " .
             "WHERE 1=1  "
             . (isset($people) ? " AND pe.dni='".$people['dni']."' " : "") 
-            . (isset($query)&&!empty(trim($query)) ? " AND (re.codpatrimonio LIKE '%$query%') " : "")
+            . (isset($query)&&!empty(trim($query)) ? " AND (re.codpatrimonio LIKE '%$query%' OR re.codigo LIKE '%$query%') " : "")
             . ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
         if ($wpdb->last_error) return t_error();
         $results = Util\toCamelCase($results);
