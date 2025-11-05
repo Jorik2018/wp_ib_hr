@@ -134,7 +134,7 @@ class MovimientoRestController extends Controller
         $filename = remove($o, 'filename');
         if (!empty($tempFile)) {
             $tempDir = WP_CONTENT_DIR . '/uploads/temp/';
-            $finalDir = WP_CONTENT_DIR . '/uploads/final/';
+            $finalDir = WP_CONTENT_DIR . '/uploads/movements/';
             if (!is_dir($finalDir)) mkdir($finalDir, 0777, true);
             $moved = rename($tempDir . $tempFile, $finalDir . $filename);
             if ($moved) {
@@ -143,9 +143,7 @@ class MovimientoRestController extends Controller
             } else {
                 return ['error' => 'No se pudo mover el archivo a la carpeta final.'];
             }
-        }        
-
-
+        } 
         
         cdfield($o, 'fechaAsignacion');
         $o['dni'] = $personal['dni'];
