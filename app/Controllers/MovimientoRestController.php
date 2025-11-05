@@ -229,11 +229,12 @@ class MovimientoRestController extends Controller
 
         $wpdb->select($original_db);
 
-        $o = Util\toCamelCase($o);
+        
 
         $o['uploaded'] = $uploaded;
         $o['uploadedDev'] = $uploadedDev;
         $o['resources'] = $resourcesOut;
+        $o = Util\toCamelCase($o);
         return $o;
     }
 
@@ -317,6 +318,7 @@ class MovimientoRestController extends Controller
             $deletedDet = $wpdb->delete('r_actas_det', ['movement_id' => $id]);
             if ($deletedDet === false) {
                 $wpdb->query("ROLLBACK");
+                if ($wpdb->last_error) return t_error();
                 $wpdb->select($original_db);
                 return false;
             }
@@ -325,6 +327,7 @@ class MovimientoRestController extends Controller
             $deletedActa = $wpdb->delete('r_actas', ['id' => $id]);
             if ($deletedActa === false) {
                 $wpdb->query("ROLLBACK");
+                if ($wpdb->last_error) return t_error();
                 $wpdb->select($original_db);
                 return false;
             }

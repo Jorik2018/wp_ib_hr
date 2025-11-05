@@ -218,7 +218,7 @@ class PersonalRestController extends Controller
         $wpdb->last_error = '';
         $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS pe.*, pe.n id FROM $db_erp.m_personal pe " .
             "WHERE 1=1 " . 
-            (isset($query) ? " AND (pe.apellidos_nombres LIKE '%$query%') " : "") .
+            (isset($query) ? " AND (pe.apellidos_nombres LIKE '%$query%' OR pe.dni LIKE '%$query%') " : "") .
             (isset($apellidosNombres) ? " AND (pe.apellidos_nombres LIKE '%$apellidosNombres%') " : "").
             (isset($organo) ? " AND (pe.organo LIKE '%$organo%') " : "").
             (isset($tipoDeContrato) ? " AND (pe.tipo_de_contrato LIKE '%$tipoDeContrato%') " : "").
