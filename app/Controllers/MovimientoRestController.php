@@ -332,8 +332,12 @@ class MovimientoRestController extends Controller
                 return false;
             }
         }
-
-        $wpdb->query("COMMIT");
+        $success = !in_array(false, $result, true);
+        if ($success) {
+            $wpdb->query('COMMIT');
+        } else {
+            $wpdb->query('ROLLBACK');
+        }
         $wpdb->select($original_db);
         return true;
     }

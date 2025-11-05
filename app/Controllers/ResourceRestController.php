@@ -217,6 +217,10 @@ class ResourceRestController extends Controller
         $to = $request['to'];
         $query = get_param($request, 'query');
         $personal = get_param($request, 'personal');
+        $typeName = get_param($request, 'typeName');
+        $user = get_param($request, 'user');
+        $codigo = get_param($request, 'codigo');
+        $modelo = get_param($request, 'modelo');
         $current_user = wp_get_current_user();
         $db_erp = get_option("db_ofis");
         $people = null;
@@ -227,6 +231,10 @@ class ResourceRestController extends Controller
         $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS re.*, upper(tb.tipo) type_name, pe.apellidos_nombres  FROM $db_erp.t_recursos re LEFT JOIN $db_erp.maestro_tipo_bien tb ON tb.id=re.tipo LEFT JOIN $db_erp.m_personal pe ON pe.dni=re.dni " .
             "WHERE 1=1  "
             . (isset($people) ? " AND pe.dni='".$people['dni']."' " : "") 
+            . (isset($codigo) ? " AND re.codigo='%".$codigo."%' " : "") 
+            . (isset($modelo) ? " AND re.modelo='%".$modelo."%' " : "") 
+            . (isset($user) ? " AND pe.apellidos_nombres LIKE '%".$user."%' " : "") 
+            . (isset($typeName) ? " AND tb.tipo LIKE '%".$typeName."%' " : "") 
             . (isset($query)&&!empty(trim($query)) ? " AND (re.codpatrimonio LIKE '%$query%' OR re.codigo LIKE '%$query%' OR tb.tipo LIKE '%$query%') " : "")
             . ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
         if ($wpdb->last_error) return t_error();
