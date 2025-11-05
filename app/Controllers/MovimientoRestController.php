@@ -133,8 +133,11 @@ class MovimientoRestController extends Controller
         remove($o, '_vts');
         remove($o, 'n');
         remove($o, 'isTrusted');
+        remove($o, 'uploaded');
+        remove($o, 'uploadedDev');
         
         $tempFile = remove($o, 'tempFile');
+        $uploaded = false;
         if (!empty($tempFile)) {
             $filename = remove($o, 'filename');
             $tempDir = WP_CONTENT_DIR . '/uploads/temp/';
@@ -143,6 +146,7 @@ class MovimientoRestController extends Controller
             $moved = rename($tempDir . $tempFile, $finalDir . $filename);
             if ($moved) {
                 $o['filename'] = $filename;
+                $uploaded = true;
                 unset($tempFile, $filename);
             } else {
                 return ['error' => 'No se pudo mover el archivo a la carpeta final.'];
@@ -150,6 +154,7 @@ class MovimientoRestController extends Controller
         } 
 
         $tempFile = remove($o, 'tempFileDev');
+        $uploadedDev = false;
         if (!empty($tempFile)) {
             $filename = remove($o, 'filenameDev');
             $tempDir = WP_CONTENT_DIR . '/uploads/temp/';
@@ -158,6 +163,7 @@ class MovimientoRestController extends Controller
             $moved = rename($tempDir . $tempFile, $finalDir . $filename);
             if ($moved) {
                 $o['filenameDev'] = $filename;
+                $uploadedDev = true;
                 unset($tempFile, $filename);
             } else {
                 return ['error' => 'No se pudo mover el archivo a la carpeta final.'];
@@ -225,6 +231,8 @@ class MovimientoRestController extends Controller
 
         $o = Util\toCamelCase($o);
 
+        $o['uploaded'] = $uploaded;
+        $o['uploadedDev'] = $uploadedDev;
         $o['resources'] = $resourcesOut;
         return $o;
     }
