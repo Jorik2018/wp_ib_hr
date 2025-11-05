@@ -241,7 +241,9 @@ class ResourceRestController extends Controller
     public function delete($data)
     {
         global $wpdb;
-        $db = get_option("db_ofis");
+        $original_db = $wpdb->dbname;
+        $db_erp = get_option("db_ofis");
+        $wpdb->select($db_erp);
         $wpdb->query('START TRANSACTION');
         $result = array_map(function ($id) use ($wpdb) {
             //return $wpdb->update('hr_employee', array('canceled' => 1, 'delete_date' => current_time('mysql')), array('id' => $id));
@@ -254,6 +256,7 @@ class ResourceRestController extends Controller
         } else {
             $wpdb->query('ROLLBACK');
         }
+        $wpdb->select($original_db);
         return $success;
     }
 }
