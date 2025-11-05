@@ -116,6 +116,7 @@ class ResourceRestController extends Controller
         $current_user = wp_get_current_user();
         cdfield($o, 'fechaAsignacion');
         cdfield($o, 'fechaDevolucion');
+        remove($o, 'n');
         unset($o['apellidosNombres']);
         unset($o['personal']);
         unset($o['fechaCrea']);
