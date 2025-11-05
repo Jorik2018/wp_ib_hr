@@ -107,7 +107,11 @@ class MovimientoRestController extends Controller
         'lastSurname' => 'last_surname',
         'actaAsignacion' => 'acta_asignacion',
         'fechaAsignacion' => 'fecha_asignacion',
+
         'actaDevolucion' => 'acta_devolucion',
+        'filenameDev' => 'filename_dev',
+        'fechaDevolucion' => 'fecha_devolucion',
+
         'unidadOrganica' => 'unidad_organica',
         'insertDate' => 'insert_date',
         'updateDate' => 'update_date'
@@ -131,8 +135,8 @@ class MovimientoRestController extends Controller
         remove($o, 'isTrusted');
         
         $tempFile = remove($o, 'tempFile');
-        $filename = remove($o, 'filename');
         if (!empty($tempFile)) {
+            $filename = remove($o, 'filename');
             $tempDir = WP_CONTENT_DIR . '/uploads/temp/';
             $finalDir = WP_CONTENT_DIR . '/uploads/movements/';
             if (!is_dir($finalDir)) mkdir($finalDir, 0777, true);
@@ -144,8 +148,24 @@ class MovimientoRestController extends Controller
                 return ['error' => 'No se pudo mover el archivo a la carpeta final.'];
             }
         } 
+
+        $tempFile = remove($o, 'tempFileDev');
+        if (!empty($tempFile)) {
+            $filename = remove($o, 'filenameDev');
+            $tempDir = WP_CONTENT_DIR . '/uploads/temp/';
+            $finalDir = WP_CONTENT_DIR . '/uploads/movements/';
+            if (!is_dir($finalDir)) mkdir($finalDir, 0777, true);
+            $moved = rename($tempDir . $tempFile, $finalDir . $filename);
+            if ($moved) {
+                $o['filenameDev'] = $filename;
+                unset($tempFile, $filename);
+            } else {
+                return ['error' => 'No se pudo mover el archivo a la carpeta final.'];
+            }
+        } 
         
         cdfield($o, 'fechaAsignacion');
+        cdfield($o, 'fechaDevolucion');
         $o['dni'] = $personal['dni'];
         $o = renameFields($o, self::FIELD_MAP);
         $wpdb->select($db_erp);
@@ -274,9 +294,14 @@ class MovimientoRestController extends Controller
     public function delete($data)
     {
         global $wpdb;
+        $original_db = $wpdb->dbname;
+        $db_erp = get_option("db_ofis");
+        $wpdb->select($db_erp);
         $wpdb->query('START TRANSACTION');
         $result = array_map(function ($id) use ($wpdb) {
-            return $wpdb->update('hr_employee', array('canceled' => 1, 'delete_date' => current_time('mysql')), array('id' => $id));
+            return $wpdb->update('r_actas', array('id' => $id));
+            //como elimino el r_actas det?
+            //return $wpdb->update('r_actas', array('canceled' => 1, 'delete_date' => current_time('mysql')), array('id' => $id));
         }, explode(",", $data['id']));
         $success = !in_array(false, $result, true);
         if ($success) {
@@ -284,6 +309,7 @@ class MovimientoRestController extends Controller
         } else {
             $wpdb->query('ROLLBACK');
         }
+        $wpdb->select($original_db);
         return $success;
     }
 }
