@@ -87,7 +87,7 @@ class ResourceRestController extends Controller
             'callback' => array($this, 'post')
         ));
         
-        register_rest_route('api/hr', '/personal/resource/(?P<id>)', array(
+        register_rest_route('api/hr', '/resource/(?P<ids>[0-9,]+)', array(
             'methods' => 'DELETE',
             'callback' => array($this, 'delete')
         ));
@@ -243,7 +243,8 @@ class ResourceRestController extends Controller
         global $wpdb;
         $wpdb->query('START TRANSACTION');
         $result = array_map(function ($id) use ($wpdb) {
-            return $wpdb->update('hr_employee', array('canceled' => 1, 'delete_date' => current_time('mysql')), array('id' => $id));
+            //return $wpdb->update('hr_employee', array('canceled' => 1, 'delete_date' => current_time('mysql')), array('id' => $id));
+            return $wpdb->delete('t_recursos', array('n' => $id));
         }, explode(",", $data['id']));
         $success = !in_array(false, $result, true);
         if ($success) {
