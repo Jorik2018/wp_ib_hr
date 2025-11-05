@@ -235,7 +235,7 @@ class ResourceRestController extends Controller
             . (isset($modelo) ? " AND re.modelo LIKE '%".$modelo."%' " : "") 
             . (isset($user) ? " AND pe.apellidos_nombres LIKE '%".$user."%' " : "") 
             . (isset($typeName) ? " AND tb.tipo LIKE '%".$typeName."%' " : "") 
-            . (isset($query)&&!empty(trim($query)) ? " AND (re.codpatrimonio LIKE '%$query%' OR re.codigo LIKE '%$query%' OR tb.tipo LIKE '%$query%') " : "")
+            //. (isset($query)&&!empty(trim($query)) ? " AND (re.codpatrimonio LIKE '%$query%' OR re.codigo LIKE '%$query%' OR tb.tipo LIKE '%$query%') " : "")
             . ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
         if ($wpdb->last_error) return t_error();
         $results = Util\toCamelCase($results);
