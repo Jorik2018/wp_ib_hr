@@ -138,8 +138,8 @@ class MovimientoRestController extends Controller
             if (!is_dir($finalDir)) mkdir($finalDir, 0777, true);
             $moved = rename($tempDir . $tempFile, $finalDir . $filename);
             if ($moved) {
-                unset($tempFile, $filename);
                 $o['filename'] = $filename;
+                unset($tempFile, $filename);
             } else {
                 return ['error' => 'No se pudo mover el archivo a la carpeta final.'];
             }
