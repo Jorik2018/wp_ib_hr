@@ -241,11 +241,10 @@ class ResourceRestController extends Controller
         $original_db = $wpdb->dbname;
         $db_erp = get_option("db_ofis");
         $wpdb->select($db_erp);
-        return explode(",", $data['id']);
         $wpdb->query('START TRANSACTION');
         $result = array_map(function ($id) use ($wpdb) {
             return $wpdb->delete('t_recursos', array('id' => $id));
-        }, explode(",", $data['id']));
+        }, explode(",", $data['ids']));
         if ($wpdb->last_error) return t_error();
         $success = !in_array(false, $result, true);
         if ($success) {

@@ -307,7 +307,7 @@ class MovimientoRestController extends Controller
         $db_erp = get_option("db_ofis");
         $wpdb->select($db_erp);
 
-        $ids = explode(",", $data['id']);
+        $ids = explode(",", $data['ids']);
 
         $wpdb->query("START TRANSACTION");
 
