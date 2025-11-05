@@ -65,7 +65,7 @@ class MovimientoRestController extends Controller
             'callback' => array($this, 'post')
         ));
 
-        register_rest_route('api/hr', '/movement/(?P<id>)', array(
+        register_rest_route('api/hr', '/movement/(?P<ids>[0-9,]+)', array(
             'methods' => 'DELETE',
             'callback' => array($this, 'delete')
         ));
