@@ -241,11 +241,13 @@ class ResourceRestController extends Controller
     public function delete($data)
     {
         global $wpdb;
+        $db = get_option("db_ofis");
         $wpdb->query('START TRANSACTION');
         $result = array_map(function ($id) use ($wpdb) {
             //return $wpdb->update('hr_employee', array('canceled' => 1, 'delete_date' => current_time('mysql')), array('id' => $id));
             return $wpdb->delete('t_recursos', array('n' => $id));
         }, explode(",", $data['id']));
+        if ($wpdb->last_error) return t_error();
         $success = !in_array(false, $result, true);
         if ($success) {
             $wpdb->query('COMMIT');
