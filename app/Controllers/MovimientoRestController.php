@@ -297,19 +297,34 @@ class MovimientoRestController extends Controller
         $original_db = $wpdb->dbname;
         $db_erp = get_option("db_ofis");
         $wpdb->select($db_erp);
-        $wpdb->query('START TRANSACTION');
-        $result = array_map(function ($id) use ($wpdb) {
-            return $wpdb->update('r_actas', array('id' => $id));
-            //como elimino el r_actas det?
-            //return $wpdb->update('r_actas', array('canceled' => 1, 'delete_date' => current_time('mysql')), array('id' => $id));
-        }, explode(",", $data['id']));
-        $success = !in_array(false, $result, true);
-        if ($success) {
-            $wpdb->query('COMMIT');
-        } else {
-            $wpdb->query('ROLLBACK');
+
+        $ids = explode(",", $data['id']);
+
+        $wpdb->query("START TRANSACTION");
+
+        foreach ($ids as $id) {
+            $id = intval($id);
+
+            // 1. Borrar detalles
+            $deletedDet = $wpdb->delete('r_actas_det', ['movement_id' => $id]);
+            if ($deletedDet === false) {
+                $wpdb->query("ROLLBACK");
+                $wpdb->select($original_db);
+                return false;
+            }
+
+            // 2. Borrar maestro
+            $deletedActa = $wpdb->delete('r_actas', ['id' => $id]);
+            if ($deletedActa === false) {
+                $wpdb->query("ROLLBACK");
+                $wpdb->select($original_db);
+                return false;
+            }
         }
+
+        $wpdb->query("COMMIT");
         $wpdb->select($original_db);
-        return $success;
+        return true;
     }
+
 }
