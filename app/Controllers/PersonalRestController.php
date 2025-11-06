@@ -237,7 +237,8 @@ class PersonalRestController extends Controller
         $wpdb->query('START TRANSACTION');
         $result = array_map(function ($id) use ($wpdb) {
             return $wpdb->update('hr_employee', array('canceled' => 1, 'delete_date' => current_time('mysql')), array('id' => $id));
-        }, explode(",", $data['id']));
+        }, explode(",", $data['ids']));
+        
         $success = !in_array(false, $result, true);
         if ($success) {
             $wpdb->query('COMMIT');
