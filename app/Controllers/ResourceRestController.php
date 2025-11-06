@@ -225,7 +225,7 @@ class ResourceRestController extends Controller
         $db_erp = get_option("db_ofis");
 
         $people = null;
-        if(isset($personal)&&$personal != '<NONE>') 
+        if(isset($personal)&&$personal != '<NONE>') {
             $people = $wpdb->get_row($wpdb->prepare("SELECT dni FROM $db_erp.m_personal WHERE n=%s", $personal), ARRAY_A);
         }
 
