@@ -232,7 +232,7 @@ class ResourceRestController extends Controller
         $wpdb->last_error = '';
         $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS re.*, upper(tb.tipo) type_name, pe.apellidos_nombres  FROM $db_erp.t_recursos re LEFT JOIN $db_erp.maestro_tipo_bien tb ON tb.id=re.tipo LEFT JOIN $db_erp.m_personal pe ON pe.dni=re.dni " .
             "WHERE 1=1  "
-            . (isset($personal)&&$personal === '<NONE>' ? " AND (pe.dni IS NULL OR pe.dni = '') " : "") 
+            . (isset($personal)&&$personal === '<NONE>' ? " AND (pe.dni IS NULL OR re.dni = '') " : "") 
             . (isset($people) ? " AND pe.dni='".$people['dni']."' " : "") 
             . (isset($codigo) ? " AND re.codigo LIKE '%".$codigo."%' " : "") 
             . (isset($modelo) ? " AND re.modelo LIKE '%".$modelo."%' " : "") 
