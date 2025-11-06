@@ -312,29 +312,22 @@ class MovimientoRestController extends Controller
         $wpdb->query("START TRANSACTION");
 
         $result = array_map(function ($id) use ($wpdb) {
-
-       
             $id = intval($id);
-
-            // 1. Borrar detalles
             $deletedDet = $wpdb->delete('r_actas_det', ['movement_id' => $id]);
             if ($deletedDet === false) {
-                //if ($wpdb->last_error) return t_error();
-                //$wpdb->select($original_db);
                 return false;
             }
-
-            // 2. Borrar maestro
             $deletedActa = $wpdb->delete('r_actas', ['id' => $id]);
             if ($deletedActa === false) {
-                /*$wpdb->query("ROLLBACK");
-                if ($wpdb->last_error) return t_error();
-                $wpdb->select($original_db);*/
                 return false;
             }
             return true;
         }, explode(",", $data['ids']));
-        if ($wpdb->last_error) return t_error();
+        if ($wpdb->last_error) {
+            $error = $wpdb->last_error;
+            $wpdb->query('ROLLBACK');
+            return t_error();
+        }
         $success = !in_array(false, $result, true);
         if ($success) {
             $wpdb->query('COMMIT');
