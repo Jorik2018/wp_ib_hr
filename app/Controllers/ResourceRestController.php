@@ -210,79 +210,40 @@ class ResourceRestController extends Controller
         return $to > 0 ? array('data' => $results, 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
     }
 
-public function pag($request)
-{
-    global $wpdb;
-    $from = $request['from'];
-    $to = $request['to'];
-    $query = get_param($request, 'query');
-    $personal = get_param($request, 'personal');
-    $typeName = get_param($request, 'typeName');
-    $user = get_param($request, 'user');
-    $codigo = get_param($request, 'codigo');
-    $modelo = get_param($request, 'modelo');
-    $current_user = wp_get_current_user();
-    $db_erp = get_option("db_ofis");
+    public function pag($request)
+    {
+        global $wpdb;
+        $from = $request['from'];
+        $to = $request['to'];
+        $query = get_param($request, 'query');
+        $personal = get_param($request, 'personal');
+        $typeName = get_param($request, 'typeName');
+        $user = get_param($request, 'user');
+        $codigo = get_param($request, 'codigo');
+        $modelo = get_param($request, 'modelo');
+        $current_user = wp_get_current_user();
+        $db_erp = get_option("db_ofis");
 
-    $where = "WHERE 1=1";
-
-    // Condición de personal
-    if (isset($personal)) {
-        if ($personal === '<NONE>') {
-            // Buscar cuando no hay persona asociada
-            $where .= " AND (pe.dni IS NULL OR pe.dni = '')";
-        } else {
-            // Buscar persona específica
-            $people = $wpdb->get_row(
-                $wpdb->prepare("SELECT dni FROM $db_erp.m_personal WHERE n=%s", $personal),
-                ARRAY_A
-            );
-            if ($people) {
-                $where .= $wpdb->prepare(" AND pe.dni = %s", $people['dni']);
-            }
+        $people = null;
+        if(isset($personal)&&$personal != '<NONE>') 
+            $people = $wpdb->get_row($wpdb->prepare("SELECT dni FROM $db_erp.m_personal WHERE n=%s", $personal), ARRAY_A);
         }
-    }
 
-    // Filtros adicionales
-    if (isset($codigo)) {
-        $where .= $wpdb->prepare(" AND re.codigo LIKE %s", "%$codigo%");
+        $wpdb->last_error = '';
+        $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS re.*, upper(tb.tipo) type_name, pe.apellidos_nombres  FROM $db_erp.t_recursos re LEFT JOIN $db_erp.maestro_tipo_bien tb ON tb.id=re.tipo LEFT JOIN $db_erp.m_personal pe ON pe.dni=re.dni " .
+            "WHERE 1=1  "
+            . (isset($personal)&&$personal === '<NONE>' ? " AND (pe.dni IS NULL OR pe.dni = '') " : "") 
+            . (isset($people) ? " AND pe.dni='".$people['dni']."' " : "") 
+            . (isset($codigo) ? " AND re.codigo LIKE '%".$codigo."%' " : "") 
+            . (isset($modelo) ? " AND re.modelo LIKE '%".$modelo."%' " : "") 
+            . (isset($user) ? " AND pe.apellidos_nombres LIKE '%".$user."%' " : "") 
+            . (isset($typeName) ? " AND tb.tipo LIKE '%".$typeName."%' " : "") 
+            . (isset($query)&&!empty(trim($query)) ? " AND (re.codpatrimonio LIKE '%$query%' OR re.codigo LIKE '%$query%' OR tb.tipo LIKE '%$query%') " : "")
+            . ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
+        if ($wpdb->last_error) return t_error();
+        $results = Util\toCamelCase($results);
+        return $to > 0 ? array('data' => $results, 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
     }
-    if (isset($modelo)) {
-        $where .= $wpdb->prepare(" AND re.modelo LIKE %s", "%$modelo%");
-    }
-    if (isset($user)) {
-        $where .= $wpdb->prepare(" AND pe.apellidos_nombres LIKE %s", "%$user%");
-    }
-    if (isset($typeName)) {
-        $where .= $wpdb->prepare(" AND tb.tipo LIKE %s", "%$typeName%");
-    }
-    if (isset($query) && !empty(trim($query))) {
-        $where .= $wpdb->prepare(
-            " AND (re.codpatrimonio LIKE %s OR re.codigo LIKE %s OR tb.tipo LIKE %s)",
-            "%$query%", "%$query%", "%$query%"
-        );
-    }
-
-    $limit = $to > 0 ? $wpdb->prepare(" LIMIT %d, %d", $from, $to) : "";
-
-    $wpdb->last_error = '';
-    $results = $wpdb->get_results("
-        SELECT SQL_CALC_FOUND_ROWS 
-            re.*, 
-            UPPER(tb.tipo) AS type_name, 
-            pe.apellidos_nombres  
-        FROM $db_erp.t_recursos re 
-        LEFT JOIN $db_erp.maestro_tipo_bien tb ON tb.id = re.tipo 
-        LEFT JOIN $db_erp.m_personal pe ON pe.dni = re.dni 
-        $where 
-        $limit
-    ", ARRAY_A);
-
-    if ($wpdb->last_error) return t_error();
-
-    $results = Util\toCamelCase($results);
-    return $to > 0 ? ['data' => $results, 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')] : $results;
-}
 
 
     public function delete($data)
