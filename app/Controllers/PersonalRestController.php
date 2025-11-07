@@ -220,7 +220,7 @@ class PersonalRestController extends Controller
             "WHERE 1=1 " . 
             (isset($query) ? " AND (pe.apellidos_nombres LIKE '%$query%' OR pe.dni LIKE '%$query%') " : "") .
             (isset($apellidosNombres) ? " AND (pe.apellidos_nombres LIKE '%$apellidosNombres%') " : "").
-            (isset($organo) ? " AND (pe.organo LIKE '%$organo%') " : "").
+            (isset($organo) ? " AND (pe.organo_id = '$organo' OR pe.organo LIKE '%$organo%') " : "").
             (isset($tipoDeContrato) ? " AND (pe.tipo_de_contrato LIKE '%$tipoDeContrato%') " : "").
             (isset($afpOnp) ? " AND (pe.afp_onp LIKE '%$afpOnp%') " : "").
             (isset($dni) ? " AND (pe.dni LIKE '%$dni%') " : "").
