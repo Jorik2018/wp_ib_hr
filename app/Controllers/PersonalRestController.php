@@ -211,6 +211,7 @@ class PersonalRestController extends Controller
         $dni = get_param($request, 'dni');
         $apellidosNombres = get_param($request, 'apellidosNombres');
         $organo = get_param($request, 'organo');
+        $organoId = get_param($request, 'organoId');
         $tipoDeContrato = get_param($request, 'tipoDeContrato');
         $afpOnp = get_param($request, 'afpOnp');
         $current_user = wp_get_current_user();
@@ -220,7 +221,8 @@ class PersonalRestController extends Controller
             "WHERE 1=1 " . 
             (isset($query) ? " AND (pe.apellidos_nombres LIKE '%$query%' OR pe.dni LIKE '%$query%') " : "") .
             (isset($apellidosNombres) ? " AND (pe.apellidos_nombres LIKE '%$apellidosNombres%') " : "").
-            (isset($organo) ? " AND (pe.organo_id = '$organo' OR pe.organo LIKE '%$organo%') " : "").
+            (isset($organo) ? " AND (pe.organo LIKE '%$organo%') " : "").
+            (isset($organoId) ? " AND (pe.organo_id = '$organoId') " : "").
             (isset($tipoDeContrato) ? " AND (pe.tipo_de_contrato LIKE '%$tipoDeContrato%') " : "").
             (isset($afpOnp) ? " AND (pe.afp_onp LIKE '%$afpOnp%') " : "").
             (isset($dni) ? " AND (pe.dni LIKE '%$dni%') " : "").
