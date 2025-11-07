@@ -212,6 +212,7 @@ class PersonalRestController extends Controller
         $apellidosNombres = get_param($request, 'apellidosNombres');
         $organo = get_param($request, 'organo');
         $organoId = get_param($request, 'organoId');
+        $unidadOrganica = get_param($request, 'unidadOrganica');
         $tipoDeContrato = get_param($request, 'tipoDeContrato');
         $afpOnp = get_param($request, 'afpOnp');
         $current_user = wp_get_current_user();
@@ -223,6 +224,7 @@ class PersonalRestController extends Controller
             (isset($apellidosNombres) ? " AND (pe.apellidos_nombres LIKE '%$apellidosNombres%') " : "").
             (isset($organo) ? " AND (pe.organo LIKE '%$organo%') " : "").
             (isset($organoId) ? " AND (pe.organo_id = '$organoId') " : "").
+            (isset($unidadOrganica) ? " AND (UPPER(pe.unidad_organica) LIKE '%$unidadOrganica%') " : "").
             (isset($tipoDeContrato) ? " AND (pe.tipo_de_contrato LIKE '%$tipoDeContrato%') " : "").
             (isset($afpOnp) ? " AND (pe.afp_onp LIKE '%$afpOnp%') " : "").
             (isset($dni) ? " AND (pe.dni LIKE '%$dni%') " : "").
