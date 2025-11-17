@@ -5,6 +5,7 @@
 $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir).'/wp_ib_hr';
 
+
 return array(
     'WPMVC\\PHPFastCache\\' => array($vendorDir . '/10quality/wpmvc-phpfastcache/src/psr4'),
     'WPMVC\\MVC\\' => array($vendorDir . '/10quality/wpmvc-mvc/src'),
@@ -16,6 +17,7 @@ return array(
     'Pusher\\' => array($vendorDir . '/pusher/pusher-php-server/src'),
     'Psr\\Http\\Message\\' => array($vendorDir . '/psr/http-message/src', $vendorDir . '/psr/http-factory/src'),
     'Psr\\Http\\Client\\' => array($vendorDir . '/psr/http-client/src'),
+    'PhpOffice\\' => array($vendorDir . '/phpoffice/phpspreadsheet/src'),
     'PhpParser\\' => array($vendorDir . '/nikic/php-parser/lib/PhpParser'),
     'Peast\\' => array($vendorDir . '/mck89/peast/lib/Peast'),
     'PHP_Parallel_Lint\\PhpConsoleColor\\' => array($vendorDir . '/php-parallel-lint/php-console-color/src'),

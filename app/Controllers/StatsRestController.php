@@ -2,6 +2,8 @@
 
 namespace IB\cv\Controllers;
 
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use WPMVC\MVC\Controller;
 use IB\cv\Util;
 use function IB\directory\Util\remove;
@@ -11,6 +13,7 @@ use function IB\directory\Util\cdfield;
 use function IB\directory\Util\t_error;
 use function IB\directory\Util\get_param;
 use function IB\directory\Util\renameFields;
+
 
 class StatsRestController extends Controller
 {
@@ -56,6 +59,12 @@ class StatsRestController extends Controller
 
     public function rest_api_init()
     {
+
+        register_rest_route('api/stats', '/download', array(
+            'methods' => 'GET',
+            'callback' => array($this, 'export_excel')
+        ));
+
         register_rest_route('api/stats', '/personal/resource/(?P<from>\d+)/(?P<to>\d+)', array(
             'methods' => 'GET',
             'callback' => array($this, 'pag')
@@ -141,7 +150,35 @@ class StatsRestController extends Controller
             'methods' => 'GET',
             'callback' => array($this, 'pag_seguimiento')
         ));
+
+        register_rest_route('api/stats', '/anemia', array(
+            'methods' => 'GET',
+            'callback' => array($this, 'pag_anemia')
+        ));
         
+        register_rest_route('api/stats', '/inmunizaciones', array(
+            'methods' => 'GET',
+            'callback' => array($this, 'pag_inmunizaciones')
+        ));
+
+    }
+
+    public function export_excel($request)
+    {
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="adultos_mayores.xlsx"');
+        header('Cache-Control: max-age=0');
+        header("Access-Control-Allow-Origin: *");
+        header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+        header("Access-Control-Allow-Headers: Authorization, Content-Type");
+        $writer = new Xlsx($spreadsheet);
+        $writer->save('php://output');
+        wp_die('', '', 200);
     }
 
     public function get_ind_1_seguimiento_red_menor1a_mes_linea_tiempo($request){
@@ -446,6 +483,142 @@ function generarArrayAleatorio() {
         );
     }
     
+     public function pag_anemia($request){
+        $microred = get_param($request, 'microred');
+        $establishment = get_param($request, 'establishment');
+        $period = get_param($request, 'period');
+
+        $patient = array();
+        for ($i = 0; $i < rand(4, 50); $i++) {
+            $citados = mt_rand(500, 5000);
+            $asistieron = mt_rand(0000, $citados);
+            $porcentaje = ($asistieron/$citados)*100;
+
+
+            $treatment = array();
+
+            for ($j = 0; $j < rand(1, 12); $j++) {
+                $treatment[] = array(
+                    "date" => '2025-04-05',
+                    "HIS" => 'Lote:L01 Pag.:3 Reg.:21',
+                    "hb" => rand(1, 120)/10,
+                    "Suplement" => 'SI',
+                    'profetional' => $this->generarNombreAleatorio()
+                );
+            }
+
+            $patient[] = array(
+                "fullName" => $this->generarNombreAleatorio(),
+                "dni" => $this->generarNumeroAleatorio(),
+                "fechaNac" => '2025-04-05',
+                "age" => '6M 15D',
+                'address' => $this->generarNombreAleatorio(),
+                'treatment' => $treatment
+            );
+        }
+        return array(
+            "stats" => array(
+                array( "value" => count($patient), "label" => "Total de Niñas y Niños con Anemia", "color" => "rgb(172, 128, 238)" ),
+                array( "value" => rand(4, 300), "label" => "Total de Niñas y Niños Recuperados", "color" => "hsl(var(--primary))" ),
+                array( "value" => rand(4, 300), "label" => "Niñas y Niños no recuperados, que asistieron al tratamiento en Noviembre", "color" => "hsl(142, 76%, 36%)" ),
+                array( "value" => rand(4, 300), "label" => "Niñas y Niños en alerta (Dosaje Hb no mejora)", "color" => "hsl(0, 84%, 60%)" ),
+            ),
+            'data' => $patient
+        );
+    }
+
+    function generarCadenaAleatoria($pagMin = 1, $pagMax = 10, $regMin = 1, $regMax = 50) {
+    // Generar 3 letras aleatorias para el lote
+    $letras = '';
+    $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    for ($i = 0; $i < 3; $i++) {
+        $letras .= $chars[rand(0, strlen($chars) - 1)];
+    }
+
+    // Generar números aleatorios para página y registro
+    $pag = rand($pagMin, $pagMax);
+    $reg = rand($regMin, $regMax);
+
+    return "Lote:{$letras} Pag.:{$pag} Reg.:{$reg}";
+}
+    
+    public function pag_inmunizaciones($request){
+        $microred = get_param($request, 'microred');
+        $establishment = get_param($request, 'establishment');
+        $period = get_param($request, 'period');
+
+        $patient = array();
+        for ($i = 0; $i < rand(4, 50); $i++) {
+            $citados = mt_rand(500, 5000);
+            $asistieron = mt_rand(0000, $citados);
+            $porcentaje = ($asistieron/$citados)*100;
+
+
+            $vaccines = array();
+
+            for ($j = 0; $j < 8; $j++) {
+                if($j<2){
+                    $vaccines[] = [
+                        array("name"=> "Neumococo (1° dosis)", "code" => 'Neu.',"date" => "2024-11-05", "professional" => $this->generarNombreAleatorio(), "his" => $this->generarCadenaAleatoria()),
+                        array("code" => 'IPV',"date" => "2024-11-05", "observation" => "observation", "his" => $this->generarCadenaAleatoria()),
+                        array("code" => 'Rot.'),
+                        array("code" => 'Pnt.',"date" => "2024-11-05", "professional" => $this->generarNombreAleatorio(), "his" => $this->generarCadenaAleatoria())
+                    ];
+                } else if($j==2){
+                    $vaccines[] = [
+                        array("code" => 'Pnt.',"date" => "2024-11-05", "professional" => $this->generarNombreAleatorio()),
+                        array("code" => 'IPV',"date" => "2024-11-05", "professional" => $this->generarNombreAleatorio()),
+                        array("code" => 'Inf.',"date" => "2024-11-05", "professional" => $this->generarNombreAleatorio())
+                    ];
+                } else if($j==3){
+                    $vaccines[] = [
+                        array("code" => 'Inf.', "observation" => "observation")
+                    ];
+                } else if($j==4){
+                    $vaccines[] = [
+                        array("code" => 'Neu.',"date" => "2024-11-05", "professional" => $this->generarNombreAleatorio()),
+                        array("code" => 'SPR',"date" => "2024-11-05","professional" => $this->generarNombreAleatorio()),
+                        array("code" => 'Var.', "observation" => "observation")
+                    ];
+                } else if($j==5){
+                    $vaccines[] = [
+                        array("code" => 'AMA',"date" => "2024-11-05"),
+                        array("code" => 'HvA')
+                    ];
+                } else if($j==6){
+                    $vaccines[] = [
+                        array("code" => 'DPT', "observation" => "observation"),
+                        array("code" => 'SPR',"date" => "2024-11-05", "professional" => $this->generarNombreAleatorio()),
+                        array("code" => 'IPV', "observation" => "observation", "professional" => $this->generarNombreAleatorio())
+                    ];
+                } else{
+                    $vaccines[] = [
+                        array("code" => 'DPT'),
+                        array("code" => 'APO',"date" => "2024-11-05", "professional" => $this->generarNombreAleatorio())
+                    ];
+                }
+            }
+
+            $patient[] = array(
+                "fullName" => $this->generarNombreAleatorio(),
+                "dni" => $this->generarNumeroAleatorio(),
+                "fechaNac" => '2025-04-05',
+                "age" => '6M 15D',
+                'address' => $this->generarNombreAleatorio(),
+                'vaccines' => $vaccines
+            );
+        }
+        return array(
+            "stats" => array(
+                array( "value" => count($patient), "label" => "Total de Niñas y Niños con Anemia", "color" => "rgb(172, 128, 238)" ),
+                array( "value" => rand(4, 300), "label" => "Total de Niñas y Niños Recuperados", "color" => "hsl(var(--primary))" ),
+                array( "value" => rand(4, 300), "label" => "Niñas y Niños no recuperados, que asistieron al tratamiento en Noviembre", "color" => "hsl(142, 76%, 36%)" ),
+                array( "value" => rand(4, 300), "label" => "Niñas y Niños en alerta (Dosaje Hb no mejora)", "color" => "hsl(0, 84%, 60%)" ),
+            ),
+            'data' => $patient
+        );
+    }
+
     public function get_microred(){
         $microred = array();
         for($i=1;$i<=9;$i++){

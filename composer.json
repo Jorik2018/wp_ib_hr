@@ -10,10 +10,11 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^7.4",
+        "php": "^7.4|^8.0",
         "10quality/wpmvc-core": "^3.1",
         "deliciousbrains/wp-background-processing": "^1.3",
         "imangazaliev/didom": "^2.0",
+        "phpoffice/phpspreadsheet": "^5.2",
         "pusher/pusher-php-server": "^7.2"
     },
     "require-dev": {

@@ -1,5 +1,5 @@
 <?php
-
+//boostrap.php
 use WPMVC\Config;
 
 /**

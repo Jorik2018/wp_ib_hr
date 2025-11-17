@@ -313,6 +313,7 @@ return array(
     'Peast\\Syntax\\Token' => $vendorDir . '/mck89/peast/lib/Peast/Syntax/Token.php',
     'Peast\\Syntax\\Utils' => $vendorDir . '/mck89/peast/lib/Peast/Syntax/Utils.php',
     'Peast\\Traverser' => $vendorDir . '/mck89/peast/lib/Peast/Traverser.php',
+    'PhpOffice\\PhpSpreadsheet\\Spreadsheet' => $vendorDir .'/phpoffice/phpspreadsheet/src/PhpSpreadsheet/Spreadsheet.php',
     'PhpParser\\Builder' => $vendorDir . '/nikic/php-parser/lib/PhpParser/Builder.php',
     'PhpParser\\BuilderFactory' => $vendorDir . '/nikic/php-parser/lib/PhpParser/BuilderFactory.php',
     'PhpParser\\BuilderHelpers' => $vendorDir . '/nikic/php-parser/lib/PhpParser/BuilderHelpers.php',
