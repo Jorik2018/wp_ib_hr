@@ -252,10 +252,10 @@ class PersonalRestController extends Controller
         $query = get_param($request, 'query');
         $current_user = wp_get_current_user();
         $db_erp = get_option("db_ofis");
-        $data = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS ps.* FROM $db_erp.v_personal_servicios ps", ARRAY_A);
+        $data = $wpdb->get_results("SELECT ps.* FROM $db_erp.v_personal_servicios ps", ARRAY_A);
         if ($wpdb->last_error) return t_error();
         $columns = array_keys($data[0]);
-        export_excel("personal", $columns, $data);
+        export_excel("v_personal_servicios", $columns, $data);
     }
 
     public function delete($data)
