@@ -11,6 +11,7 @@ use function IB\directory\Util\cdfield;
 use function IB\directory\Util\t_error;
 use function IB\directory\Util\get_param;
 use function IB\directory\Util\renameFields;
+use function IB\cv\Util\export_excel;
 
 class PersonalRestController extends Controller
 {
@@ -63,6 +64,11 @@ class PersonalRestController extends Controller
         register_rest_route('api/hr', '/personal', array(
             'methods' => 'POST',
             'callback' => array($this, 'post')
+        ));
+
+        register_rest_route('api/hr', '/personal/download', array(
+            'methods' => 'POST',
+            'callback' => array($this, 'download')
         ));
 
         register_rest_route('api/hr', '/personal/position', array(
@@ -236,22 +242,12 @@ class PersonalRestController extends Controller
         return $to > 0 ? array('data' => $results, 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
     }
 
-    public function export_excel($request)
+    public function download($request)
     {
-        while (ob_get_level()) {
-            ob_end_clean();
-        }
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="adultos_mayores.xlsx"');
-        header('Cache-Control: max-age=0');
-        header("Access-Control-Allow-Origin: *");
-        header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-        header("Access-Control-Allow-Headers: Authorization, Content-Type");
-        $writer = new Xlsx($spreadsheet);
-        $writer->save('php://output');
-        wp_die('', '', 200);
+        $request['to'] = 0;
+        $data = $this->pag($request);
+        $columns = array_keys($data[0]);
+        export_excel("personal", $columns, $data);
     }
 
     public function delete($data)

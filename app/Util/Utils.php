@@ -6,6 +6,50 @@ namespace IB\cv\Util;
 
 use WPMVC\Bridge;
 
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
+function export_excel($filename, $columns, $rows)
+{
+    while (ob_get_level()) {
+        ob_end_clean();
+    }
+
+    $spreadsheet = new Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+
+    // Headers
+    $colIndex = 1;
+    foreach ($columns as $header) {
+        $sheet->setCellValueByColumnAndRow($colIndex, 1, $header);
+        $colIndex++;
+    }
+
+    // Data
+    $rowIndex = 2;
+    foreach ($rows as $row) {
+        $colIndex = 1;
+        foreach ($columns as $key) {
+            $sheet->setCellValueByColumnAndRow($colIndex, $rowIndex, $row[$key] ?? "");
+            $colIndex++;
+        }
+        $rowIndex++;
+    }
+
+    header("Access-Control-Allow-Origin: *");
+    header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+    header("Access-Control-Allow-Headers: Authorization, Content-Type");
+
+    header("Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    header("Content-Disposition: attachment; filename=\"{$filename}.xlsx\"");
+    header("Cache-Control: max-age=0");
+
+    $writer = new Xlsx($spreadsheet);
+    $writer->save('php://output');
+    exit;
+}
+
+
 function toLowerCase($data) {
     if (is_object($data)) {
         $result = new \stdClass();
