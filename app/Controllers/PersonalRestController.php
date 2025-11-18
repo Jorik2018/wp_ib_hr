@@ -244,8 +244,16 @@ class PersonalRestController extends Controller
 
     public function download($request)
     {
-        $request['to'] = 0;
-        $data = $this->pag($request);
+        //$request['to'] = 0;
+        //$data = $this->pag($request);
+        global $wpdb;
+        $from = $request['from'];
+        $to = $request['to'];
+        $query = get_param($request, 'query');
+        $current_user = wp_get_current_user();
+        $db_erp = get_option("db_ofis");
+        $data = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS ps.* FROM $db_erp.v_personal_servicios ps", ARRAY_A);
+        if ($wpdb->last_error) return t_error();
         $columns = array_keys($data[0]);
         export_excel("personal", $columns, $data);
     }
