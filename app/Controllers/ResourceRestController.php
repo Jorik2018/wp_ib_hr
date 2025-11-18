@@ -23,33 +23,33 @@ class ResourceRestController extends Controller
 
     public function init()
     {
-        remove_role('hr_personal_admin');
-        remove_role('hr_personal_register');
-        remove_role('hr_personal_read');
+        remove_role('hr_resource_admin');
+        remove_role('hr_resource_register');
+        remove_role('hr_resource_read');
         add_role(
-            'hr_personal_read',
-            'hr_personal_read',
+            'hr_resource_read',
+            'hr_resource_read',
             array(
-                'HR_PERSONAL_READ' => true
+                'HR_RESOURCE_READ' => true
             )
         );
         add_role(
-            'hr_personal_admin',
-            'hr_personal_admin',
+            'hr_resource_admin',
+            'hr_resource_admin',
             array(
-                'HR_PERSONAL_REGISTER' => true,
-                'HR_PERSONAL_ADMIN' => true,
-                'HR_PERSONAL_READ' => true,
-                'HR_PERSONAL_DET' => true
+                'HR_RESOURCE_REGISTER' => true,
+                'HR_RESOURCE_ADMIN' => true,
+                'HR_RESOURCE_READ' => true,
+                'HR_RESOURCE_DET' => true
             )
         );
         add_role(
-            'hr_personal_register',
-            'hr_personal_register',
+            'hr_resource_register',
+            'hr_resource_register',
             array(
-                'HR_PERSONAL_REGISTER' => true,
-                'HR_PERSONAL_READ' => true,
-                'HR_PERSONAL_DET' => true
+                'HR_RESOURCE_REGISTER' => true,
+                'HR_RESOURCE_READ' => true,
+                'HR_RESOURCE_DET' => true
             )
         );
     }
