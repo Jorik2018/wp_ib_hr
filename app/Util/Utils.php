@@ -19,27 +19,29 @@ function export_excel($filename, $columns, $rows)
     $sheet = $spreadsheet->getActiveSheet();
 
     // Headers
-    $colIndex = 1;
+    $col = 'A';
     foreach ($columns as $header) {
-        $sheet->setCellValueByColumnAndRow($colIndex, 1, $header);
-        $colIndex++;
+        $sheet->setCellValue($col . '1', $header);
+        $col++;
     }
 
     // Data
-    $rowIndex = 2;
+    $rowNum = 2;
     foreach ($rows as $row) {
-        $colIndex = 1;
+        $col = 'A';
         foreach ($columns as $key) {
-            $sheet->setCellValueByColumnAndRow($colIndex, $rowIndex, $row[$key] ?? "");
-            $colIndex++;
+            $sheet->setCellValue($col . $rowNum, $row[$key] ?? "");
+            $col++;
         }
-        $rowIndex++;
+        $rowNum++;
     }
 
+    // Headers CORS
     header("Access-Control-Allow-Origin: *");
     header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
     header("Access-Control-Allow-Headers: Authorization, Content-Type");
 
+    // Excel output headers
     header("Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     header("Content-Disposition: attachment; filename=\"{$filename}.xlsx\"");
     header("Cache-Control: max-age=0");
@@ -48,6 +50,7 @@ function export_excel($filename, $columns, $rows)
     $writer->save('php://output');
     exit;
 }
+
 
 
 function toLowerCase($data) {
