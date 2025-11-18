@@ -89,6 +89,40 @@ function toLowerCase($data) {
 
 function toCamelCase($data) {
     if (is_object($data)) {
+        // Convertir objeto → array para mantener consistencia
+        $data = (array) $data;
+    }
+
+    if (is_array($data)) {
+
+        // Detectar si es array numérico
+        $isNumeric = array_keys($data) === range(0, count($data) - 1);
+
+        if ($isNumeric) {
+            // Lista de elementos
+            $result = [];
+            foreach ($data as $item) {
+                $result[] = toCamelCase($item);
+            }
+            return $result;
+        }
+
+        // Array asociativo → devolver array, NO stdClass
+        $result = [];
+        foreach ($data as $key => $value) {
+            $newKey = lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $key))));
+            $result[$newKey] = toCamelCase($value);
+        }
+
+        return $result;
+    }
+
+    return $data; // valor primitivo
+}
+
+
+function toCamelCase2($data) {
+    if (is_object($data)) {
         $result = new \stdClass();
         foreach ($data as $key => $value) {
             $newKey = lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $key))));
