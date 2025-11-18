@@ -30,7 +30,8 @@ class ResourceRestController extends Controller
             'hr_resource_read',
             'hr_resource_read',
             array(
-                'HR_RESOURCE_READ' => true
+                'HR_RESOURCE_READ' => true,
+                'HR_MOVEMENT_READ' => true,
             )
         );
         add_role(
@@ -40,7 +41,8 @@ class ResourceRestController extends Controller
                 'HR_RESOURCE_REGISTER' => true,
                 'HR_RESOURCE_ADMIN' => true,
                 'HR_RESOURCE_READ' => true,
-                'HR_RESOURCE_DET' => true
+                'HR_RESOURCE_DET' => true,
+                'HR_MOVEMENT_READ' => true
             )
         );
         add_role(
@@ -49,7 +51,9 @@ class ResourceRestController extends Controller
             array(
                 'HR_RESOURCE_REGISTER' => true,
                 'HR_RESOURCE_READ' => true,
-                'HR_RESOURCE_DET' => true
+                'HR_RESOURCE_DET' => true,
+                'HR_MOVEMENT_READ' => true,
+                'HR_MOVEMENT_REGISTER' => true
             )
         );
     }
