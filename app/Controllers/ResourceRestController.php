@@ -42,7 +42,8 @@ class ResourceRestController extends Controller
                 'HR_RESOURCE_ADMIN' => true,
                 'HR_RESOURCE_READ' => true,
                 'HR_RESOURCE_DET' => true,
-                'HR_MOVEMENT_READ' => true
+                'HR_MOVEMENT_READ' => true,
+                'HR_MOVEMENT_REGISTER' => true
             )
         );
         add_role(
