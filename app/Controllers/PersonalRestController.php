@@ -216,6 +216,7 @@ class PersonalRestController extends Controller
         $query = get_param($request, 'query');
         $dni = get_param($request, 'dni');
         $apellidosNombres = get_param($request, 'apellidosNombres');
+        $actividad = get_param($request, 'actividad');
         $organo = get_param($request, 'organo');
         $organoId = get_param($request, 'organoId');
         $unidadOrganica = get_param($request, 'unidadOrganica');
@@ -230,6 +231,7 @@ class PersonalRestController extends Controller
             (isset($query) ? " AND (pe.apellidos_nombres LIKE '%$query%' OR pe.dni LIKE '%$query%') " : "") .
             (isset($apellidosNombres) ? " AND (pe.apellidos_nombres LIKE '%$apellidosNombres%') " : "").
             (isset($organo) ? " AND (pe.organo LIKE '%$organo%') " : "").
+            (isset($actividad) ? " AND (pe.actividad LIKE '%$actividad%') " : "").
             (isset($organoId) ? " AND (pe.organo_id = '$organoId') " : "").
             (isset($estado) ? " AND (pe.estado = '$estado') " : "").
             (isset($unidadOrganica) ? " AND (UPPER(pe.unidad_organica) LIKE '%$unidadOrganica%') " : "").
