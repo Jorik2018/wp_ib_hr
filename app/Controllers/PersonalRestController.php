@@ -294,7 +294,9 @@ class PersonalRestController extends Controller
         }
 
         // 2️⃣ Soft delete
-        $updated = $wpdb->update(
+        $deleted = $wpdb->delete('hr_employee', ['id' => $id]);
+        $error = $wpdb->last_error;
+        /*$updated = $wpdb->update(
             'hr_employee',
             array(
                 'canceled'    => 1,
@@ -303,12 +305,12 @@ class PersonalRestController extends Controller
             array('id' => $id),
             array('%d', '%s'),
             array('%d')
-        );
+        );*/
 
-        if ($updated === false) {
+        if ($deleted === false) {
             $wpdb->query('ROLLBACK');
             $wpdb->select($original_db);
-            return t_error($wpdb->last_error);
+            return t_error($error);
         }
     }
 
