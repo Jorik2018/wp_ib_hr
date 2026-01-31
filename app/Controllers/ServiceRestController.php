@@ -65,7 +65,7 @@ class ServiceRestController extends Controller
             'callback' => array($this, 'post')
         ));
 
-        register_rest_route('api/hr', '/personal/service/(?P<id>)', array(
+        register_rest_route('api/hr', '/personal/service/(?P<id>[0-9,]+)', array(
             'methods' => 'DELETE',
             'callback' => array($this, 'delete')
         ));
