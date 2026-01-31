@@ -294,7 +294,7 @@ class PersonalRestController extends Controller
         }
 
         // 2️⃣ Soft delete
-        $deleted = $wpdb->delete('m_personal', ['id' => $id]);
+        $deleted = $wpdb->delete('m_personal', ['n' => $id]);
         $error = $wpdb->last_error;
         /*$updated = $wpdb->update(
             'm_personal',
