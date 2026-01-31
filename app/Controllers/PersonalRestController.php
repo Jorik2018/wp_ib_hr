@@ -76,7 +76,7 @@ class PersonalRestController extends Controller
             'callback' => array($this, 'position')
         ));
 
-        register_rest_route('api/hr', '/personal/(?P<id>)', array(
+        register_rest_route('api/hr', '/personal/(?P<id>[0-9,]+)', array(
             'methods' => 'DELETE',
             'callback' => array($this, 'delete')
         ));
@@ -260,20 +260,62 @@ class PersonalRestController extends Controller
         export_excel("v_personal_servicios", $columns, $data);
     }
 
-    public function delete($data)
-    {
-        global $wpdb;
-        $wpdb->query('START TRANSACTION');
-        $result = array_map(function ($id) use ($wpdb) {
-            return $wpdb->update('hr_employee', array('canceled' => 1, 'delete_date' => current_time('mysql')), array('id' => $id));
-        }, explode(",", $data['ids']));
+   public function delete($data)
+{
+    global $wpdb;
+
+    $original_db = $wpdb->dbname;
+    $db_erp = get_option("db_ofis");
+
+    $ids = array_map('intval', explode(",", $data['id']));
+
+    $wpdb->select($db_erp);
+    $wpdb->query('START TRANSACTION');
+
+    foreach ($ids as $id) {
+
+        $people = $wpdb->get_row($wpdb->prepare("SELECT dni FROM $db_erp.m_personal WHERE n=%s", $id), ARRAY_A);
         
-        $success = !in_array(false, $result, true);
-        if ($success) {
-            $wpdb->query('COMMIT');
-        } else {
+
+        $count = (int) $wpdb->get_var(
+            $wpdb->prepare(
+                "SELECT COUNT(*) FROM t_servicios WHERE dni = %d",
+                $people['dni']
+            )
+        );
+
+        if ($count > 0) {
             $wpdb->query('ROLLBACK');
+            $wpdb->select($original_db);
+
+            return t_error(
+                "Existen servicios asociados al empleado ID {$id}. No se puede borrar."
+            );
         }
-        return $success;
+
+        // 2️⃣ Soft delete
+        $updated = $wpdb->update(
+            'hr_employee',
+            array(
+                'canceled'    => 1,
+                'delete_date' => current_time('mysql')
+            ),
+            array('id' => $id),
+            array('%d', '%s'),
+            array('%d')
+        );
+
+        if ($updated === false) {
+            $wpdb->query('ROLLBACK');
+            $wpdb->select($original_db);
+            return t_error($wpdb->last_error);
+        }
     }
+
+    $wpdb->query('COMMIT');
+    $wpdb->select($original_db);
+
+    return true;
+}
+
 }
