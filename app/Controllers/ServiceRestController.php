@@ -163,7 +163,12 @@ class ServiceRestController extends Controller
         $wpdb->select($db_erp);
         $wpdb->query('START TRANSACTION');
         $result = array_map(function ($id) use ($wpdb) {
-            return $wpdb->update('t_servicios', array('canceled' => 1, 'delete_date' => current_time('mysql')), array('id' => $id));
+            $deletedActa = $wpdb->delete('t_servicios', ['id' => $id]);
+            if ($deletedActa === false) {
+                return false;
+            }
+            return true;
+            //return $wpdb->update('t_servicios', array('canceled' => 1, 'delete_date' => current_time('mysql')), array('id' => $id));
         }, explode(",", $data['id']));
         if ($wpdb->last_error) {
             $error = $wpdb->last_error;
