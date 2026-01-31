@@ -159,7 +159,7 @@ class ServiceRestController extends Controller
     {
         global $wpdb;
         $original_db = $wpdb->dbname;
-        $db_erp = get_option("db_erp");
+        $db_erp = get_option("db_ofis");
         $wpdb->select($db_erp);
         $wpdb->query('START TRANSACTION');
         $result = array_map(function ($id) use ($wpdb) {
