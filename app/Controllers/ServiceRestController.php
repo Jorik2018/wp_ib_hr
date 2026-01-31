@@ -158,7 +158,9 @@ class ServiceRestController extends Controller
     public function delete($data)
     {
         global $wpdb;
-
+        $original_db = $wpdb->dbname;
+        $db_erp = get_option("db_erp");
+        $wpdb->select($db_erp);
         $wpdb->query('START TRANSACTION');
         $result = array_map(function ($id) use ($wpdb) {
             return $wpdb->update('t_servicios', array('canceled' => 1, 'delete_date' => current_time('mysql')), array('id' => $id));
@@ -166,6 +168,7 @@ class ServiceRestController extends Controller
         if ($wpdb->last_error) {
             $error = $wpdb->last_error;
             $wpdb->query('ROLLBACK');
+            $wpdb->select($original_db);
             return t_error($error);
         }
         $success = !in_array(false, $result, true);
@@ -174,6 +177,7 @@ class ServiceRestController extends Controller
         } else {
             $wpdb->query('ROLLBACK');
         }
+        $wpdb->select($original_db);
         return $success;
     }
 }
