@@ -158,6 +158,7 @@ class ServiceRestController extends Controller
     public function delete($data)
     {
         global $wpdb;
+        
         $wpdb->query('START TRANSACTION');
         $result = array_map(function ($id) use ($wpdb) {
             return $wpdb->update('t_servicios', array('canceled' => 1, 'delete_date' => current_time('mysql')), array('id' => $id));
