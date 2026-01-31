@@ -166,7 +166,7 @@ class ServiceRestController extends Controller
         if ($wpdb->last_error) {
             $error = $wpdb->last_error;
             $wpdb->query('ROLLBACK');
-            return t_error();
+            return t_error($error);
         }
         $success = !in_array(false, $result, true);
         if ($success) {
