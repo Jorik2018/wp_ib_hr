@@ -154,35 +154,85 @@ class PersonalRestController extends Controller
         $current_user = wp_get_current_user();
         cdfield($o, 'fechaDeInicioContrato');
         cdfield($o, 'fechaDeInicioOfis');
-
+        if (empty($o['dni'])) {
+            return t_error('DNI es obligatorio');
+        }
         if (!empty($o['organoId'])) {
             $o['organo'] = $wpdb->get_var(
-                $wpdb->prepare("SELECT organo FROM $db_erp.maestro_organo WHERE id = %d", $o['organoId'])
+                $wpdb->prepare(
+                    "SELECT organo FROM $db_erp.maestro_organo WHERE id = %d",
+                    $o['organoId']
+                )
             );
-            if (false === $updated) return t_error();
+
+            if ($wpdb->last_error) {
+                return t_error($wpdb->last_error);
+            }
+
+            if ($o['organo'] === null) {
+                return t_error('Órgano '.$o['organoId'].' no existe');
+            }
         }
+
         if (!empty($o['unidadId'])) {
             $o['unidadOrganica'] = $wpdb->get_var(
-                $wpdb->prepare("SELECT unidad_organica FROM $db_erp.maestro_unidad WHERE id = %d", $o['unidadId'])
+                $wpdb->prepare(
+                    "SELECT unidad_organica FROM $db_erp.maestro_unidad WHERE id = %d",
+                    $o['unidadId']
+                )
             );
-            if (false === $updated) return t_error();
+
+            if ($wpdb->last_error) {
+                return t_error($wpdb->last_error);
+            }
+
+            if ($o['unidadOrganica'] === null) {
+                return t_error('Unidad '.$o['unidadId'].' no existe');
+            }
         }
         $o = renameFields($o, self::FIELD_MAP);
         unset($o['editable']);
+        try {
+            $wpdb->select($db_erp);
+            if (isset($o['n'])) {
+                $exists = $wpdb->get_var(
+                    $wpdb->prepare(
+                        "SELECT COUNT(*) FROM m_personal WHERE dni = %s AND n <> %d",
+                        $o['dni'],
+                        $o['n']
+                    )
+                );
+            } else {
+                $exists = $wpdb->get_var(
+                    $wpdb->prepare(
+                        "SELECT COUNT(*) FROM m_personal WHERE dni = %s",
+                        $o['dni']
+                    )
+                );
+            }
 
-        $wpdb->select($db_erp);
-        $people = $o;
+            if ($wpdb->last_error) {
+                return t_error($wpdb->last_error);
+            }
 
-        //llenar organo y unidad usando organo_id y unidad_id respectivamante usando las tablas 
-        if (isset($o['n'])) {
-            $updated = $wpdb->update('m_personal', $people, array('n' => $people['n']));
-            $o['id'] = $o['n'];
-        } else {
-            $wpdb->insert('m_personal', $o);
-            $o['id'] = $wpdb->insert_id;
+            if ($exists > 0) {
+                return t_error('DNI ya registrado');
+            }
+            $people = $o;
+
+            //llenar organo y unidad usando organo_id y unidad_id respectivamante usando las tablas 
+            if (isset($o['n'])) {
+                $updated = $wpdb->update('m_personal', $people, array('n' => $people['n']));
+                $o['id'] = $o['n'];
+            } else {
+                // esto retornara $updated=false para verificar si hubo error?
+                $updated = $wpdb->insert('m_personal', $o);
+                $o['id'] = $wpdb->insert_id;
+            }
+            if (false === $updated) return t_error($wpdb->last_error);
+        } finally {
+            $wpdb->select($original_db);
         }
-        $wpdb->select($original_db);
-        if (false === $updated) return t_error();
         return Util\toCamelCase($o);
     }
 
