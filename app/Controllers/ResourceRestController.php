@@ -223,6 +223,8 @@ class ResourceRestController extends Controller
         $query = get_param($request, 'query');
         $personal = get_param($request, 'personal');
         $typeName = get_param($request, 'typeName');
+        $codpatrimonio = get_param($request, 'codpatrimonio');
+        
         $user = get_param($request, 'user');
         $codigo = get_param($request, 'codigo');
         $modelo = get_param($request, 'modelo');
@@ -241,6 +243,7 @@ class ResourceRestController extends Controller
             . (isset($people) ? " AND pe.dni='".$people['dni']."' " : "") 
             . (isset($codigo) ? " AND re.codigo LIKE '%".$codigo."%' " : "") 
             . (isset($modelo) ? " AND re.modelo LIKE '%".$modelo."%' " : "") 
+            . (isset($codpatrimonio) ? " AND re.codpatrimonio LIKE '%".$codpatrimonio."%' " : "") 
             . (isset($user) ? " AND pe.apellidos_nombres LIKE '%".$user."%' " : "") 
             . (isset($typeName) ? " AND tb.tipo LIKE '%".$typeName."%' " : "") 
             . (isset($query)&&!empty(trim($query)) ? " AND (re.codpatrimonio LIKE '%$query%' OR re.codigo LIKE '%$query%' OR tb.tipo LIKE '%$query%') " : "")
