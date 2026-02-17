@@ -292,8 +292,9 @@ class MovimientoRestController extends Controller
             (isset($query) ? " AND (pe.apellidos_nombres LIKE '%$query%') " : "") .
             (isset($apellidosNombres) ? " AND (pe.apellidos_nombres LIKE '%$apellidosNombres%') " : "").
             (isset($organo) ? " AND (pe.organo LIKE '%$organo%') " : "").
-            (isset($dni) ? " AND (ac.dni LIKE '%$dni%') " : "").
-            ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
+            (isset($dni) ? " AND (ac.dni LIKE '%$dni%') " : "")
+            . " ORDER BY ac.id DESC "
+            .($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
         if ($wpdb->last_error) return t_error();
         $results = Util\toCamelCase($results);
         return $to > 0 ? array('data' => $results, 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
