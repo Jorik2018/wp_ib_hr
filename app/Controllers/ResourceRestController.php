@@ -228,6 +228,7 @@ class ResourceRestController extends Controller
         $user = get_param($request, 'user');
         $codigo = get_param($request, 'codigo');
         $modelo = get_param($request, 'modelo');
+        $marca = get_param($request, 'marca');
         $current_user = wp_get_current_user();
         $db_erp = get_option("db_ofis");
 
@@ -242,7 +243,8 @@ class ResourceRestController extends Controller
             . (isset($personal)&&$personal === '<NONE>' ? " AND (pe.dni IS NULL OR re.dni = '') " : "") 
             . (isset($people) ? " AND pe.dni='".$people['dni']."' " : "") 
             . (isset($codigo) ? " AND re.codigo LIKE '%".$codigo."%' " : "") 
-            . (isset($modelo) ? " AND re.modelo LIKE '%".$modelo."%' " : "") 
+            . (isset($modelo) ? " AND re.modelo LIKE '%".$modelo."%' " : "")
+            . (isset($marca) ? " AND re.marca LIKE '%".$marca."%' " : "") 
             . (isset($codpatrimonio) ? " AND re.codpatrimonio LIKE '%".$codpatrimonio."%' " : "") 
             . (isset($user) ? " AND pe.apellidos_nombres LIKE '%".$user."%' " : "") 
             . (isset($typeName) ? " AND tb.tipo LIKE '%".$typeName."%' " : "") 
