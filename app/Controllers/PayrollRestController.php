@@ -34,7 +34,7 @@ class PayrollRestController extends Controller
 
     public function rest_api_init()
     {
-        register_rest_route('api/payroll', 'period/(?P<year>\d+)/(?P<month>\d+)', array(
+        register_rest_route('api/payroll', 'period', array(
             'methods' => 'GET',
             'callback' => array($this, 'period')
         ));
