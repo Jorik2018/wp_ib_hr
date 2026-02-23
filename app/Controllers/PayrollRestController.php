@@ -93,7 +93,7 @@ class PayrollRestController extends Controller
     // Simulación de endpoint similar a mock.onGet
     function obtenerNomina()
     {
-        $headers = $this->assignLeafIndexes([
+        $headers = [
             ['title' => 'NOMBRE COMPLETO', 'width' => 200, 'index' => 'fullName'],
             ['title' => 'DIAS LABORADOS', 'width' => 100],
             [
@@ -162,7 +162,8 @@ class PayrollRestController extends Controller
             ['title' => 'AGUINALDO', 'width' => 90],
             ['title' => 'NETO A PAGAR (I) - (II)', 'width' => 100, 'backgroundColor' => '#badefd', 'color' => 'black'],
             ['title' => 'ESSALUD CAS']
-        ]);
+        ];
+        $headers = $this->assignLeafIndexes($headers);
 
         $items = [];
         for ($i = 0; $i < 20; $i++) {
