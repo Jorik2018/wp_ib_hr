@@ -40,23 +40,7 @@ class PayrollRestController extends Controller
         ));
     }
 
-    function assignLeafIndexes(array &$headers)
-    {
-        $index = 0;
 
-        $walk = function (&$items) use (&$walk, &$index) {
-            foreach ($items as &$h) {
-                if (isset($h['children']) && count($h['children']) > 0) {
-                    $walk($h['children']);
-                } elseif (!isset($h['index'])) {
-                    $h['index'] = $index++; // solo hojas obtienen índice
-                }
-            }
-        };
-
-        $walk($headers);
-        return $headers;
-    }
 
     function getOrCreatePayroll($year, $month, $typeId, $fuenteFinanc = null, $preparedBy = null)
     {
@@ -117,13 +101,53 @@ class PayrollRestController extends Controller
             )
         );
     }
+    function assignLeafIndexes(array &$headers)
+    {
+        $index = 0;
 
+        $walk = function (&$items) use (&$walk, &$index) {
+            foreach ($items as &$h) {
+                if (isset($h['children']) && count($h['children']) > 0) {
+                    $walk($h['children']);
+                } elseif (!isset($h['index'])) {
+                    $h['index'] = $index++; // solo hojas obtienen índice
+                }
+            }
+        };
+
+        $walk($headers);
+        return $headers;
+    }
     function obtenerNomina($request)
     {
         global $wpdb;
         $original_db = $wpdb->dbname;
         $db_erp = get_option("db_ofis");
         $wpdb->select($db_erp);
+        $ingresos = [];
+        $descuentos = [];
+        $aportaciones = [];
+        $concepts = $wpdb->get_results("
+    SELECT id, name, pdt_code, type_id, weight
+    FROM per_concept
+    ORDER BY weight
+");
+        foreach ($concepts as $c) {
+
+            $item = [
+                'title' => $c->name,
+                'code'  => $c->pdt_code,
+                'concept_id' => $c->id
+            ];
+
+            if ($c->type_id == 1) {
+                $ingresos[] = $item;
+            } elseif ($c->type_id == 2 || $c->type_id == 3) {
+                $descuentos[] = $item;
+            } else {
+                $aportaciones[] = $item;
+            }
+        }
         $headers = [
             ['title' => 'NOMBRE COMPLETO', 'width' => 200, 'index' => 'fullName'],
             ['title' => 'DIAS LABORADOS', 'width' => 100],
@@ -193,6 +217,28 @@ class PayrollRestController extends Controller
             ['title' => 'AGUINALDO', 'width' => 90],
             ['title' => 'NETO A PAGAR (I) - (II)', 'width' => 100, 'backgroundColor' => '#badefd', 'color' => 'black'],
             ['title' => 'ESSALUD CAS']
+        ];
+        $headers = [
+            ['title' => 'NOMBRE COMPLETO', 'width' => 200, 'index' => 'fullName'],
+            ['title' => 'DIAS LABORADOS', 'width' => 100],
+
+            [
+                'title' => 'INGRESOS',
+                'backgroundColor' => '#20ab29',
+                'children' => $ingresos
+            ],
+
+            [
+                'title' => 'DESCUENTOS',
+                'backgroundColor' => '#20ab29',
+                'children' => $descuentos
+            ],
+
+            [
+                'title' => 'APORTES',
+                'backgroundColor' => '#20ab29',
+                'children' => $aportaciones
+            ]
         ];
         $headers = $this->assignLeafIndexes($headers);
 
