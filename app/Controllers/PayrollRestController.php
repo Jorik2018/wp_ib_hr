@@ -202,10 +202,21 @@ class PayrollRestController extends Controller
 
         $payroll = $this->getOrCreatePayroll($year, $month, 1);
 
+        // Obtener nombres reales
+        $employees = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT p.apellidos_nombres fullName
+         FROM rem_payroll_people pp
+         INNER JOIN m_personal p ON p.n = pp.people_id
+         WHERE pp.payroll_id = %d
+         ORDER BY 1 ",
+                $payroll->id
+            )
+        );
         $items = [];
-        for ($i = 0; $i < 20; $i++) {
+        foreach ($employees as $employee) {
             $items[] = [
-                'fullName' => "nommmmmbre comp",
+                'fullName' => $employee->fullName,
                 'values' => [
                     30,
                     2500,
