@@ -58,41 +58,72 @@ class PayrollRestController extends Controller
         return $headers;
     }
 
-    // Función para generar sílaba consonante+vocal
-    function generarSílaba()
+    function getOrCreatePayroll($year, $month, $typeId, $fuenteFinanc = null, $preparedBy = null)
     {
-        $consonantes = 'bcdfghjklmnpqrstvwxyz';
-        $vocales = 'aeiou';
-        $c = $consonantes[random_int(0, strlen($consonantes) - 1)];
-        $v = $vocales[random_int(0, strlen($vocales) - 1)];
-        return $c . $v;
-    }
+        global $wpdb;
 
-    // Función para generar palabra de 2 a 4 sílabas
-    function generarPalabra()
-    {
-        $numSilabas = random_int(2, 4);
-        $palabra = '';
-        for ($i = 0; $i < $numSilabas; $i++) {
-            $palabra .= $this->generarSílaba();
+        // 1️⃣ Buscar existente
+        $payroll = $wpdb->get_row(
+            $wpdb->prepare(
+                "SELECT * 
+             FROM rem_payroll
+             WHERE year = %d 
+             AND month = %d 
+             AND type_id = %d
+             LIMIT 1",
+                $year,
+                $month,
+                $typeId
+            )
+        );
+
+        if ($payroll) {
+            return $payroll;
         }
-        return ucfirst($palabra);
+
+        // 2️⃣ Insertar si no existe
+        $wpdb->insert(
+            'rem_payroll',
+            [
+                'year' => $year,
+                'month' => $month,
+                'type_id' => $typeId,
+                'number' => 1, // puedes ajustar lógica si necesitas correlativo
+                'id_fuente_financ' => $fuenteFinanc,
+                'closed' => 0,
+                'canceled' => 0,
+                'prepared_by' => $preparedBy,
+                'generate_date' => current_time('mysql')
+            ],
+            [
+                '%d',
+                '%d',
+                '%d',
+                '%d',
+                '%d',
+                '%d',
+                '%d',
+                '%s'
+            ]
+        );
+
+        $newId = $wpdb->insert_id;
+
+        // 3️⃣ Devolver el nuevo registro
+        return $wpdb->get_row(
+            $wpdb->prepare(
+                "SELECT * FROM rem_payroll WHERE id = %d",
+                $newId
+            )
+        );
     }
 
-    // Función para generar nombre completo con 3 o 4 palabras
-    function generarNombreCompleto()
+    function obtenerNomina($request)
     {
-        $numPalabras = (random_int(0, 1) === 0) ? 3 : 4;
-        $palabras = [];
-        for ($i = 0; $i < $numPalabras; $i++) {
-            $palabras[] = $this->generarPalabra();
-        }
-        return implode(' ', $palabras);
-    }
-
-    // Simulación de endpoint similar a mock.onGet
-    function obtenerNomina()
-    {
+        global $wpdb;
+        $original_db = $wpdb->dbname;
+        $db_erp = get_option("db_ofis");
+        $wpdb->select($db_erp);
         $headers = [
             ['title' => 'NOMBRE COMPLETO', 'width' => 200, 'index' => 'fullName'],
             ['title' => 'DIAS LABORADOS', 'width' => 100],
@@ -165,10 +196,16 @@ class PayrollRestController extends Controller
         ];
         $headers = $this->assignLeafIndexes($headers);
 
+
+        $year = $request->get_param('year');
+        $month = $request->get_param('month');
+
+        $payroll = $this->getOrCreatePayroll($year, $month, 1);
+
         $items = [];
         for ($i = 0; $i < 20; $i++) {
             $items[] = [
-                'fullName' => strtoupper($this->generarNombreCompleto()),
+                'fullName' => "nommmmmbre comp",
                 'values' => [
                     30,
                     2500,
@@ -222,22 +259,256 @@ class PayrollRestController extends Controller
                 ]
             ];
         }
-
+        $wpdb->select($original_db);
         return [
             'success' => true,
             'data' => $items,
-            'headers' => $headers
+            'headers' => $headers,
+            'payroll' => $payroll
         ];
     }
 
+    function loadPayroll($id)
+    {
+        global $wpdb;
+
+        // ===== 1. LOAD PAYROLL =====
+        $payroll = $wpdb->get_row(
+            $wpdb->prepare("SELECT * FROM rem_payroll WHERE id = %d", $id)
+        );
+
+        if (!$payroll) return null;
+
+        // ===== 2. LOAD PEOPLE =====
+        $rows = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT pp.people_id,
+                    pe.full_name,
+                    pe.document
+             FROM payroll_people pp
+             JOIN people pe ON pe.code = pp.people_id
+             WHERE pp.payroll_id = %d
+             AND pp.people_id > 0
+             ORDER BY pe.fullname",
+                $id
+            )
+        );
+
+        $persons = [];
+        $peopleMap = [];
+
+        foreach ($rows as $r) {
+            $pp = new \stdClass();
+            $pp->peopleId = $r->people_id;
+            $pp->fullName = $r->full_name;
+            $pp->document = $r->document;
+
+            // equivalente a new Object[1]
+            $pp->ext = [null];
+
+            $persons[] = $pp;
+            $peopleMap[$r->people_id] = $pp;
+        }
+
+        // ===== 3. LOAD CONCEPTS (concept_id = 0) =====
+        $concepts = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT people_id, amount
+             FROM rem_payroll_concept
+             WHERE payroll_id = %d
+             AND concept_id = 0",
+                $id
+            )
+        );
+
+        foreach ($concepts as $c) {
+            if (isset($peopleMap[$c->people_id])) {
+                $peopleMap[$c->people_id]->ext[0] = $c->amount;
+            }
+        }
+
+        // ===== 4. EXT STRUCTURE =====
+        $payroll->ext = [
+            "persons" => $persons
+        ];
+
+        return $payroll;
+    }
+
+    function getPayrollPeopleList($payrollId0, $group)
+    {
+        global $wpdb;
+        $columns = 13;
+        $result = [];
+        // ===== PAYROLL BASE =====
+        $payroll0 = $wpdb->get_row(
+            $wpdb->prepare("SELECT p.*, pt.group_id 
+                        FROM payroll p
+                        JOIN payroll_type pt ON pt.id=p.type_id
+                        WHERE p.id=%d", $payrollId0)
+        );
+
+        if (!$payroll0) return [];
+
+        // ===== LISTA PAYROLL =====
+        if ($group > 0) {
+            $payrollList = $wpdb->get_results(
+                $wpdb->prepare(
+                    "SELECT p.*
+                 FROM payroll p
+                 JOIN payroll_type pt ON pt.id=p.type_id
+                 WHERE p.year=%d AND p.month=%d AND pt.group_id=%d",
+                    $payroll0->year,
+                    $payroll0->month,
+                    $payroll0->group_id
+                )
+            );
+        } else {
+            $payrollList = [$payroll0];
+        }
+
+        foreach ($payrollList as $payroll) {
+
+            // ========= FORMATEOS =========
+            $payroll->code = sprintf("%02d", $payroll->month)
+                . substr($payroll->year, 2)
+                . "-" . sprintf("%04d", $payroll->number);
+
+            $months = [
+                "ENERO",
+                "FEBRERO",
+                "MARZO",
+                "ABRIL",
+                "MAYO",
+                "JUNIO",
+                "JULIO",
+                "AGOSTO",
+                "SEPTIEMBRE",
+                "OCTUBRE",
+                "NOVIEMBRE",
+                "DICIEMBRE"
+            ];
+
+            $payroll->monthName = $months[$payroll->month - 1];
+
+            // ========= CONCEPTOS =========
+            $concepts = $wpdb->get_results(
+                $wpdb->prepare(
+                    "SELECT DISTINCT c.id, c.name, c.abbreviation
+                 FROM payroll_concept pc
+                 JOIN per_concept c ON c.id = pc.concept_id
+                 WHERE pc.payroll_id=%d
+                 AND c.type_id>0
+                 ORDER BY c.type_id, c.weight",
+                    $payroll->id
+                )
+            );
+
+            $positionMap = [];
+            $headerList = [];
+            $summaryList = [];
+
+            $pos = 0;
+
+            foreach ($concepts as $c) {
+
+                if ($pos >= $columns) $pos = 0;
+
+                if ($pos == 0) {
+                    $headerList[] = array_fill(0, $columns, null);
+                    $summaryList[] = array_fill(0, $columns, 0);
+                }
+
+                $headerList[count($headerList) - 1][$pos] =
+                    $c->abbreviation ?: $c->name;
+
+                $positionMap[$c->id] =
+                    (count($headerList) - 1) * $columns + $pos;
+
+                $pos++;
+            }
+
+            // ========= PERSONAS =========
+            $peopleRows = $wpdb->get_results(
+                $wpdb->prepare(
+                    "SELECT pp.*, pe.full_name,
+                        em.income_date
+                 FROM payroll_people pp
+                 LEFT JOIN people pe ON pe.code = pp.people_id
+                 LEFT JOIN employee em ON em.id = pp.employee_id
+                 WHERE pp.payroll_id=%d
+                 ORDER BY pe.full_name",
+                    $payroll->id
+                )
+            );
+
+            $peopleMap = [];
+            $peopleList = [];
+
+            foreach ($peopleRows as $row) {
+
+                $extConcept = [];
+                for ($i = 0; $i < count($headerList); $i++)
+                    $extConcept[$i] = array_fill(0, $columns, 0);
+
+                $row->ext = [
+                    "header" => $headerList,
+                    "concept" => $extConcept,
+                    "concepts" => [],
+                    "summary" => $summaryList
+                ];
+
+                $row->totalDesc = $row->totalDesc ?? 0;
+
+                $peopleMap[$row->people_id] = $row;
+                $peopleList[] = $row;
+            }
+
+            // ========= MONTOS =========
+            $amounts = $wpdb->get_results(
+                $wpdb->prepare(
+                    "SELECT people_id, concept_id, amount
+                 FROM payroll_concept
+                 WHERE payroll_id=%d",
+                    $payroll->id
+                )
+            );
+
+            foreach ($amounts as $pc) {
+
+                if (!isset($peopleMap[$pc->people_id])) continue;
+
+                if (!isset($positionMap[$pc->concept_id])) continue;
+
+                $pp = $peopleMap[$pc->people_id];
+                $po = $positionMap[$pc->concept_id];
+
+                $rowIndex = intdiv($po, $columns);
+                $colIndex = $po % $columns;
+
+                $pp->ext["concept"][$rowIndex][$colIndex] = $pc->amount;
+                $pp->ext["summary"][$rowIndex][$colIndex] += $pc->amount;
+
+                if ($pc->concept_id == 80)
+                    $pp->esSalud = $pc->amount;
+            }
+
+            // asegurar 5 filas
+            while (count($headerList) < 5) {
+                $headerList[] = array_fill(0, $columns, null);
+                $summaryList[] = array_fill(0, $columns, 0);
+            }
+
+            $result = array_merge($result, $peopleList);
+        }
+
+        return $result;
+    }
+
+
     public function period($request)
     {
-
-
-
-        return $this->obtenerNomina();
-
-
+        return $this->obtenerNomina($request);
         global $wpdb;
         $edb = 2;
         $from = $request['from'];
