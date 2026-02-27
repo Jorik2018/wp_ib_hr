@@ -190,6 +190,14 @@ class MovimientoRestController extends Controller
             $detalleId  = $row['id'] ?? null;
             if (!empty($row['delete'])) {
                 if ($detalleId) {
+                    if (!empty($row['resourceId'])) {
+            $wpdb->update(
+                't_recursos',
+                ['dni' => null],
+                ['id' => $row['resourceId']]
+            );
+            if ($wpdb->last_error) return t_error();
+        }
                     $wpdb->delete('r_actas_det', ['id' => $detalleId]);
                 }
                 $resourcesOut[] = [
