@@ -213,9 +213,9 @@ class PayrollRestController extends Controller
                 'concept_id' => $c->id
             ];
 
-            if ($c->type_id == 1) {
+            if ($c->type_id == 1 || $c->type_id == 2) {
                 $ingresos[] = $item;
-            } elseif ($c->type_id == 2 || $c->type_id == 3) {
+            } elseif ($c->type_id == 3 || $c->type_id == 4) {
                 $descuentos[] = $item;
             } else {
                 $aportaciones[] = $item;
@@ -263,7 +263,7 @@ class PayrollRestController extends Controller
         foreach ($params as $p) {
             $amountMap[$p->concept_id] = $p->amount;
         }
-        $diasMes = 30;//cal_days_in_month(CAL_GREGORIAN, $month, $year);
+        $diasMes = 30; //cal_days_in_month(CAL_GREGORIAN, $month, $year);
         $headers = $this->assignLeafIndexes($headers);
         $ingresoConceptIndexes = [];
 
@@ -292,7 +292,7 @@ class PayrollRestController extends Controller
         );
         $ingresoConceptIds = [];
         foreach ($concepts as $c) {
-            if ($c->type_id == 1) {
+            if ($c->type_id == 1||$c->type_id == 2) {
                 $ingresoConceptIds[] = $c->id;
             }
         }
@@ -309,10 +309,12 @@ class PayrollRestController extends Controller
             foreach ($concepts as $c) {
 
                 $baseAmount = $amountMap[$c->id] ?? 0;
-
-                $calculated = round(($baseAmount * $workedDays) / $diasMes, 2);
-
+                
                 if ($c->type_id == 1) {
+                    $calculated = round(($baseAmount * $workedDays) / $diasMes, 2);
+                    $totalIngresos += $calculated;
+                }else if($c->type_id == 2){
+                    $calculated = $baseAmount;
                     $totalIngresos += $calculated;
                 }
 
