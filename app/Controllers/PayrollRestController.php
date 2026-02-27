@@ -235,6 +235,12 @@ class PayrollRestController extends Controller
             'is_total_ingresos' => true,
             'color' => 'black'
         ];
+        $egresos[] = [
+            'title' => 'TOTAL DSCTO. QUE AFECTAN LA BASE IMPONIBLE (A)',
+            'is_total_ingresos' => true,
+            'color' => 'black'
+        ];
+
         $headers = [
             ['title' => 'NOMBRE COMPLETO', 'width' => 200, 'index' => 'fullName'],
             ['title' => 'DIAS LABORADOS', 'width' => 100],
@@ -351,6 +357,9 @@ class PayrollRestController extends Controller
                 $values[] = $amount;
             }
 
+            $values[] = $totalEgresos;
+
+            //debe caer en TOTAL DSCTO. QUE AFECTAN LA BASE IMPONIBLE (A)
             $values[] = $totalEgresos;
 
             $items[] = [
