@@ -190,9 +190,6 @@ class PayrollRestController extends Controller
         $original_db = $wpdb->dbname;
         $db_erp = get_option("db_ofis");
         $wpdb->select($db_erp);
-        $ingresos = [];
-        $descuentos = [];
-        $aportaciones = [];
         $year = $request->get_param('year');
         $month = $request->get_param('month');
         $concepts = $wpdb->get_results($wpdb->prepare("
@@ -204,7 +201,10 @@ class PayrollRestController extends Controller
       AND (a.end_date IS NULL OR a.end_date >= %s)
     ORDER BY c.weight
 ", "$year-$month-01", "$year-$month-01"));
-
+        $ingresos = [];
+        $egresos = [];
+        $descuentos = [];
+        $aportaciones = [];
         foreach ($concepts as $c) {
 
             $item = [
@@ -215,7 +215,9 @@ class PayrollRestController extends Controller
 
             if ($c->type_id == 1 || $c->type_id == 2) {
                 $ingresos[] = $item;
-            } elseif ($c->type_id == 3 || $c->type_id == 4) {
+            } elseif ($c->type_id == 3) {
+                $egresos[] = $item;
+            } elseif ($c->type_id == 4) {
                 $descuentos[] = $item;
             } else {
                 $aportaciones[] = $item;
@@ -223,12 +225,16 @@ class PayrollRestController extends Controller
         }
 
         $ingresos[] = [
-            'title' => 'TOTAL INGRESOS',
+            'title' => 'TOTAL INGRESOS I',
             'is_total_ingresos' => true,
             'backgroundColor' => '#badefd',
             'color' => 'black'
         ];
-
+        $egresos[] = [
+            'title' => 'TOTAL',
+            'is_total_ingresos' => true,
+            'color' => 'black'
+        ];
         $headers = [
             ['title' => 'NOMBRE COMPLETO', 'width' => 200, 'index' => 'fullName'],
             ['title' => 'DIAS LABORADOS', 'width' => 100],
@@ -239,6 +245,13 @@ class PayrollRestController extends Controller
                 'color' => 'black',
                 'width' => 110,
                 'children' => $ingresos
+            ],
+            [
+                'title' => 'EGRESOS QUE AFECTAN LA BASE IMPONIBLE',
+                'backgroundColor' => '#20ab29',
+                'color' => 'black',
+                'width' => 110,
+                'children' => $egresos
             ],
 
             [
@@ -307,6 +320,7 @@ class PayrollRestController extends Controller
             $values[] = $workedDays;
 
             $totalIngresos = 0;
+            $totalEgresos = 0;
 
             foreach ($concepts as $c) {
 
@@ -325,6 +339,19 @@ class PayrollRestController extends Controller
 
             // insertar TOTAL INGRESOS justo después de los ingresos
             $values[] = $totalIngresos;
+
+            foreach ($concepts as $c) {
+
+                $amount = $amountMap[$c->id] ?? 0;
+
+                if ($c->type_id == 3){
+                    $totalEngresos += $amount;
+                }
+
+                $values[] = $amount;
+            }
+
+            $values[] = $totalEgresos;
 
             $items[] = [
                 'fullName' => $employee->fullName,
