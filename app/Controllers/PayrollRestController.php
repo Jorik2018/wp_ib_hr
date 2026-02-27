@@ -236,6 +236,8 @@ class PayrollRestController extends Controller
             [
                 'title' => 'INGRESOS',
                 'backgroundColor' => '#fbff00',
+                'color' => 'black',
+                'width' => 110,
                 'children' => $ingresos
             ],
 
