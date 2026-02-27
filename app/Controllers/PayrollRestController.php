@@ -48,20 +48,15 @@ class PayrollRestController extends Controller
                 'title' => 'INGRESO',
                 'backgroundColor' => '#20ab29',
                 'children' => [
-                    ['title' => '_REMUNERACION', 'code' => '0131'],
                     ['title' => 'REMUNERACION', 'width' => 120, 'code' => '0131', 'type' => 1],
-                    ['title' => '_D.S. N° 311-2022-EF', 'code' => '0897'],
                     ['title' => 'D.S. N° 311-2022-EF', 'code' => '0897', 'type' => 1],
-                    ['title' => '_D.S. N° 313-2023-EF', 'code' => '0981'],
                     ['title' => 'D.S. N° 313-2023-EF', 'code' => '0981', 'type' => 1],
-                    ['title' => '_D.S. N° 265-2024-EF', 'code' => '1051'],
                     ['title' => 'D.S. N° 265-2024-EF', 'code' => '1051', 'type' => 1],
-                    ['title' => '_D.S. N° 279-2024-EF', 'code' => '1053'],
                     ['title' => 'D.S. N° 279-2024-EF', 'code' => '1053', 'type' => 1],
-                    ['title' => '_DS 327-2025-EF', 'code' => ''],
                     ['title' => 'DS 327-2025-EF', 'code' => '', 'type' => 1],
                     ['title' => 'DIFERENCIAL SUBSIDIO', 'width' => 100, 'code' => '', 'type' => 1],
                     ['title' => 'REINTEGRO / COPAGO', 'code' => '0236'],
+
                     ['title' => 'CLASIFICADOR INGRESOS', 'width' => 100],
                     ['title' => 'TOTAL INGRESOS', 'backgroundColor' => '#badefd', 'color' => 'black']
                 ]
@@ -227,6 +222,13 @@ class PayrollRestController extends Controller
             }
         }
 
+        $ingresos[] = [
+            'title' => 'TOTAL INGRESOS',
+            'is_total_ingresos' => true,
+            'backgroundColor' => '#badefd',
+            'color' => 'black'
+        ];
+
         $headers = [
             ['title' => 'NOMBRE COMPLETO', 'width' => 200, 'index' => 'fullName'],
             ['title' => 'DIAS LABORADOS', 'width' => 100],
@@ -263,9 +265,17 @@ class PayrollRestController extends Controller
         }
         $diasMes = cal_days_in_month(CAL_GREGORIAN, $month, $year);
         $headers = $this->assignLeafIndexes($headers);
+        $ingresoConceptIndexes = [];
 
-
-
+        foreach ($headers as $h) {
+            if (!empty($h['children'])) {
+                foreach ($h['children'] as $child) {
+                    if (isset($child['concept_id']) && !empty($child['type']) === false) {
+                        $ingresoConceptIndexes[$child['concept_id']] = $child['index'];
+                    }
+                }
+            }
+        }
 
         $payroll = $this->getOrCreatePayroll($year, $month, 1);
 
@@ -280,24 +290,37 @@ class PayrollRestController extends Controller
                 $payroll->id
             )
         );
+        $ingresoConceptIds = [];
+        foreach ($concepts as $c) {
+            if ($c->type_id == 1) {
+                $ingresoConceptIds[] = $c->id;
+            }
+        }
         $items = [];
-
         foreach ($employees as $employee) {
 
             $workedDays = $employee->worked_days ?? 30;
 
             $values = [];
-            $values[] = $workedDays; // DIAS LABORADOS
+            $values[] = $workedDays;
+
+            $totalIngresos = 0;
 
             foreach ($concepts as $c) {
 
                 $baseAmount = $amountMap[$c->id] ?? 0;
 
-                // proporcional por días
                 $calculated = round(($baseAmount * $workedDays) / $diasMes, 2);
+
+                if ($c->type_id == 1) {
+                    $totalIngresos += $calculated;
+                }
 
                 $values[] = $calculated;
             }
+
+            // insertar TOTAL INGRESOS justo después de los ingresos
+            $values[] = $totalIngresos;
 
             $items[] = [
                 'fullName' => $employee->fullName,
