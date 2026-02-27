@@ -40,7 +40,77 @@ class PayrollRestController extends Controller
         ));
     }
 
-
+    /*
+        $headers = [
+            ['title' => 'NOMBRE COMPLETO', 'width' => 200, 'index' => 'fullName'],
+            ['title' => 'DIAS LABORADOS', 'width' => 100],
+            [
+                'title' => 'INGRESO',
+                'backgroundColor' => '#20ab29',
+                'children' => [
+                    ['title' => '_REMUNERACION', 'code' => '0131'],
+                    ['title' => 'REMUNERACION', 'width' => 120, 'code' => '0131', 'type' => 1],
+                    ['title' => '_D.S. N° 311-2022-EF', 'code' => '0897'],
+                    ['title' => 'D.S. N° 311-2022-EF', 'code' => '0897', 'type' => 1],
+                    ['title' => '_D.S. N° 313-2023-EF', 'code' => '0981'],
+                    ['title' => 'D.S. N° 313-2023-EF', 'code' => '0981', 'type' => 1],
+                    ['title' => '_D.S. N° 265-2024-EF', 'code' => '1051'],
+                    ['title' => 'D.S. N° 265-2024-EF', 'code' => '1051', 'type' => 1],
+                    ['title' => '_D.S. N° 279-2024-EF', 'code' => '1053'],
+                    ['title' => 'D.S. N° 279-2024-EF', 'code' => '1053', 'type' => 1],
+                    ['title' => '_DS 327-2025-EF', 'code' => ''],
+                    ['title' => 'DS 327-2025-EF', 'code' => '', 'type' => 1],
+                    ['title' => 'DIFERENCIAL SUBSIDIO', 'width' => 100, 'code' => '', 'type' => 1],
+                    ['title' => 'REINTEGRO / COPAGO', 'code' => '0236'],
+                    ['title' => 'CLASIFICADOR INGRESOS', 'width' => 100],
+                    ['title' => 'TOTAL INGRESOS', 'backgroundColor' => '#badefd', 'color' => 'black']
+                ]
+            ],
+            [
+                'title' => 'EGRESOS QUE AFECTAN LA BASE IMPONIBLE',
+                'backgroundColor' => '#20ab29',
+                'children' => [
+                    ['title' => 'TARDANZAS', 'type' => 2],
+                    ['title' => 'JORN. INCOMPLETA', 'width' => 100, 'type' => 2],
+                    ['title' => 'PERMISO PERSONAL', 'type' => 2],
+                    ['title' => 'INASISTENCIAS/ LSGH', 'type' => 2],
+                    ['title' => 'TOTAL'],
+                    ['title' => 'PAGO EN EXCESO'],
+                    ['title' => 'TOTAL DSCTO. QUE AFECTAN LA BASE IMPONIBLE (A)', 'width' => 120, 'backgroundColor' => '#badefd', 'color' => 'black']
+                ]
+            ],
+            ['title' => 'BASE DE CALCULO CONTRIBUCIONES'],
+            ['title' => 'BASE DE CALCULO  4TA CATG.', 'backgroundColor' => '#5f2da3'],
+            [
+                'title' => 'DESCUENTOS DE LEY',
+                'backgroundColor' => '#20ab29',
+                'children' => [
+                    ['title' => 'SUSPENSIÓN 4TA SI/NO'],
+                    ['title' => 'RETENCION DE 4TA', 'type' => 3],
+                    ['title' => 'APORTE ONP', 'type' => 3],
+                    ['title' => 'APORTE OBLIGATORIO AFP 10%', 'width' => 100, 'type' => 3],
+                    ['title' => 'APORTE SEGURO AFP', 'type' => 3],
+                    ['title' => 'APORTE COMISION AFP', 'type' => 3],
+                    ['title' => 'TOTAL DESCUENTOS DE LEY (B)', 'backgroundColor' => '#badefd', 'color' => 'black']
+                ]
+            ],
+            ['title' => 'SI/NO'],
+            ['title' => 'APORTE SOLID. POR  CONV. COLECTIVO 0.5%', 'width' => 100],
+            [
+                'title' => 'OTROS DESCUENTOS',
+                'backgroundColor' => '#20ab29',
+                'children' => [
+                    ['title' => 'OTROS COOPAC SAN MIGUEL', 'width' => 100],
+                    ['title' => 'ESSALUD + VIDA'],
+                    ['title' => 'JUDICIAL / COACTIVO'],
+                    ['title' => 'TOTAL OTROS DESCUENTOS (C)', 'width' => 100, 'backgroundColor' => '#badefd', 'color' => 'black'],
+                    ['title' => 'TOTAL DESCUENTOS II = (A + B + C)', 'width' => 100, 'backgroundColor' => '#badefd', 'color' => 'black']
+                ]
+            ],
+            ['title' => 'AGUINALDO', 'width' => 90],
+            ['title' => 'NETO A PAGAR (I) - (II)', 'width' => 100, 'backgroundColor' => '#badefd', 'color' => 'black'],
+            ['title' => 'ESSALUD CAS']
+        ];*/
 
     function getOrCreatePayroll($year, $month, $typeId, $fuenteFinanc = null, $preparedBy = null)
     {
@@ -118,6 +188,7 @@ class PayrollRestController extends Controller
         $walk($headers);
         return $headers;
     }
+
     function obtenerNomina($request)
     {
         global $wpdb;
@@ -127,11 +198,18 @@ class PayrollRestController extends Controller
         $ingresos = [];
         $descuentos = [];
         $aportaciones = [];
-        $concepts = $wpdb->get_results("
-    SELECT id, name, pdt_code, type_id, weight
-    FROM per_concept
-    ORDER BY weight
-");
+        $year = $request->get_param('year');
+        $month = $request->get_param('month');
+        $concepts = $wpdb->get_results($wpdb->prepare("
+    SELECT DISTINCT c.id, c.name, c.pdt_code, c.type_id, c.weight
+    FROM rem_payroll_amount a
+    INNER JOIN per_concept c ON c.id = a.concept_id
+    WHERE a.canceled = 0
+      AND a.ini_date <= %s
+      AND (a.end_date IS NULL OR a.end_date >= %s)
+    ORDER BY c.weight
+", "$year-$month-01", "$year-$month-01"));
+
         foreach ($concepts as $c) {
 
             $item = [
@@ -148,76 +226,7 @@ class PayrollRestController extends Controller
                 $aportaciones[] = $item;
             }
         }
-        $headers = [
-            ['title' => 'NOMBRE COMPLETO', 'width' => 200, 'index' => 'fullName'],
-            ['title' => 'DIAS LABORADOS', 'width' => 100],
-            [
-                'title' => 'INGRESO',
-                'backgroundColor' => '#20ab29',
-                'children' => [
-                    ['title' => '_REMUNERACION', 'code' => '0131'],
-                    ['title' => 'REMUNERACION', 'width' => 120, 'code' => '0131', 'type' => 1],
-                    ['title' => '_D.S. N° 311-2022-EF', 'code' => '0897'],
-                    ['title' => 'D.S. N° 311-2022-EF', 'code' => '0897', 'type' => 1],
-                    ['title' => '_D.S. N° 313-2023-EF', 'code' => '0981'],
-                    ['title' => 'D.S. N° 313-2023-EF', 'code' => '0981', 'type' => 1],
-                    ['title' => '_D.S. N° 265-2024-EF', 'code' => '1051'],
-                    ['title' => 'D.S. N° 265-2024-EF', 'code' => '1051', 'type' => 1],
-                    ['title' => '_D.S. N° 279-2024-EF', 'code' => '1053'],
-                    ['title' => 'D.S. N° 279-2024-EF', 'code' => '1053', 'type' => 1],
-                    ['title' => '_DS 327-2025-EF', 'code' => ''],
-                    ['title' => 'DS 327-2025-EF', 'code' => '', 'type' => 1],
-                    ['title' => 'DIFERENCIAL SUBSIDIO', 'width' => 100, 'code' => '', 'type' => 1],
-                    ['title' => 'REINTEGRO / COPAGO', 'code' => '0236'],
-                    ['title' => 'CLASIFICADOR INGRESOS', 'width' => 100],
-                    ['title' => 'TOTAL INGRESOS', 'backgroundColor' => '#badefd', 'color' => 'black']
-                ]
-            ],
-            [
-                'title' => 'EGRESOS QUE AFECTAN LA BASE IMPONIBLE',
-                'backgroundColor' => '#20ab29',
-                'children' => [
-                    ['title' => 'TARDANZAS', 'type' => 2],
-                    ['title' => 'JORN. INCOMPLETA', 'width' => 100, 'type' => 2],
-                    ['title' => 'PERMISO PERSONAL', 'type' => 2],
-                    ['title' => 'INASISTENCIAS/ LSGH', 'type' => 2],
-                    ['title' => 'TOTAL'],
-                    ['title' => 'PAGO EN EXCESO'],
-                    ['title' => 'TOTAL DSCTO. QUE AFECTAN LA BASE IMPONIBLE (A)', 'width' => 120, 'backgroundColor' => '#badefd', 'color' => 'black']
-                ]
-            ],
-            ['title' => 'BASE DE CALCULO CONTRIBUCIONES'],
-            ['title' => 'BASE DE CALCULO  4TA CATG.', 'backgroundColor' => '#5f2da3'],
-            [
-                'title' => 'DESCUENTOS DE LEY',
-                'backgroundColor' => '#20ab29',
-                'children' => [
-                    ['title' => 'SUSPENSIÓN 4TA SI/NO'],
-                    ['title' => 'RETENCION DE 4TA', 'type' => 3],
-                    ['title' => 'APORTE ONP', 'type' => 3],
-                    ['title' => 'APORTE OBLIGATORIO AFP 10%', 'width' => 100, 'type' => 3],
-                    ['title' => 'APORTE SEGURO AFP', 'type' => 3],
-                    ['title' => 'APORTE COMISION AFP', 'type' => 3],
-                    ['title' => 'TOTAL DESCUENTOS DE LEY (B)', 'backgroundColor' => '#badefd', 'color' => 'black']
-                ]
-            ],
-            ['title' => 'SI/NO'],
-            ['title' => 'APORTE SOLID. POR  CONV. COLECTIVO 0.5%', 'width' => 100],
-            [
-                'title' => 'OTROS DESCUENTOS',
-                'backgroundColor' => '#20ab29',
-                'children' => [
-                    ['title' => 'OTROS COOPAC SAN MIGUEL', 'width' => 100],
-                    ['title' => 'ESSALUD + VIDA'],
-                    ['title' => 'JUDICIAL / COACTIVO'],
-                    ['title' => 'TOTAL OTROS DESCUENTOS (C)', 'width' => 100, 'backgroundColor' => '#badefd', 'color' => 'black'],
-                    ['title' => 'TOTAL DESCUENTOS II = (A + B + C)', 'width' => 100, 'backgroundColor' => '#badefd', 'color' => 'black']
-                ]
-            ],
-            ['title' => 'AGUINALDO', 'width' => 90],
-            ['title' => 'NETO A PAGAR (I) - (II)', 'width' => 100, 'backgroundColor' => '#badefd', 'color' => 'black'],
-            ['title' => 'ESSALUD CAS']
-        ];
+
         $headers = [
             ['title' => 'NOMBRE COMPLETO', 'width' => 200, 'index' => 'fullName'],
             ['title' => 'DIAS LABORADOS', 'width' => 100],
@@ -240,11 +249,23 @@ class PayrollRestController extends Controller
                 'children' => $aportaciones
             ]
         ];
+        $params = $wpdb->get_results($wpdb->prepare("
+    SELECT concept_id, amount
+    FROM rem_payroll_amount
+    WHERE canceled = 0
+      AND ini_date <= %s
+      AND (end_date IS NULL OR end_date >= %s)
+", "$year-$month-01", "$year-$month-01"));
+
+        $amountMap = [];
+        foreach ($params as $p) {
+            $amountMap[$p->concept_id] = $p->amount;
+        }
+        $diasMes = cal_days_in_month(CAL_GREGORIAN, $month, $year);
         $headers = $this->assignLeafIndexes($headers);
 
 
-        $year = $request->get_param('year');
-        $month = $request->get_param('month');
+
 
         $payroll = $this->getOrCreatePayroll($year, $month, 1);
 
@@ -260,60 +281,27 @@ class PayrollRestController extends Controller
             )
         );
         $items = [];
+
         foreach ($employees as $employee) {
+
+            $workedDays = $employee->worked_days ?? 30;
+
+            $values = [];
+            $values[] = $workedDays; // DIAS LABORADOS
+
+            foreach ($concepts as $c) {
+
+                $baseAmount = $amountMap[$c->id] ?? 0;
+
+                // proporcional por días
+                $calculated = round(($baseAmount * $workedDays) / $diasMes, 2);
+
+                $values[] = $calculated;
+            }
+
             $items[] = [
                 'fullName' => $employee->fullName,
-                'values' => [
-                    30,
-                    2500,
-                    null,
-                    64.19,
-                    null,
-                    50,
-                    null,
-                    50,
-                    null,
-                    100,
-                    null,
-                    100,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    8,
-                    null,
-                    null,
-                    7,
-                    88,
-                    9,
-                    736.42,
-                    100.89,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null
-                ]
+                'values'   => $values
             ];
         }
         $wpdb->select($original_db);
