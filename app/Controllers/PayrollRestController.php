@@ -261,9 +261,8 @@ class PayrollRestController extends Controller
             ],
 
             [
-                'title' => 'DESCUENTOS',
-                'backgroundColor' => '#20ab29',
-                'children' => $descuentos
+                'title' => 'BASE DE CALCULO CONTRIBUCIONES', ///este es calculado
+                'backgroundColor' => '#20a2ab'
             ],
 
             [
@@ -361,6 +360,11 @@ class PayrollRestController extends Controller
 
             //debe caer en TOTAL DSCTO. QUE AFECTAN LA BASE IMPONIBLE (A)
             $values[] = $totalEgresos;
+
+            //BASE DE CALCULO CONTRIBUCIONES
+            $values[] = $totalIngresos - $totalEgresos;
+
+
 
             $items[] = [
                 'fullName' => $employee->fullName,
