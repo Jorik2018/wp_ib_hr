@@ -263,7 +263,7 @@ class PayrollRestController extends Controller
         foreach ($params as $p) {
             $amountMap[$p->concept_id] = $p->amount;
         }
-        $diasMes = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+        $diasMes = 30;//cal_days_in_month(CAL_GREGORIAN, $month, $year);
         $headers = $this->assignLeafIndexes($headers);
         $ingresoConceptIndexes = [];
 
