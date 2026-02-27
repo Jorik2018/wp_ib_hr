@@ -235,7 +235,7 @@ class PayrollRestController extends Controller
 
             [
                 'title' => 'INGRESOS',
-                'backgroundColor' => '#20ab29',
+                'backgroundColor' => '#fbff00',
                 'children' => $ingresos
             ],
 
@@ -309,7 +309,7 @@ class PayrollRestController extends Controller
             foreach ($concepts as $c) {
 
                 $baseAmount = $amountMap[$c->id] ?? 0;
-                
+
                 if ($c->type_id == 1) {
                     $calculated = round(($baseAmount * $workedDays) / $diasMes, 2);
                     $totalIngresos += $calculated;
