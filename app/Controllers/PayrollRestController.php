@@ -424,8 +424,19 @@ class PayrollRestController extends Controller
             $values[] = $descuentos_ley;
 
             //APORTE SOLID. POR  CONV. COLECTIVO
-            $values[] = $base_calculo_contribuciones*0.08;
+            $x = $base_calculo_contribuciones*0.005;
+            $values[] = $x;
 
+            $otros_descuentos = $x;
+
+            foreach ($concepts as $c) {
+                $baseAmount = $amountMap[$c->id] ?? 0;
+                if ($c->type_id == 6) {
+                    $otros_descuentos += $baseAmount;
+                    $values[] = $baseAmount;
+                }
+            }
+            $values[] = $otros_descuentos;
 
             $items[] = [
                 'fullName' => $employee->fullName,
