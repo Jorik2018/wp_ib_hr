@@ -364,10 +364,10 @@ class PayrollRestController extends Controller
             $values[] = 0;// $totalEgresos;
 
             //debe caer en TOTAL DSCTO. QUE AFECTAN LA BASE IMPONIBLE (A)
-            $values[] = $totalEgresos;
+            $values[] = 0;//$totalEgresos;
 
             //BASE DE CALCULO CONTRIBUCIONES
-            $values[] = $totalIngresos - $totalEgresos;
+            $values[] = 0;//$totalIngresos - $totalEgresos;
 
 
 
