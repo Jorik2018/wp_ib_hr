@@ -348,7 +348,7 @@ class PayrollRestController extends Controller
             }
 
             // insertar TOTAL INGRESOS justo después de los ingresos
-            $values[] = $totalIngresos+100000;
+            $values[] = $totalIngresos;
             
             $totalEgresos = 0;
 
@@ -361,13 +361,13 @@ class PayrollRestController extends Controller
             }
 
             //Total
-            $values[] = 0;// $totalEgresos;
+            $values[] = $totalEgresos;
 
             //debe caer en TOTAL DSCTO. QUE AFECTAN LA BASE IMPONIBLE (A)
-            $values[] = 0;//$totalEgresos;
+            $values[] = $totalEgresos;
 
             //BASE DE CALCULO CONTRIBUCIONES
-            $values[] = 0;//$totalIngresos - $totalEgresos;
+            $values[] = $totalIngresos - $totalEgresos;
 
 
 
