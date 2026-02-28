@@ -348,7 +348,7 @@ class PayrollRestController extends Controller
             }
 
             // insertar TOTAL INGRESOS justo después de los ingresos
-            $values[] = $totalIngresos;
+            $values[] = $totalIngresos+100000;
             
             $totalEgresos = 0;
 
