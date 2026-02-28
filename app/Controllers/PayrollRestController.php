@@ -264,7 +264,11 @@ class PayrollRestController extends Controller
                 'title' => 'BASE DE CALCULO CONTRIBUCIONES', ///este es calculado
                 'backgroundColor' => '#20a2ab'
             ],
-
+            [
+                'title' => 'BASE DE CALCULO  4TA CATG.', ///este es calculado
+                'backgroundColor' => '#ad1805',
+                'color' => 'white'
+            ],
             [
                 'title' => 'APORTES',
                 'backgroundColor' => '#20ab29',
@@ -350,12 +354,13 @@ class PayrollRestController extends Controller
                 $amount = $amountMap[$c->id] ?? 0;
 
                 if ($c->type_id == 3){
-                    $totalEngresos += $amount;
+                    $totalEgresos += $amount;
                 }
 
                 $values[] = $amount;
             }
 
+            //Total
             $values[] = $totalEgresos;
 
             //debe caer en TOTAL DSCTO. QUE AFECTAN LA BASE IMPONIBLE (A)
