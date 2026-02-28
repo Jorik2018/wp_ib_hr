@@ -278,11 +278,14 @@ class PayrollRestController extends Controller
                 'backgroundColor' => '#5f10c7',
                 'color' => 'white'
             ],
-                        [
+            [
                 'title' => 'DESCUENTOS DE LEY',
                 'backgroundColor' => '#54e05e',
                 'color' => 'black',
                 'children' => $descuentos
+            ],
+            [
+                'title' => 'APORTE SOLID. POR  CONV. COLECTIVO 0.5%',
             ],
             [
                 'title' => 'APORTES',
