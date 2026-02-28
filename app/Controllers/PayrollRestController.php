@@ -338,9 +338,7 @@ class PayrollRestController extends Controller
             $totalIngresos = 0;
 
             foreach ($concepts as $c) {
-
                 $baseAmount = $amountMap[$c->id] ?? 0;
-
                 if ($c->type_id == 1) {
                     $calculated = round(($baseAmount * $workedDays) / $diasMes, 2);
                     $totalIngresos += $calculated;
@@ -350,8 +348,6 @@ class PayrollRestController extends Controller
                     $totalIngresos += $calculated;
                     $values[] = $calculated;
                 }
-
-                
             }
 
             // insertar TOTAL INGRESOS justo después de los ingresos
@@ -382,6 +378,18 @@ class PayrollRestController extends Controller
 
             //APORTE SOLID. POR  CONV. COLECTIVO
             $values[] = $base_calculo_contribuciones*0.08;
+
+            $descuentos_ley = 0;
+
+            foreach ($concepts as $c) {
+                $baseAmount = $amountMap[$c->id] ?? 0;
+                if ($c->type_id == 4) {
+                    $calculated = round($baseAmount * $base_calculo_contribuciones, 2);
+                    $descuentos_ley += $calculated;
+                    $values[] = $calculated;
+                }
+            }
+
 
             $items[] = [
                 'fullName' => $employee->fullName,
