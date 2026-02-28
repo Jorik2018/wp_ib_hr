@@ -262,11 +262,12 @@ class PayrollRestController extends Controller
 
             [
                 'title' => 'BASE DE CALCULO CONTRIBUCIONES', ///este es calculado
-                'backgroundColor' => '#20a2ab'
+                'backgroundColor' => '#ad1805',
+                'color' => 'white'
             ],
             [
                 'title' => 'BASE DE CALCULO  4TA CATG.', ///este es calculado
-                'backgroundColor' => '#ad1805',
+                'backgroundColor' => '#5f10c7',
                 'color' => 'white'
             ],
             [
