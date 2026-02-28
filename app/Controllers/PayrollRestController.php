@@ -424,7 +424,7 @@ class PayrollRestController extends Controller
             $values[] = $descuentos_ley;
 
             //APORTE SOLID. POR  CONV. COLECTIVO
-            $x = $base_calculo_contribuciones*0.005;
+            $x = round($base_calculo_contribuciones*0.005, 2);
             $values[] = $x;
 
             $otros_descuentos = $x;
