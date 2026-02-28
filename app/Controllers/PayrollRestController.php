@@ -329,7 +329,6 @@ class PayrollRestController extends Controller
             $values[] = $workedDays;
 
             $totalIngresos = 0;
-            $totalEgresos = 0;
 
             foreach ($concepts as $c) {
 
@@ -350,17 +349,15 @@ class PayrollRestController extends Controller
 
             // insertar TOTAL INGRESOS justo después de los ingresos
             $values[] = $totalIngresos;
+            
+            $totalEgresos = 0;
 
             foreach ($concepts as $c) {
-
-                $amount = $amountMap[$c->id] ?? 0;
-
                 if ($c->type_id == 3){
+                    $amount = $amountMap[$c->id] ?? 0;
                     $totalEgresos += $amount;
                     $values[] = $amount;
                 }
-
-                
             }
 
             //Total
