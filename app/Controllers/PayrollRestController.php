@@ -241,6 +241,14 @@ class PayrollRestController extends Controller
             'color' => 'black'
         ];
 
+        $descuentos[] = [
+            'title' => 'TOTAL DESCUENTOS DE LEY (B)',
+            'is_total_ingresos' => true,
+            'backgroundColor' => '#badefd',
+            'color' => 'black'
+        ];
+        
+
         $headers = [
             ['title' => 'NOMBRE COMPLETO', 'width' => 200, 'index' => 'fullName'],
             ['title' => 'DIAS LABORADOS', 'width' => 100],
