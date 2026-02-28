@@ -397,6 +397,10 @@ class PayrollRestController extends Controller
 
             $values[] = $descuentos_ley;
 
+            //APORTE SOLID. POR  CONV. COLECTIVO
+            $values[] = $base_calculo_contribuciones*0.08;
+
+
             $items[] = [
                 'fullName' => $employee->fullName,
                 'values'   => $values
