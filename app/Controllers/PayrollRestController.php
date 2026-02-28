@@ -370,7 +370,8 @@ class PayrollRestController extends Controller
             //BASE DE CALCULO CONTRIBUCIONES
             $values[] = $totalIngresos - $totalEgresos;
 
-
+            //BASE DE CALCULO  4TA CATG.
+            $values[] = $totalIngresos - $totalEgresos;
 
             $items[] = [
                 'fullName' => $employee->fullName,
