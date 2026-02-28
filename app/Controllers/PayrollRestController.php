@@ -204,6 +204,7 @@ class PayrollRestController extends Controller
         $ingresos = [];
         $egresos = [];
         $descuentos = [];
+        $otros_descuentos = [];
         $aportaciones = [];
         foreach ($concepts as $c) {
 
@@ -219,6 +220,9 @@ class PayrollRestController extends Controller
                 $egresos[] = $item;
             } elseif ($c->type_id == 4) {
                 $descuentos[] = $item;
+            } elseif ($c->type_id == 6) {
+                $otros_descuentos[] = $item;
+            
             } else {
                 $aportaciones[] = $item;
             }
@@ -247,7 +251,20 @@ class PayrollRestController extends Controller
             'backgroundColor' => '#badefd',
             'color' => 'black'
         ];
+
+        $otros_descuentos[] = [
+            'title' => 'TOTAL OTROS DESCUENTOS (C)',
+            'is_total_ingresos' => true,
+            'backgroundColor' => '#badefd',
+            'color' => 'black'
+        ];
         
+        $otros_descuentos[] = [
+            'title' => 'TOTAL DESCUENTOS II = (A + B + C)',
+            'is_total_ingresos' => true,
+            'backgroundColor' => '#badefd',
+            'color' => 'black'
+        ];
 
         $headers = [
             ['title' => 'NOMBRE COMPLETO', 'width' => 200, 'index' => 'fullName'],
@@ -286,6 +303,12 @@ class PayrollRestController extends Controller
             ],
             [
                 'title' => 'APORTE SOLID. POR  CONV. COLECTIVO 0.5%',
+            ],
+            [
+                'title' => 'OTROS DESCUENTOS',
+                'backgroundColor' => '#54e05e',
+                'color' => 'black',
+                'children' => $otros_descuentos
             ],
             [
                 'title' => 'APORTES',
