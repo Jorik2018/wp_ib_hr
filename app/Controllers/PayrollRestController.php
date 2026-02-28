@@ -232,8 +232,7 @@ class PayrollRestController extends Controller
         ];
         $egresos[] = [
             'title' => 'TOTAL',
-            'is_total_ingresos' => true,
-            'color' => 'black'
+            'is_total_ingresos' => true
         ];
         $egresos[] = [
             'title' => 'TOTAL DSCTO. QUE AFECTAN LA BASE IMPONIBLE (A)',
