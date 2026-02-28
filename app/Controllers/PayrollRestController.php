@@ -262,7 +262,7 @@ class PayrollRestController extends Controller
             ],
             [
                 'title' => 'EGRESOS QUE AFECTAN LA BASE IMPONIBLE',
-                'backgroundColor' => '#20ab29',
+                'backgroundColor' => '#54e05e',
                 'color' => 'black',
                 'width' => 110,
                 'children' => $egresos
@@ -280,13 +280,13 @@ class PayrollRestController extends Controller
             ],
                         [
                 'title' => 'DESCUENTOS DE LEY',
-                'backgroundColor' => '#20ab29',
+                'backgroundColor' => '#54e05e',
                 'color' => 'black',
                 'children' => $descuentos
             ],
             [
                 'title' => 'APORTES',
-                'backgroundColor' => '#20ab29',
+                'backgroundColor' => '#54e05e',
                 'children' => $aportaciones
             ]
         ];
@@ -384,9 +384,6 @@ class PayrollRestController extends Controller
             //BASE DE CALCULO  4TA CATG.
             $values[] = $totalIngresos - $totalEgresos;
 
-            //APORTE SOLID. POR  CONV. COLECTIVO
-            $values[] = $base_calculo_contribuciones*0.08;
-
             $descuentos_ley = 0;
 
             foreach ($concepts as $c) {
@@ -398,6 +395,7 @@ class PayrollRestController extends Controller
                 }
             }
 
+            $values[] = $descuentos_ley;
 
             $items[] = [
                 'fullName' => $employee->fullName,
