@@ -338,12 +338,14 @@ class PayrollRestController extends Controller
                 if ($c->type_id == 1) {
                     $calculated = round(($baseAmount * $workedDays) / $diasMes, 2);
                     $totalIngresos += $calculated;
+                    $values[] = $calculated;
                 }else if($c->type_id == 2){
                     $calculated = $baseAmount;
                     $totalIngresos += $calculated;
+                    $values[] = $calculated;
                 }
 
-                $values[] = $calculated;
+                
             }
 
             // insertar TOTAL INGRESOS justo después de los ingresos
@@ -355,9 +357,10 @@ class PayrollRestController extends Controller
 
                 if ($c->type_id == 3){
                     $totalEgresos += $amount;
+                    $values[] = $amount;
                 }
 
-                $values[] = $amount;
+                
             }
 
             //Total
