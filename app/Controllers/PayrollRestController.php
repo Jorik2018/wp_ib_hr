@@ -438,6 +438,9 @@ class PayrollRestController extends Controller
             }
             $values[] = $otros_descuentos;
 
+            $values[] = $totalEgresos + $descuentos_ley + $otros_descuentos;
+
+
             $items[] = [
                 'fullName' => $employee->fullName,
                 'values'   => $values
