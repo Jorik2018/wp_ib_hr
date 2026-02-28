@@ -270,6 +270,12 @@ class PayrollRestController extends Controller
                 'backgroundColor' => '#5f10c7',
                 'color' => 'white'
             ],
+                        [
+                'title' => 'DESCUENTOS DE LEY',
+                'backgroundColor' => '#20ab29',
+                'color' => 'black',
+                'children' => $descuentos
+            ],
             [
                 'title' => 'APORTES',
                 'backgroundColor' => '#20ab29',
@@ -368,10 +374,14 @@ class PayrollRestController extends Controller
             $values[] = $totalEgresos;
 
             //BASE DE CALCULO CONTRIBUCIONES
-            $values[] = $totalIngresos - $totalEgresos;
+            $base_calculo_contribuciones = $totalIngresos - $totalEgresos;
+            $values[] = $base_calculo_contribuciones;
 
             //BASE DE CALCULO  4TA CATG.
             $values[] = $totalIngresos - $totalEgresos;
+
+            //APORTE SOLID. POR  CONV. COLECTIVO
+            $values[] = $base_calculo_contribuciones*0.08;
 
             $items[] = [
                 'fullName' => $employee->fullName,
