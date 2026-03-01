@@ -5,7 +5,7 @@ namespace IB\cv\Controllers;
 use WPMVC\MVC\Controller;
 use function IB\directory\Util\remove;
 use function IB\directory\Util\cfield;
-use function IB\directory\Util\camelCase;
+use function IB\directory\Util\get_param;
 use function IB\directory\Util\cdfield;
 use function IB\directory\Util\t_error;
 
@@ -37,6 +37,11 @@ class PayrollRestController extends Controller
         register_rest_route('api/payroll', 'period', array(
             'methods' => 'GET',
             'callback' => array($this, 'period')
+        ));
+
+        register_rest_route('api/payroll', 'add-person', array(
+            'methods' => 'POST',
+            'callback' => array($this, 'add_person')
         ));
     }
 
@@ -184,14 +189,67 @@ class PayrollRestController extends Controller
         return $headers;
     }
 
+    function add_person($request)
+    {
+        global $wpdb;
+
+        // Obtener params compatible WP_REST_Request o array
+        $o = get_param($request);
+
+        $original_db = $wpdb->dbname;
+        $wpdb->select(get_option("db_ofis"));
+
+        $current_user = wp_get_current_user();
+
+        $persons = $o['persons'] ?? [];
+        $payroll_type_id = $o['payrollTypeId'] ?? 1;
+        $beneficiary = $o['beneficiary'];
+        $benefit_type_id = $o['benefit_type_id'];
+
+        if (!is_array($persons) || empty($persons)) {
+            $wpdb->select($original_db);
+            return t_error('No persons provided');
+        }
+
+        $inserted = [];
+
+        foreach ($persons as $person) {
+
+            if (!$person) continue;
+
+            $data = [
+                'payroll_type_id' => $payroll_type_id,
+                'people_id'       => $person->id,
+                'beneficiary'     => $beneficiary,
+                'benefit_type_id' => $benefit_type_id
+            ];
+
+            $ok = $wpdb->insert('rem_payroll_type_people', $data);
+
+            if ($ok === false) {
+                $wpdb->select($original_db);
+                return t_error('Insert failed');
+            }
+
+            $inserted[] = $person->id;
+        }
+
+        $wpdb->select($original_db);
+
+        return [
+            'inserted' => $inserted,
+            'count'    => count($inserted)
+        ];
+    }
+
     function obtenerNomina($request)
     {
         global $wpdb;
         $original_db = $wpdb->dbname;
         $db_erp = get_option("db_ofis");
         $wpdb->select($db_erp);
-        $year = $request->get_param('year');
-        $month = $request->get_param('month');
+        $year = get_param($request, 'year');
+        $month = get_param($request, 'month');
         $concepts = $wpdb->get_results($wpdb->prepare("
     SELECT DISTINCT c.id, c.name, c.pdt_code, c.type_id, c.weight
     FROM rem_payroll_amount a
@@ -222,7 +280,6 @@ class PayrollRestController extends Controller
                 $descuentos[] = $item;
             } elseif ($c->type_id == 6) {
                 $otros_descuentos[] = $item;
-            
             } else {
                 $aportaciones[] = $item;
             }
@@ -258,7 +315,7 @@ class PayrollRestController extends Controller
             'backgroundColor' => '#badefd',
             'color' => 'black'
         ];
-        
+
         $otros_descuentos[] = [
             'title' => 'TOTAL DESCUENTOS II = (A + B + C)',
             'is_total_ingresos' => true,
@@ -342,7 +399,7 @@ class PayrollRestController extends Controller
             }
         }
 
-        
+
         $payroll = $this->getOrCreatePayroll($year, $month, 1);
 
         // Obtener nombres reales
@@ -368,7 +425,7 @@ class PayrollRestController extends Controller
         );
         $ingresoConceptIds = [];
         foreach ($concepts as $c) {
-            if ($c->type_id == 1||$c->type_id == 2) {
+            if ($c->type_id == 1 || $c->type_id == 2) {
                 $ingresoConceptIds[] = $c->id;
             }
         }
@@ -388,7 +445,7 @@ class PayrollRestController extends Controller
                     $calculated = round(($baseAmount * $workedDays) / $diasMes, 2);
                     $totalIngresos += $calculated;
                     $values[] = $calculated;
-                }else if($c->type_id == 2){
+                } else if ($c->type_id == 2) {
                     $calculated = $baseAmount;
                     $totalIngresos += $calculated;
                     $values[] = $calculated;
@@ -397,11 +454,11 @@ class PayrollRestController extends Controller
 
             // insertar TOTAL INGRESOS justo después de los ingresos
             $values[] = $totalIngresos;
-            
+
             $totalEgresos = 0;
 
             foreach ($concepts as $c) {
-                if ($c->type_id == 3){
+                if ($c->type_id == 3) {
                     $amount = $amountMap[$c->id] ?? 0;
                     $totalEgresos += $amount;
                     $values[] = $amount;
@@ -435,7 +492,7 @@ class PayrollRestController extends Controller
             $values[] = $descuentos_ley;
 
             //APORTE SOLID. POR  CONV. COLECTIVO
-            $x = round($base_calculo_contribuciones*0.005, 2);
+            $x = round($base_calculo_contribuciones * 0.005, 2);
             $values[] = $x;
 
             $otros_descuentos = $x;
@@ -712,11 +769,11 @@ class PayrollRestController extends Controller
         $edb = 2;
         $from = $request['from'];
         $to = $request['to'];
-        $numeroDNI = method_exists($request, 'get_param') ? $request->get_param('numeroDNI') : $request['numeroDNI'];
-        $fullName = method_exists($request, 'get_param') ? $request->get_param('fullName') : $request['fullName'];
-        $red = method_exists($request, 'get_param') ? $request->get_param('red') : $request['red'];
-        $microred = method_exists($request, 'get_param') ? $request->get_param('microred') : $request['microred'];
-        $microredName = method_exists($request, 'get_param') ? $request->get_param('microredName') : $request['microredName'];
+        $numeroDNI = get_param($request, 'numeroDNI');
+        $fullName = get_param($request, 'fullName');
+        $red = get_param($request, 'red');
+        $microred = get_param($request, 'microred');
+        $microredName = get_param($request, 'microredName');
         $current_user = wp_get_current_user();
         $wpdb->last_error  = '';
 
@@ -752,7 +809,7 @@ class PayrollRestController extends Controller
         global $wpdb;
         $from = $request['from'];
         $to = $request['to'];
-        $gestanteId = method_exists($request, 'get_param') ? $request->get_param('gestanteId') : $request['gestanteId'];
+        $gestanteId = get_param($request, 'gestanteId');
         $current_user = wp_get_current_user();
         $wpdb->last_error  = '';
         $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS * FROM ds_gestante_visita d Where canceled=0 " . ($gestanteId ? "AND gestante_id=$gestanteId" : "") . " ORDER BY id desc " . ($to ? "LIMIT " . $from . ', ' . $to : ""), ARRAY_A);
@@ -778,7 +835,7 @@ class PayrollRestController extends Controller
     function visit_post(&$request)
     {
         global $wpdb;
-        $o = method_exists($request, 'get_params') ? $request->get_params() : $request;
+        $o = get_param($request);
         $current_user = wp_get_current_user();
         cdfield($o, 'fechaVisita');
 

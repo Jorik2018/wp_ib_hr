@@ -3,12 +3,10 @@
 namespace IB\cv\Controllers;
 
 use WPMVC\MVC\Controller;
-use IB\cv\Util;
-use function IB\directory\Util\remove;
-use function IB\directory\Util\cfield;
-use function IB\directory\Util\camelCase;
-use function IB\directory\Util\cdfield;
 use function IB\directory\Util\t_error;
+use function IB\directory\Util\get_param;
+use function IB\directory\Util\cfield;
+use function IB\directory\Util\toCamelCase;
 
 class RiskTypeRestController extends Controller
 {
@@ -98,8 +96,8 @@ class RiskTypeRestController extends Controller
         $o['fullName'] = $people['fullName'];
         $o['code'] = $people['code'];
         $controller = new ExperienceRestController(array());
-        $o['experience'] = Util\toCamelCase($controller->pag(array('from' => 0, 'to' => 0, 'employee_id' => $o['id'])));
-        return Util\toCamelCase($o);
+        $o['experience'] = toCamelCase($controller->pag(array('from' => 0, 'to' => 0, 'employee_id' => $o['id'])));
+        return toCamelCase($o);
     }
 
     public function pag($request)
@@ -107,7 +105,7 @@ class RiskTypeRestController extends Controller
         global $wpdb;
         $from = $request['from'];
         $to = $request['to'];
-        $query = method_exists($request, 'get_param') ? $request->get_param('query') : $request['query'];
+        $query = get_param($request, 'query');
         $current_user = wp_get_current_user();
         $wpdb->last_error = '';
         $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS em.* FROM grupoipe_erp.risk_type em " .
@@ -116,7 +114,7 @@ class RiskTypeRestController extends Controller
 
 
         if ($wpdb->last_error) return t_error();
-        return $to > 0 ? array('data' => Util\toCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
+        return $to > 0 ? array('data' => toCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
     }
 
     public function delete($data)

@@ -3,12 +3,12 @@
 namespace IB\cv\Controllers;
 
 use WPMVC\MVC\Controller;
-use IB\cv\Util;
-use function IB\directory\Util\remove;
+
 use function IB\directory\Util\cfield;
-use function IB\directory\Util\camelCase;
 use function IB\directory\Util\cdfield;
 use function IB\directory\Util\t_error;
+use function IB\directory\Util\get_param;
+use function IB\directory\Util\toCamelCase;
 
 class EmployeeRestController extends Controller
 {
@@ -50,7 +50,7 @@ class EmployeeRestController extends Controller
     {
         global $wpdb;
         $original_db = $wpdb->dbname;
-        $o = method_exists($request, 'get_params') ? $request->get_params() : $request;
+        $o = get_param($request);
         $wpdb->select('grupoipe_erp');
         cfield($o, 'employeeId', 'employee_id');
         cfield($o, 'startDate', 'start_date');
@@ -72,7 +72,7 @@ class EmployeeRestController extends Controller
     public function post($request)
     {
         global $wpdb;
-        $o = method_exists($request, 'get_params') ? $request->get_params() : $request;
+        $o = get_param($request);
         $current_user = wp_get_current_user();
         cfield($o, 'firstSurname', 'first_surname');
         cfield($o, 'lastSurname', 'last_surname');
@@ -139,8 +139,8 @@ class EmployeeRestController extends Controller
         $o['training'] = Util\toCamelCase($controller->pag(array('from' => 0, 'to' => 0, 'employee_id' => $o['id'])));
         */
         $controller = new ExperienceRestController(array());
-        $o['experience'] = Util\toCamelCase($controller->pag(array('from' => 0, 'to' => 0, 'employee_id' => $o['id'])));
-        return Util\toCamelCase($o);
+        $o['experience'] = toCamelCase($controller->pag(array('from' => 0, 'to' => 0, 'employee_id' => $o['id'])));
+        return toCamelCase($o);
     }
 
 
@@ -149,8 +149,8 @@ class EmployeeRestController extends Controller
         global $wpdb;
         $from = $request['from'];
         $to = $request['to'];
-        $query = method_exists($request, 'get_param') ? $request->get_param('query') : $request['query'];
-        $type = method_exists($request, 'get_param') ? $request->get_param('type') : $request['type'];
+        $query = get_param($request, 'query');
+        $type = get_param($request, 'type');
         $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS em.* FROM grupoipe_erp.rem_concept em " .
             "WHERE 1=1 " . (isset($query) ? " AND (em.name LIKE '%$query%') " : "") .
          (isset($type) ? " AND (em.type_id = $type) " : "") .
@@ -159,7 +159,7 @@ class EmployeeRestController extends Controller
 
 
         if ($wpdb->last_error) return t_error();
-        return $to > 0 ? array('data' => Util\toCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
+        return $to > 0 ? array('data' => toCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
     }
 
     public function pag($request)
@@ -167,7 +167,7 @@ class EmployeeRestController extends Controller
         global $wpdb;
         $from = $request['from'];
         $to = $request['to'];
-        $query = method_exists($request, 'get_param') ? $request->get_param('query') : $request['query'];
+        $query = get_param($request, 'query');
         $current_user = wp_get_current_user();
         $wpdb->last_error = '';
         /*$results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS o.*,CONCAT(um.meta_value,' ',umln.meta_value) fullName FROM hr_employee o LEFT OUTER JOIN $wpdb->usermeta um ON um.user_id=o.people_id AND um.meta_key='first_name' LEFT OUTER JOIN $wpdb->usermeta umln ON umln.user_id=o.people_id AND umln.meta_key='last_name'" .
@@ -180,7 +180,7 @@ class EmployeeRestController extends Controller
 
 
         if ($wpdb->last_error) return t_error();
-        return $to > 0 ? array('data' => Util\toCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
+        return $to > 0 ? array('data' => toCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
     }
 
 

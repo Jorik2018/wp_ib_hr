@@ -3,57 +3,60 @@
 namespace IB\cv\Controllers;
 
 use WPMVC\MVC\Controller;
-use IB\cv\Util;
-require_once __DIR__ . '/../Util/Utils.php';
+use function IB\directory\Util\get_param;
+use function IB\directory\Util\cfield;
+use function IB\directory\Util\remove;
+use function IB\directory\Util\t_error;
+use function IB\directory\Util\toCamelCase;
 
 class StudyRestController extends Controller
 {
 
     public function init()
     {
- 
-        register_rest_route( 'api/hr','/study', array(
+
+        register_rest_route('api/hr', '/study', array(
             'methods' => 'POST',
-            'callback' => array($this,'post')
+            'callback' => array($this, 'post')
         ));
 
-        register_rest_route( 'api/hr','/study/(?P<from>\d+)/(?P<to>\d+)', array(
+        register_rest_route('api/hr', '/study/(?P<from>\d+)/(?P<to>\d+)', array(
             'methods' => 'GET',
-            'callback' => array($this,'pag')
+            'callback' => array($this, 'pag')
         ));
 
-        register_rest_route( 'api/hr','/study/(?P<id>\d+)', array(
+        register_rest_route('api/hr', '/study/(?P<id>\d+)', array(
             'methods' => 'GET',
-            'callback' => array($this,'get')
+            'callback' => array($this, 'get')
         ));
 
-        register_rest_route( 'api/hr', '/study/(?P<id>)',array(
+        register_rest_route('api/hr', '/study/(?P<id>)', array(
             'methods' => 'DELETE',
-            'callback' => array($this,'delete')
+            'callback' => array($this, 'delete')
         ));
-
     }
 
-    public function post($request){
+    public function post($request)
+    {
         global $wpdb;
         $o = method_exists($request, 'get_params') ? $request->get_params() : $request;
         $current_user = wp_get_current_user();
         cfield($o, 'employeeId', 'employee_id');
         cfield($o, 'inProgress', 'in_progress');
-		remove($o,'canceled');
-        remove($o,'uidInsert');
-        remove($o,'userInsert');
-        remove($o,'insertDate');
-        remove($o,'uidUpdate');
-        remove($o,'userUpdate');
-        remove($o,'updateDate');
-		remove($o,'people');
-        remove($o,'uidDelete');
-        remove($o,'userDelete');
-        remove($o,'deleteDate');
+        remove($o, 'canceled');
+        remove($o, 'uidInsert');
+        remove($o, 'userInsert');
+        remove($o, 'insertDate');
+        remove($o, 'uidUpdate');
+        remove($o, 'userUpdate');
+        remove($o, 'updateDate');
+        remove($o, 'people');
+        remove($o, 'uidDelete');
+        remove($o, 'userDelete');
+        remove($o, 'deleteDate');
         cfield($o, 'expeditionDate', 'expedition_date');
-        if(isset($o['attachment'])&&is_array($o['attachment'])){
-            $o['attachment']=$o['attachment']['tempFile'];
+        if (isset($o['attachment']) && is_array($o['attachment'])) {
+            $o['attachment'] = $o['attachment']['tempFile'];
         }
         $tmpId = remove($o, 'tmpId');
         unset($o['synchronized']);
@@ -65,7 +68,7 @@ class StudyRestController extends Controller
             $updated = $wpdb->update('hr_study', $o, array('id' => $o['id']));
         } else {
             unset($o['id']);
-			
+
             $o['uid_insert'] = $current_user->ID;
             $o['user_insert'] = $current_user->user_login;
             $o['insert_date'] = current_time('mysql', 1);
@@ -79,42 +82,45 @@ class StudyRestController extends Controller
             $o['tmpId'] = $tmpId;
             $o['synchronized'] = 1;
         }
-        return Util\toCamelCase($o);
+        return toCamelCase($o);
     }
 
-    public function get($request){    
+    public function get($request)
+    {
         global $wpdb;
         $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM hr_study WHERE id=" . $request['id']), ARRAY_A);
-		$e = $wpdb->get_row($wpdb->prepare("SELECT people_id FROM hr_employee WHERE id=" . $o['employee_id']), ARRAY_A);
-		if(isset($e['people_id'])){
-			$e['people_id']=intval($e['people_id']);
-			$o['people']=array();
-			foreach(array('names'=>'first_name','surnames'=>'last_name') as $key=>$field)
-				$o['people'][$key] = get_user_meta($e['people_id'],$field, true);
-		}
+        $e = $wpdb->get_row($wpdb->prepare("SELECT people_id FROM hr_employee WHERE id=" . $o['employee_id']), ARRAY_A);
+        if (isset($e['people_id'])) {
+            $e['people_id'] = intval($e['people_id']);
+            $o['people'] = array();
+            foreach (array('names' => 'first_name', 'surnames' => 'last_name') as $key => $field)
+                $o['people'][$key] = get_user_meta($e['people_id'], $field, true);
+        }
         if ($wpdb->last_error) return t_error();
-        return Util\toCamelCase($o);
+        return toCamelCase($o);
     }
 
-    public function pag($request){
+    public function pag($request)
+    {
         global $wpdb;
         $from = $request['from'];
         $to = $request['to'];
-        $people_id = method_exists($request, 'get_param') ? $request->get_param('people_id') : $request['people_id'];
-        $employee_id = method_exists($request, 'get_param') ? $request->get_param('employee_id') : $request['employee_id'];
+        $people_id = get_param($request, 'people_id');
+        $employee_id = get_param($request, 'employee_id');
         $current_user = wp_get_current_user();
         $wpdb->last_error = '';
         $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS o.* FROM hr_study o " .
-            "WHERE o.canceled=0 " . (isset($people_id) ? " AND o.people_id=$people_id " : "").
-		    (isset($employee_id) ? " AND o.employee_id=$employee_id " : "").
+            "WHERE o.canceled=0 " . (isset($people_id) ? " AND o.people_id=$people_id " : "") .
+            (isset($employee_id) ? " AND o.employee_id=$employee_id " : "") .
             "ORDER BY o.id DESC " .
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), OBJECT);
-    
+
         if ($wpdb->last_error) return t_error();
-        return $to > 0 ? array('data' => Util\toCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;    
+        return $to > 0 ? array('data' => toCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
     }
 
-    public function delete($data){
+    public function delete($data)
+    {
         global $wpdb;
         $wpdb->query('START TRANSACTION');
         $result = array_map(function ($id) use ($wpdb) {
@@ -128,5 +134,4 @@ class StudyRestController extends Controller
         }
         return $success;
     }
-
 }

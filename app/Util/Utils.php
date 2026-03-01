@@ -184,13 +184,6 @@ function cdfield2(&$row,$key){
     return $row;
 }
 
-function get_param($request, $param_name=null) {
-    if (is_object($request) && method_exists($request, 'get_param')) {
-        return $param_name?$request->get_param($param_name):$param_name;
-    }
-    return $param_name?(isset($request[$param_name]) ? $request[$param_name] : null):$request;
-}
-
 function cfield(&$row,$from,$to){
     if(array_key_exists($from,$row)){
         $row[$to]=$row[$from];

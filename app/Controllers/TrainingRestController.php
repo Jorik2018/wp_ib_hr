@@ -3,8 +3,12 @@
 namespace IB\cv\Controllers;
 
 use WPMVC\MVC\Controller;
-use IB\cv\Util;
-require_once __DIR__ . '/../Util/Utils.php';
+use function IB\directory\Util\get_param;
+use function IB\directory\Util\cfield;
+use function IB\directory\Util\cdfield;
+use function IB\directory\Util\remove;
+use function IB\directory\Util\t_error;
+use function IB\directory\Util\toCamelCase;
 
 class TrainingRestController extends Controller
 {
@@ -80,7 +84,7 @@ class TrainingRestController extends Controller
             $o['tmpId'] = $tmpId;
             $o['synchronized'] = 1;
         }
-        return Util\toCamelCase($o);
+        return toCamelCase($o);
     }
 
     public function get($request){    
@@ -94,15 +98,15 @@ class TrainingRestController extends Controller
 				$o['people'][$key] = get_user_meta($e['people_id'],$field, true);
 		}
         if ($wpdb->last_error) return t_error();
-        return Util\toCamelCase($o);
+        return toCamelCase($o);
     }
 
     public function pag($request){
         global $wpdb;
         $from = $request['from'];
         $to = $request['to'];
-        $people_id = method_exists($request, 'get_param') ? $request->get_param('people_id') : $request['people_id'];
-		$employee_id = method_exists($request, 'get_param') ? $request->get_param('employee_id') : $request['employee_id'];
+        $people_id = get_param($request, 'people_id');
+		$employee_id = get_param($request, 'employee_id');
         $current_user = wp_get_current_user();
         $wpdb->last_error = '';
         $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS o.* FROM hr_training o " .
@@ -112,7 +116,7 @@ class TrainingRestController extends Controller
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), OBJECT);
     
         if ($wpdb->last_error) return t_error();
-        return $to > 0 ? array('data' => Util\toCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;    
+        return $to > 0 ? array('data' => toCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;    
     }
 
     public function delete($data){

@@ -4,11 +4,10 @@ namespace IB\cv\Controllers;
 
 use WPMVC\MVC\Controller;
 use function IB\cv\Util\remove;
-use function IB\cv\Util\cfield;
 use function IB\cv\Util\cdfield;
 use function IB\cv\Util\t_error;
-use function IB\cv\Util\get_param;
-use function IB\cv\Util\toLowerCase;
+use function IB\directory\Util\get_param;
+use function IB\directory\Util\toCamelCase;
 
 class AttentionRestController extends Controller
 {
@@ -42,7 +41,7 @@ class AttentionRestController extends Controller
         $o = method_exists($request, 'get_params') ? $request->get_params() : $request;
         $current_user = wp_get_current_user();
         $original_db = $wpdb->dbname;
-        $erp=get_option('db_erp');
+        $erp = get_option('db_erp');
         $wpdb->select($erp);
         $tmpId = remove($o, 'tmpId');
         unset($o['synchronized']);
@@ -76,18 +75,18 @@ class AttentionRestController extends Controller
     public function get($request)
     {
         global $wpdb;
-        $erp=get_option('db_erp');
+        $erp = get_option('db_erp');
         $o = (array)$wpdb->get_row($wpdb->prepare("SELECT * FROM $erp.matm_atenciones WHERE id=" . $request['id']), OBJECT);
         if ($wpdb->last_error) return t_error();
-        $o = (array)toLowerCase($o);
+        $o = (array)toCamelCase($o);
         $o['people'] = $wpdb->get_row($wpdb->prepare("SELECT documento_tipo,documento_nro,ape_paterno,ape_materno,nombres FROM $erp.matm_persona p WHERE id=" . $o['persona_id']), OBJECT);
 
         $ipress = $wpdb->get_row($wpdb->prepare("SELECT codigo_microred,codigo_red,codigo_cocadenado FROM grupoipe_master.ipress_eess p WHERE Codigo_Unico=" . $o['codigo_unico']), OBJECT);
-        $ipress =(array)toLowerCase( $ipress);
-        $o['red'] =$ipress['codigo_red'];
-        $o['microred'] =$ipress['codigo_cocadenado'];
+        $ipress = (array)toCamelCase($ipress);
+        $o['red'] = $ipress['codigo_red'];
+        $o['microred'] = $ipress['codigo_cocadenado'];
         if ($wpdb->last_error) return t_error();
-        return toLowerCase($o);
+        return toCamelCase($o);
     }
 
     public function pag($request)
@@ -98,7 +97,7 @@ class AttentionRestController extends Controller
         ];
         $from = get_param($request, 'from');
         $to = get_param($request, 'to');
-        $erp=get_option('db_erp');
+        $erp = get_option('db_erp');
         $query = "SELECT SQL_CALC_FOUND_ROWS o.* FROM $erp.matm_atenciones o WHERE o.canceled=0";
         foreach ($params as $key => $value) {
             if ($value) {
@@ -110,7 +109,7 @@ class AttentionRestController extends Controller
         if ($to > 0) {
             $query .= " LIMIT $from, $to";
         }
-        $results = toLowerCase($wpdb->get_results($query, OBJECT));
+        $results = toCamelCase($wpdb->get_results($query, OBJECT));
         if ($wpdb->last_error) return t_error();
         return $to > 0 ? ['data' => $results, 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')] : $results;
     }
@@ -120,7 +119,7 @@ class AttentionRestController extends Controller
         global $wpdb;
         $original_db = $wpdb->dbname;
         $current_user = wp_get_current_user();
-        $erp=get_option('db_erp');
+        $erp = get_option('db_erp');
         $wpdb->select($erp);
         $wpdb->query('START TRANSACTION');
         $result = array_map(function ($id) use ($wpdb, $current_user) {
