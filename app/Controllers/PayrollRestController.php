@@ -450,6 +450,7 @@ class PayrollRestController extends Controller
         return [
             'success' => true,
             'data' => $items,
+            'x' => 12,
             'headers' => $headers,
             'payroll' => $payroll
         ];
