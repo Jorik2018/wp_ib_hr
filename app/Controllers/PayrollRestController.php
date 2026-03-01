@@ -198,7 +198,7 @@ class PayrollRestController extends Controller
     {
         global $wpdb;
 
-        $db = get_option("db_erp");
+        $db = get_option("db_ofis");
 
         // Parámetros de búsqueda
         $params = [
