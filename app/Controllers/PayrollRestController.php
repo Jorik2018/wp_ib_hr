@@ -227,8 +227,9 @@ class PayrollRestController extends Controller
             $ok = $wpdb->insert('rem_payroll_type_people', $data);
 
             if ($ok === false) {
+                $last_error = $wpdb->last_error;
                 $wpdb->select($original_db);
-                return t_error('Insert failed');
+                if ($last_error) return t_error();
             }
 
             $inserted[] = $person->id;
