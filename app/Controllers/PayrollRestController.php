@@ -215,11 +215,15 @@ class PayrollRestController extends Controller
 
         foreach ($persons as $person) {
 
-            if (!$person) continue;
+            if (!is_array($person)) continue;
+
+            $people_id = $person['id'] ?? null;
+
+            if (!$people_id) continue;
 
             $data = [
                 'payroll_type_id' => $payroll_type_id,
-                'people_id'       => $person->id,
+                'people_id'       => (int) $people_id,
                 'beneficiary'     => $beneficiary,
                 'benefit_type_id' => $benefit_type_id
             ];
@@ -229,10 +233,10 @@ class PayrollRestController extends Controller
             if ($ok === false) {
                 $last_error = $wpdb->last_error;
                 $wpdb->select($original_db);
-                if ($last_error) return t_error();
+                if ($last_error) return t_error($last_error);
             }
 
-            $inserted[] = $person->id;
+            $inserted[] = $people_id;
         }
 
         $wpdb->select($original_db);
