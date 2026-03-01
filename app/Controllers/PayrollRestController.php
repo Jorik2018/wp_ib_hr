@@ -38,6 +38,11 @@ class PayrollRestController extends Controller
             'methods' => 'GET',
             'callback' => array($this, 'period')
         ));
+        
+        register_rest_route('api/payroll', 'concept', array(
+            'methods' => 'GET',
+            'callback' => array($this, 'get')
+        ));
 
         register_rest_route('api/payroll', 'add-person', array(
             'methods' => 'POST',
@@ -187,6 +192,70 @@ class PayrollRestController extends Controller
 
         $walk($headers);
         return $headers;
+    }
+
+    public function pag($request)
+    {
+        global $wpdb;
+
+        $db = get_option("db_erp");
+
+        // Parámetros de búsqueda
+        $params = [
+            'c.name'         => get_param($request, 'name'),
+            'c.abbreviation' => get_param($request, 'abbreviation'),
+            'c.pdt_code'     => get_param($request, 'pdt_code'),
+            'c.description'  => get_param($request, 'description'),
+            'c.type_id'      => get_param($request, 'type_id')
+        ];
+
+        $from = (int) get_param($request, 'from');
+        $to   = (int) get_param($request, 'to');
+
+        $where = [];
+        $values = [];
+
+        foreach ($params as $column => $value) {
+            if ($value !== null && $value !== '') {
+
+                // búsquedas exactas para números
+                if ($column === 'c.type_id') {
+                    $where[] = "$column = %d";
+                    $values[] = (int) $value;
+                } else {
+                    $where[] = "UPPER($column) LIKE %s";
+                    $values[] = '%' . strtoupper($value) . '%';
+                }
+            }
+        }
+
+        $sql = "SELECT SQL_CALC_FOUND_ROWS c.*
+            FROM $db.per_concept c";
+
+        if (!empty($where)) {
+            $sql .= " WHERE " . implode(' AND ', $where);
+        }
+
+        $sql .= " ORDER BY c.id DESC";
+
+        if ($to > 0) {
+            $sql .= " LIMIT %d, %d";
+            $values[] = $from;
+            $values[] = $to;
+        }
+
+        // Preparar consulta segura
+        $query = $wpdb->prepare($sql, $values);
+
+        $results = $wpdb->get_results($query, OBJECT);
+
+        if ($wpdb->last_error) {
+            return t_error($wpdb->last_error);
+        }
+
+        return $to > 0
+            ? ['data' => $results, 'size' => (int)$wpdb->get_var("SELECT FOUND_ROWS()")]
+            : $results;
     }
 
     function add_person($request)
