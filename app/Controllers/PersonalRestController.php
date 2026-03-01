@@ -3,10 +3,7 @@
 namespace IB\cv\Controllers;
 
 use WPMVC\MVC\Controller;
-use IB\cv\Util;
-use function IB\directory\Util\remove;
-use function IB\directory\Util\cfield;
-use function IB\directory\Util\camelCase;
+use function IB\directory\Util\toCamelCase;
 use function IB\directory\Util\cdfield;
 use function IB\directory\Util\t_error;
 use function IB\directory\Util\get_param;
@@ -233,7 +230,7 @@ class PersonalRestController extends Controller
         } finally {
             $wpdb->select($original_db);
         }
-        return Util\toCamelCase($o);
+        return toCamelCase($o);
     }
 
     public function get($request)
@@ -255,7 +252,7 @@ class PersonalRestController extends Controller
         $o['code'] = $people['code'];*/
         //$controller = new ExperienceRestController(array());
         //$o['experience'] = Util\toCamelCase($controller->pag(array('from' => 0, 'to' => 0, 'employee_id' => $o['id'])));
-        return Util\toCamelCase($o);
+        return toCamelCase($o);
     }
 
     public function pag($request)
@@ -290,7 +287,7 @@ class PersonalRestController extends Controller
             (isset($dni) ? " AND (pe.dni LIKE '%$dni%') " : "").
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
         if ($wpdb->last_error) return t_error();
-        $results = Util\toCamelCase($results);
+        $results = toCamelCase($results);
         return $to > 0 ? array('data' => $results, 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
     }
 
