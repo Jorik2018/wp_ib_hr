@@ -4,7 +4,7 @@ namespace IB\cv\Controllers;
 
 use WPMVC\MVC\Controller;
 use function IB\directory\Util\remove;
-use function IB\directory\Util\toCamelCase;
+use function IB\cv\Util\toCamelCase;
 use function IB\directory\Util\cdfield;
 use function IB\directory\Util\t_error;
 use function IB\directory\Util\get_param;
@@ -255,6 +255,7 @@ class MovimientoRestController extends Controller
         if ($wpdb->last_error) return t_error();
         $wpdb->select($original_db);
         $o['editable'] = true;
+
         $o['resources'] = toCamelCase($wpdb->get_results($wpdb->prepare("SELECT 
                 d.id AS id,
                 d.resource_id AS resourceId,
