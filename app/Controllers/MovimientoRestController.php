@@ -3,9 +3,8 @@
 namespace IB\cv\Controllers;
 
 use WPMVC\MVC\Controller;
-use IB\cv\Util;
 use function IB\directory\Util\remove;
-use function IB\directory\Util\cfield;
+use function IB\directory\Util\toCamelCase;
 use function IB\directory\Util\cdfield;
 use function IB\directory\Util\t_error;
 use function IB\directory\Util\get_param;
@@ -241,7 +240,7 @@ class MovimientoRestController extends Controller
         $o['uploaded'] = $uploaded;
         $o['uploadedDev'] = $uploadedDev;
         $o['resources'] = $resourcesOut;
-        $o = Util\toCamelCase($o);
+        $o = toCamelCase($o);
         return $o;
     }
 
@@ -252,11 +251,11 @@ class MovimientoRestController extends Controller
         $original_db = $wpdb->dbname;
         $db_erp = get_option("db_ofis");
         $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM $db_erp.r_actas WHERE id=%d", $request['id']), ARRAY_A);
-        $o['personal'] = Util\toCamelCase($wpdb->get_row($wpdb->prepare("SELECT * FROM $db_erp.m_personal WHERE dni=%d", $o['dni']), ARRAY_A));
+        $o['personal'] = toCamelCase($wpdb->get_row($wpdb->prepare("SELECT * FROM $db_erp.m_personal WHERE dni=%d", $o['dni']), ARRAY_A));
         if ($wpdb->last_error) return t_error();
         $wpdb->select($original_db);
         $o['editable'] = true;
-        $o['resources'] = Util\toCamelCase($wpdb->get_results($wpdb->prepare("SELECT 
+        $o['resources'] = toCamelCase($wpdb->get_results($wpdb->prepare("SELECT 
                 d.id AS id,
                 d.resource_id AS resourceId,
                 r.tipo,
@@ -278,7 +277,7 @@ class MovimientoRestController extends Controller
             ARRAY_A
         ));
         if ($wpdb->last_error) return t_error();
-        return Util\toCamelCase($o);
+        return toCamelCase($o);
     }
 
     public function pag($request)
@@ -303,7 +302,7 @@ class MovimientoRestController extends Controller
             . " ORDER BY ac.id DESC "
             .($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
         if ($wpdb->last_error) return t_error();
-        $results = Util\toCamelCase($results);
+        $results = toCamelCase($results);
         return $to > 0 ? array('data' => $results, 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
     }
 
