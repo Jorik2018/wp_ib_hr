@@ -3,11 +3,7 @@
 namespace IB\cv\Controllers;
 
 use WPMVC\MVC\Controller;
-use IB\cv\Util;
-use function IB\directory\Util\remove;
-use function IB\directory\Util\cfield;
-use function IB\directory\Util\camelCase;
-use function IB\directory\Util\cdfield;
+use function IB\directory\Util\toCamelCase;
 use function IB\directory\Util\t_error;
 use function IB\directory\Util\get_param;
 use function IB\directory\Util\renameFields;
@@ -117,7 +113,7 @@ class ServiceRestController extends Controller
         }
         if (false === $updated) return t_error();
         $wpdb->select($original_db);
-        return Util\toCamelCase($o);
+        return toCamelCase($o);
     }
 
     public function get($request)
@@ -131,7 +127,7 @@ class ServiceRestController extends Controller
         if ($wpdb->last_error) return t_error();
         $o['apellidosNombres'] = $people['apellidos_nombres'];
         $o['personal'] = $people['n'];
-        return Util\toCamelCase($o);
+        return toCamelCase($o);
     }
 
     public function pag($request)
@@ -150,7 +146,7 @@ class ServiceRestController extends Controller
             .// (isset($query) ? " AND (pe.apellidos_nombres LIKE '%$query%') " : "") .
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
         if ($wpdb->last_error) return t_error();
-        $results = Util\toCamelCase($results);
+        $results = toCamelCase($results);
         return $to > 0 ? array('data' => $results, 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
     }
 
