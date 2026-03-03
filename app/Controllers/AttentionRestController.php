@@ -3,9 +3,9 @@
 namespace IB\cv\Controllers;
 
 use WPMVC\MVC\Controller;
-use function IB\cv\Util\remove;
-use function IB\cv\Util\cdfield;
-use function IB\cv\Util\t_error;
+use function IB\directory\Util\remove;
+use function IB\directory\Util\cdfield;
+use function IB\directory\Util\t_error;
 use function IB\directory\Util\get_param;
 use function IB\directory\Util\toCamelCase;
 

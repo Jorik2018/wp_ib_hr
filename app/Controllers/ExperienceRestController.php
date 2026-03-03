@@ -3,11 +3,11 @@
 namespace IB\cv\Controllers;
 
 use WPMVC\MVC\Controller;
-use function IB\cv\Util\cbfield;
-use function IB\cv\Util\toCamelCase;
-use function IB\cv\Util\remove;
-use function IB\cv\Util\cdfield;
-use function IB\cv\Util\cfield;
+use function IB\directory\Util\cbfield;
+use function IB\directory\Util\toCamelCase;
+use function IB\directory\Util\remove;
+use function IB\directory\Util\cdfield;
+use function IB\directory\Util\cfield;
 use function IB\directory\Util\t_error;
 
 class ExperienceRestController extends Controller
