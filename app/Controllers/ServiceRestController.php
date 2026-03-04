@@ -96,17 +96,15 @@ class ServiceRestController extends Controller
         unset($o['editable']);
         unset($o['insertDate']);
         unset($o['updateDate']);
-        $o = mapKeysToSnakeCase($o);
         $current_user = wp_get_current_user();
         $original_db = $wpdb->dbname;
-        $people = $o;
         $db_erp = get_option("db_erp");
         $db_erp = "bwgvinpi_ofis";
         $wpdb->select($db_erp);
-
+        $o = mapKeysToSnakeCase($o);
         if (isset($o['id'])) {
             $o['update_date'] = current_time('mysql', 1);
-            $updated = $wpdb->update('t_servicios', $people, array('id' => $people['id']));
+            $updated = $wpdb->update('t_servicios', $o, array('id' => $o['id']));
         } else {
             $o['insert_date'] = current_time('mysql', 1);
             $updated = $wpdb->insert('t_servicios', $o);
