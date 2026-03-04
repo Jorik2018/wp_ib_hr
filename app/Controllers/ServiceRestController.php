@@ -6,7 +6,8 @@ use WPMVC\MVC\Controller;
 use function IB\directory\Util\toCamelCase;
 use function IB\directory\Util\t_error;
 use function IB\directory\Util\get_param;
-use function IB\directory\Util\renameFields;
+use function IB\directory\Util\mapKeysToSnakeCase;
+use function IB\directory\Util\mapKeysToCamelCase;
 
 class ServiceRestController extends Controller
 {
@@ -95,7 +96,7 @@ class ServiceRestController extends Controller
         unset($o['editable']);
         unset($o['insertDate']);
         unset($o['updateDate']);
-        $o = renameFields($o, self::FIELD_MAP);
+        $o = mapKeysToSnakeCase($o);
         $current_user = wp_get_current_user();
         $original_db = $wpdb->dbname;
         $people = $o;
@@ -113,7 +114,7 @@ class ServiceRestController extends Controller
         }
         if (false === $updated) return t_error();
         $wpdb->select($original_db);
-        return toCamelCase($o);
+        return mapKeysToCamelCase($o);
     }
 
     public function get($request)
