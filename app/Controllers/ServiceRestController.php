@@ -128,7 +128,7 @@ class ServiceRestController extends Controller
         if ($wpdb->last_error) return t_error();
         $o['apellidosNombres'] = $people['apellidos_nombres'];
         $o['personal'] = $people['n'];
-        return toCamelCase($o);
+        return mapKeysToCamelCase($o);
     }
 
     public function pag($request)
@@ -147,8 +147,7 @@ class ServiceRestController extends Controller
             .// (isset($query) ? " AND (pe.apellidos_nombres LIKE '%$query%') " : "") .
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
         if ($wpdb->last_error) return t_error();
-        $results = toCamelCase($results);
-        return $to > 0 ? array('data' => $results, 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
+        return $to > 0 ? array('data' => mapKeysToCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
     }
 
 
