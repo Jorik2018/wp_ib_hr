@@ -4,7 +4,6 @@ namespace IB\cv\Controllers;
 
 use WPMVC\MVC\Controller;
 use function IB\directory\Util\remove;
-use function IB\directory\Util\toCamelCase;
 use function IB\directory\Util\cdfield;
 use function IB\directory\Util\t_error;
 use function IB\directory\Util\get_param;
@@ -218,8 +217,7 @@ class MovimientoRestController extends Controller
         $o['uploaded'] = $uploaded;
         $o['uploadedDev'] = $uploadedDev;
         $o['resources'] = $resourcesOut;
-        $o = toCamelCase($o);
-        return $o;
+        return mapKeysToCamelCase($o);
     }
 
 
@@ -280,7 +278,7 @@ class MovimientoRestController extends Controller
             . " ORDER BY ac.id DESC "
             .($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
         if ($wpdb->last_error) return t_error();
-        $results = toCamelCase($results);
+        $results = mapKeysToCamelCase($results);
         return $to > 0 ? array('data' => $results, 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
     }
 
