@@ -4,7 +4,7 @@ namespace IB\cv\Controllers;
 
 use WPMVC\MVC\Controller;
 
-use function IB\directory\Util\toCamelCase;
+use function IB\directory\Util\mapKeysToCamelCase;
 use function IB\directory\Util\cdfield;
 use function IB\directory\Util\t_error;
 use function IB\directory\Util\get_param;
@@ -133,7 +133,7 @@ class ResourceRestController extends Controller
         }
         if (false === $updated) return t_error();
         $wpdb->select($original_db);
-        return toCamelCase($o);
+        return mapKeysToCamelCase($o);
     }
 
     public function get($request)
@@ -155,7 +155,7 @@ class ResourceRestController extends Controller
                 $o['personal'] = $people['n'];
             }
         }
-        return toCamelCase($o);
+        return mapKeysToCamelCase($o);
     }
     
     public function pag_type_resource($request)
@@ -170,7 +170,7 @@ class ResourceRestController extends Controller
             "WHERE 1=1 ".
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : "")." ORDER BY 2", ARRAY_A);
         if ($wpdb->last_error) return t_error();
-        $results = toCamelCase($results);
+        $results = mapKeysToCamelCase($results);
         return $to > 0 ? array('data' => $results, 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
     }
 
@@ -186,7 +186,7 @@ class ResourceRestController extends Controller
             "WHERE 1=1 ".
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : "")." ORDER BY 3", ARRAY_A);
         if ($wpdb->last_error) return t_error();
-        $results = toCamelCase($results);
+        $results = mapKeysToCamelCase($results);
         return $to > 0 ? array('data' => $results, 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
     }
 
@@ -203,7 +203,7 @@ class ResourceRestController extends Controller
             "WHERE 1=1 ".
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : "")." ORDER BY 1", ARRAY_A);
         if ($wpdb->last_error) return t_error();
-        $results = toCamelCase($results);
+        $results = mapKeysToCamelCase($results);
         return $to > 0 ? array('data' => $results, 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
     }
 
@@ -245,7 +245,7 @@ class ResourceRestController extends Controller
             . ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : "")
             , ARRAY_A);
         if ($wpdb->last_error) return t_error();
-        $results = toCamelCase($results);
+        $results = mapKeysToCamelCase($results);
         return $to > 0 ? array('data' => $results, 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
     }
 
