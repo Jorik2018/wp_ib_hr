@@ -8,7 +8,8 @@ use function IB\directory\Util\toCamelCase;
 use function IB\directory\Util\cdfield;
 use function IB\directory\Util\t_error;
 use function IB\directory\Util\get_param;
-use function IB\directory\Util\renameFields;
+use function IB\directory\Util\mapKeysToSnakeCase;
+use function IB\directory\Util\mapKeysToCamelCase;
 
 class MovimientoRestController extends Controller
 {
@@ -100,21 +101,6 @@ class MovimientoRestController extends Controller
         }
     }
 
-    private const FIELD_MAP = [
-        'firstSurname' => 'first_surname',
-        'lastSurname' => 'last_surname',
-        'actaAsignacion' => 'acta_asignacion',
-        'fechaAsignacion' => 'fecha_asignacion',
-
-        'actaDevolucion' => 'acta_devolucion',
-        'filenameDev' => 'filename_dev',
-        'fechaDevolucion' => 'fecha_devolucion',
-
-        'unidadOrganica' => 'unidad_organica',
-        'insertDate' => 'insert_date',
-        'updateDate' => 'update_date'
-    ];
-
     public function post($request)
     {
         global $wpdb;
@@ -171,7 +157,7 @@ class MovimientoRestController extends Controller
         cdfield($o, 'fechaAsignacion');
         cdfield($o, 'fechaDevolucion');
         $o['dni'] = $personal['dni'];
-        $o = renameFields($o, self::FIELD_MAP);
+        $o = mapKeysToSnakeCase($o);
         $wpdb->select($db_erp);
         if (isset($o['id'])) {
             $o['update_date'] = current_time('mysql', 1);
@@ -228,15 +214,7 @@ class MovimientoRestController extends Controller
                 }
             }
         }
-
-
-
-
-
         $wpdb->select($original_db);
-
-        
-
         $o['uploaded'] = $uploaded;
         $o['uploadedDev'] = $uploadedDev;
         $o['resources'] = $resourcesOut;
@@ -251,11 +229,11 @@ class MovimientoRestController extends Controller
         $original_db = $wpdb->dbname;
         $db_erp = get_option("db_ofis");
         $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM $db_erp.r_actas WHERE id=%d", $request['id']), ARRAY_A);
-        $o['personal'] = toCamelCase($wpdb->get_row($wpdb->prepare("SELECT * FROM $db_erp.m_personal WHERE dni=%d", $o['dni']), ARRAY_A));
+        $o['personal'] = $wpdb->get_row($wpdb->prepare("SELECT * FROM $db_erp.m_personal WHERE dni=%d", $o['dni']), ARRAY_A);
         if ($wpdb->last_error) return t_error();
         $wpdb->select($original_db);
         $o['editable'] = true;
-        $o['resources'] = toCamelCase($wpdb->get_results($wpdb->prepare("SELECT 
+        $o['resources'] = $wpdb->get_results($wpdb->prepare("SELECT 
                 d.id AS id,
                 d.resource_id AS resourceId,
                 r.tipo,
@@ -275,9 +253,9 @@ class MovimientoRestController extends Controller
                 d.movement_id = %d
             ORDER BY d.id ASC", $o['id']),
             ARRAY_A
-        ));
+        );
         if ($wpdb->last_error) return t_error();
-        return toCamelCase($o);
+        return mapKeysToCamelCase($o);
     }
 
     public function pag($request)

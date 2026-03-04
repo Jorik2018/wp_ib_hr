@@ -7,7 +7,8 @@ use function IB\directory\Util\toCamelCase;
 use function IB\directory\Util\cdfield;
 use function IB\directory\Util\t_error;
 use function IB\directory\Util\get_param;
-use function IB\directory\Util\renameFields;
+use function IB\directory\Util\mapKeysToSnakeCase;
+use function IB\directory\Util\mapKeysToCamelCase;
 use function IB\cv\Util\export_excel;
 
 class PersonalRestController extends Controller
@@ -123,16 +124,7 @@ class PersonalRestController extends Controller
     }
 
     private const FIELD_MAP = [
-        'firstSurname' => 'first_surname',
-        'lastSurname' => 'last_surname',
-        'secuenciaFuncional' => 'secuencia_funcional',
         'codigoAirhsp' => 'codigo_airhsp',
-        'unidadOrganica' => 'unidad_organica',
-        'apellidosNombres' => 'apellidos_nombres',
-        'fechaDeInicioContrato' => 'fecha_de_inicio_contrato',
-        'fechaDeInicioOfis' => 'fecha_de_inicio_ofis',
-        'tipoDeContrato' => 'tipo_de_contrato',
-        'clasificadorDeGastoContrato' => 'clasificador_de_gasto_contrato',
         'afpOnp' => 'afp_onp',
         'nCuspp' => 'n_cuspp',
         'organoId' => 'organo_id',
@@ -187,7 +179,7 @@ class PersonalRestController extends Controller
                 return t_error('Unidad '.$o['unidadId'].' no existe');
             }
         }
-        $o = renameFields($o, self::FIELD_MAP);
+        $o = mapKeysToSnakeCase($o, self::FIELD_MAP);
         unset($o['editable']);
         try {
             $wpdb->select($db_erp);
@@ -287,7 +279,7 @@ class PersonalRestController extends Controller
             (isset($dni) ? " AND (pe.dni LIKE '%$dni%') " : "").
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
         if ($wpdb->last_error) return t_error();
-        $results = toCamelCase($results);
+        $results = mapKeysToCamelCase($results);
         return $to > 0 ? array('data' => $results, 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
     }
 
