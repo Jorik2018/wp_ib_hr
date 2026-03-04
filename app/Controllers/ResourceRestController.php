@@ -8,16 +8,10 @@ use function IB\directory\Util\toCamelCase;
 use function IB\directory\Util\cdfield;
 use function IB\directory\Util\t_error;
 use function IB\directory\Util\get_param;
-use function IB\directory\Util\renameFields;
+use function IB\directory\Util\mapKeysToSnakeCase;
 
 class ResourceRestController extends Controller
 {
-
-    private const FIELD_MAP = [
-        'usuarioDeRed' => 'usuario_de_red',
-        'fechaAsignacion' => 'fecha_asignacion',
-        'fechaDevolucion' => 'fecha_devolucion'
-    ];
 
     public function init()
     {
@@ -125,7 +119,7 @@ class ResourceRestController extends Controller
         unset($o['insertDate']);
         unset($o['updateDate']);
         unset($o['editable']);
-        $o = renameFields($o, self::FIELD_MAP);
+        $o = mapKeysToSnakeCase($o);
         $original_db = $wpdb->dbname;
         $db_erp = get_option("db_ofis");
         $wpdb->select($db_erp);

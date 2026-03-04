@@ -139,7 +139,7 @@ class PersonalRestController extends Controller
         global $wpdb;
         $original_db = $wpdb->dbname;
         $db_erp = get_option("db_ofis");
-        $o = method_exists($request, 'get_params') ? $request->get_params() : $request;
+        $o = get_param($request);
         $current_user = wp_get_current_user();
         cdfield($o, 'fechaDeInicioContrato');
         cdfield($o, 'fechaDeInicioOfis');
