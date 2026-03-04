@@ -147,7 +147,8 @@ class ServiceRestController extends Controller
             .// (isset($query) ? " AND (pe.apellidos_nombres LIKE '%$query%') " : "") .
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
         if ($wpdb->last_error) return t_error();
-        return $to > 0 ? array('data' => mapKeysToCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
+        $results = mapKeysToCamelCase($results);
+        return $to > 0 ? array('data' => $results, 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
     }
 
 
