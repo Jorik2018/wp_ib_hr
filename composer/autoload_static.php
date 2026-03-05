@@ -323,6 +323,7 @@ class ComposerStaticInitab41187644036ee6d526b14dd1cb815f
         'IB\\cv\\Controllers\\StudyRestController' => __DIR__ . '/../..'.'/wp_ib_hr' . '/app/Controllers/StudyRestController.php',
         'IB\\cv\\Controllers\\TrainingRestController' => __DIR__ . '/../..'.'/wp_ib_hr' . '/app/Controllers/TrainingRestController.php',
         'IB\\cv\\Main' => __DIR__ . '/../..'.'/wp_ib_hr' . '/app/Main.php',
+        'IB\\cv\\Util' => __DIR__ . '/../..'.'/wp_ib_hr' . '/app/Util/Utils.php',
         'PHP_Parallel_Lint\\PhpConsoleColor\\ConsoleColor' => __DIR__ . '/../../vendor' . '/php-parallel-lint/php-console-color/src/ConsoleColor.php',
         'PHP_Parallel_Lint\\PhpConsoleColor\\InvalidStyleException' => __DIR__ . '/../../vendor' . '/php-parallel-lint/php-console-color/src/InvalidStyleException.php',
         'Peast\\Formatter\\Base' => __DIR__ . '/../../vendor' . '/mck89/peast/lib/Peast/Formatter/Base.php',
