@@ -8,7 +8,47 @@ use function IB\directory\Util\cdfield;
 use function IB\directory\Util\t_error;
 use function IB\directory\Util\get_param;
 use function IB\directory\Util\mapKeysToSnakeCase;
-use function IB\cv\Util\export_excel;
+//use function IB\cv\Util\export_excel;
+
+
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
+function export_excel($filename, $columns, $rows)
+{
+    while (ob_get_level()) {
+        ob_end_clean();
+    }
+    $spreadsheet = new Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+    // Headers
+    $col = 'A';
+    foreach ($columns as $header) {
+        $sheet->setCellValue($col . '1', $header);
+        $col++;
+    }
+    // Data
+    $rowNum = 2;
+    foreach ($rows as $row) {
+        $col = 'A';
+        foreach ($columns as $key) {
+            $sheet->setCellValue($col . $rowNum, $row[$key] ?? "");
+            $col++;
+        }
+        $rowNum++;
+    }
+    // Headers CORS
+    header("Access-Control-Allow-Origin: *");
+    header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+    header("Access-Control-Allow-Headers: Authorization, Content-Type");
+    // Excel output headers
+    header("Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    header("Content-Disposition: attachment; filename=\"{$filename}.xlsx\"");
+    header("Cache-Control: max-age=0");
+    $writer = new Xlsx($spreadsheet);
+    $writer->save('php://output');
+    exit;
+}
 
 class PersonalRestController extends Controller
 {
