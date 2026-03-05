@@ -572,7 +572,7 @@ class PayrollRestController extends Controller
         );*/
         $employees = $wpdb->get_results(
             $wpdb->prepare(
-                "SELECT p.apellidos_nombres fullName
+                "SELECT p.apellidos_nombres fullName, p.people_id
          FROM rem_payroll_type_people pp
          INNER JOIN m_personal p ON p.n = pp.people_id
          
@@ -668,6 +668,7 @@ class PayrollRestController extends Controller
 
             $items[] = [
                 'fullName' => $employee->fullName,
+                'peopleId' => $employee->people_id,
                 'values'   => $values
             ];
         }
