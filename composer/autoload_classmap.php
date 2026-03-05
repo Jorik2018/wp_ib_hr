@@ -159,6 +159,7 @@ return array(
     'IB\\cv\\Controllers\\StudyRestController' => $baseDir . '/app/Controllers/StudyRestController.php',
     'IB\\cv\\Controllers\\TrainingRestController' => $baseDir . '/app/Controllers/TrainingRestController.php',
     'IB\\cv\\Main' => $baseDir . '/app/Main.php',
+    'IB\\cv\\Util' => $baseDir . '/app/Util/Utils.php',
     'PHP_Parallel_Lint\\PhpConsoleColor\\ConsoleColor' => $vendorDir . '/php-parallel-lint/php-console-color/src/ConsoleColor.php',
     'PHP_Parallel_Lint\\PhpConsoleColor\\InvalidStyleException' => $vendorDir . '/php-parallel-lint/php-console-color/src/InvalidStyleException.php',
     'Peast\\Formatter\\Base' => $vendorDir . '/mck89/peast/lib/Peast/Formatter/Base.php',
