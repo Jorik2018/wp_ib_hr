@@ -134,7 +134,7 @@ class PeopleRestController extends Controller
         $o['ubigeo_distrito'] = $ccpp['Ubigeo_Distrito'];
         $o['distrito'] = $ccpp['distrito'];
         $o['ccpp'] = $ccpp['name'];
-        return $o; //Util\toCamelCase($o);
+        return $o; //Util\mapKeysToCamelCase($o);
     }
 
     public function pag($request)

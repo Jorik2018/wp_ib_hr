@@ -7,7 +7,7 @@ use function IB\directory\Util\get_param;
 use function IB\directory\Util\cfield;
 use function IB\directory\Util\remove;
 use function IB\directory\Util\t_error;
-use function IB\directory\Util\toCamelCase;
+use function IB\directory\Util\mapKeysToCamelCase;
 
 class StudyRestController extends Controller
 {
@@ -82,7 +82,7 @@ class StudyRestController extends Controller
             $o['tmpId'] = $tmpId;
             $o['synchronized'] = 1;
         }
-        return toCamelCase($o);
+        return mapKeysToCamelCase($o);
     }
 
     public function get($request)
@@ -97,7 +97,7 @@ class StudyRestController extends Controller
                 $o['people'][$key] = get_user_meta($e['people_id'], $field, true);
         }
         if ($wpdb->last_error) return t_error();
-        return toCamelCase($o);
+        return mapKeysToCamelCase($o);
     }
 
     public function pag($request)
@@ -116,7 +116,7 @@ class StudyRestController extends Controller
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), OBJECT);
 
         if ($wpdb->last_error) return t_error();
-        return $to > 0 ? array('data' => toCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
+        return $to > 0 ? array('data' => mapKeysToCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
     }
 
     public function delete($data)

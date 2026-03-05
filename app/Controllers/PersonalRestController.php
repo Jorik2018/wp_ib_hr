@@ -3,12 +3,11 @@
 namespace IB\cv\Controllers;
 
 use WPMVC\MVC\Controller;
-use function IB\directory\Util\toCamelCase;
+use function IB\directory\Util\mapKeysToCamelCase;
 use function IB\directory\Util\cdfield;
 use function IB\directory\Util\t_error;
 use function IB\directory\Util\get_param;
 use function IB\directory\Util\mapKeysToSnakeCase;
-use function IB\directory\Util\mapKeysToCamelCase;
 use function IB\cv\Util\export_excel;
 
 class PersonalRestController extends Controller
@@ -222,7 +221,7 @@ class PersonalRestController extends Controller
         } finally {
             $wpdb->select($original_db);
         }
-        return toCamelCase($o);
+        return mapKeysToCamelCase($o);
     }
 
     public function get($request)
@@ -243,8 +242,8 @@ class PersonalRestController extends Controller
         $o['fullName'] = $people['fullName'];
         $o['code'] = $people['code'];*/
         //$controller = new ExperienceRestController(array());
-        //$o['experience'] = Util\toCamelCase($controller->pag(array('from' => 0, 'to' => 0, 'employee_id' => $o['id'])));
-        return toCamelCase($o);
+        //$o['experience'] = Util\mapKeysToCamelCase($controller->pag(array('from' => 0, 'to' => 0, 'employee_id' => $o['id'])));
+        return mapKeysToCamelCase($o);
     }
 
     public function pag($request)

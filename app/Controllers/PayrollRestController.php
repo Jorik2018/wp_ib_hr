@@ -38,7 +38,7 @@ class PayrollRestController extends Controller
             'methods' => 'GET',
             'callback' => array($this, 'period')
         ));
-        
+
         register_rest_route('api/payroll', 'concept/(?P<from>\d+)/(?P<to>\d+)', array(
             'methods' => 'GET',
             'callback' => array($this, 'pag')
@@ -47,6 +47,11 @@ class PayrollRestController extends Controller
         register_rest_route('api/payroll', 'add-person', array(
             'methods' => 'POST',
             'callback' => array($this, 'add_person')
+        ));
+
+        register_rest_route('api/payroll', 'add-concept', array(
+            'methods' => 'POST',
+            'callback' => array($this, 'add_concept')
         ));
     }
 
@@ -256,6 +261,84 @@ class PayrollRestController extends Controller
         return $to > 0
             ? ['data' => $results, 'size' => (int)$wpdb->get_var("SELECT FOUND_ROWS()")]
             : $results;
+    }
+
+    public function add_concept($request)
+    {
+        global $wpdb;
+
+        // Obtener params compatible WP_REST_Request o array
+        $o = get_param($request);
+
+        $original_db = $wpdb->dbname;
+        $wpdb->select(get_option("db_ofis"));
+
+        $current_user = wp_get_current_user();
+
+        $concepts = $o['concepts'] ?? [];
+        $amount = $o['amount'] ?? null;
+
+        $payroll_group_id = $o['payroll_group_id'] ?? null;
+        $payroll_type_id  = $o['payroll_type_id'] ?? null;
+        $type             = $o['type'] ?? null;
+        $target_id        = $o['target_id'] ?? null;
+        $ini_date         = $o['ini_date'] ?? date('Y-m-d');
+        $end_date         = $o['end_date'] ?? null;
+
+        if (!is_array($concepts) || empty($concepts)) {
+            $wpdb->select($original_db);
+            return t_error('No concepts provided');
+        }
+
+        if (!$target_id) {
+            $wpdb->select($original_db);
+            return t_error('target_id is required');
+        }
+
+        if ($amount === null) {
+            $wpdb->select($original_db);
+            return t_error('amount is required');
+        }
+
+        $inserted = [];
+
+        foreach ($concepts as $concept) {
+
+            if (!is_array($concept)) continue;
+
+            $concept_id = $concept['id'] ?? null;
+
+            if (!$concept_id) continue;
+
+            $data = [
+                'payroll_group_id' => $payroll_group_id,
+                'payroll_type_id'  => $payroll_type_id,
+                'type'             => $type,
+                'target_id'        => $target_id,
+                'concept_id'       => (int) $concept_id,
+                'ini_date'         => $ini_date,
+                'end_date'         => $end_date,
+                'amount'           => (float) $amount,
+                'canceled'         => 0
+            ];
+
+            $ok = $wpdb->insert('rem_payroll_amount', $data);
+
+            if ($ok === false) {
+                $last_error = $wpdb->last_error;
+                $wpdb->select($original_db);
+                if ($last_error) return t_error($last_error);
+            }
+
+            $inserted[] = $concept_id;
+        }
+
+        $wpdb->select($original_db);
+
+        return [
+            'inserted' => $inserted,
+            'count'    => count($inserted)
+        ];
     }
 
     function add_person($request)

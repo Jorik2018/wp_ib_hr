@@ -8,7 +8,7 @@ use function IB\directory\Util\cfield;
 use function IB\directory\Util\cdfield;
 use function IB\directory\Util\t_error;
 use function IB\directory\Util\get_param;
-use function IB\directory\Util\toCamelCase;
+use function IB\directory\Util\mapKeysToCamelCase;
 
 class DocumentRestController extends Controller
 {
@@ -108,7 +108,7 @@ class DocumentRestController extends Controller
         global $wpdb;
         $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM hr_document WHERE id=" . $request['id']), OBJECT);
         if ($wpdb->last_error) return t_error();
-        return toCamelCase($o);
+        return mapKeysToCamelCase($o);
     }
 
     public function pag($request){
@@ -124,7 +124,7 @@ class DocumentRestController extends Controller
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), OBJECT);
     
         if ($wpdb->last_error) return t_error();
-        return $to > 0 ? array('data' => toCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;    
+        return $to > 0 ? array('data' => mapKeysToCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;    
     }
 
     public function delete($data){
@@ -184,7 +184,7 @@ class DocumentRestController extends Controller
         global $wpdb;
         $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM grupoipe_erp.inv_inventory WHERE id=" . $request['id']), OBJECT);
         if ($wpdb->last_error) return t_error();
-        return $o;//Util\toCamelCase($o);
+        return $o;//Util\mapKeysToCamelCase($o);
     }
 
 

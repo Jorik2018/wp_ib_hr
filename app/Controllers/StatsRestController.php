@@ -9,7 +9,7 @@ use function IB\directory\Util\cdfield;
 use function IB\directory\Util\t_error;
 use function IB\directory\Util\get_param;
 use function IB\directory\Util\renameFields;
-use function IB\directory\Util\toCamelCase;
+use function IB\directory\Util\mapKeysToCamelCase;
 
 class StatsRestController extends Controller
 {
@@ -677,7 +677,7 @@ function generarArrayAleatorio() {
         }
         if (false === $updated) return t_error();
         $wpdb->select($original_db);
-        return toCamelCase($o);
+        return mapKeysToCamelCase($o);
     }
 
     public function get($request)
@@ -691,7 +691,7 @@ function generarArrayAleatorio() {
         if ($wpdb->last_error) return t_error();
         $o['apellidosNombres'] = $people['apellidos_nombres'];
         $o['personal'] = $people['n'];
-        return toCamelCase($o);
+        return mapKeysToCamelCase($o);
     }
     
     public function pag_type_resource($request)
@@ -706,7 +706,7 @@ function generarArrayAleatorio() {
             "WHERE 1=1 ".
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : "")." ORDER BY 2", ARRAY_A);
         if ($wpdb->last_error) return t_error();
-        $results = toCamelCase($results);
+        $results = mapKeysToCamelCase($results);
         return $to > 0 ? array('data' => $results, 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
     }
 
@@ -726,7 +726,7 @@ function generarArrayAleatorio() {
             . (isset($query) ? " AND (pe.apellidos_nombres LIKE '%$query%') " : "") .
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), ARRAY_A);
         if ($wpdb->last_error) return t_error();
-        $results = toCamelCase($results);
+        $results = mapKeysToCamelCase($results);
         return $to > 0 ? array('data' => $results, 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
     }
 

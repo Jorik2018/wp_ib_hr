@@ -4,7 +4,7 @@ namespace IB\cv\Controllers;
 
 use WPMVC\MVC\Controller;
 use function IB\directory\Util\cbfield;
-use function IB\directory\Util\toCamelCase;
+use function IB\directory\Util\mapKeysToCamelCase;
 use function IB\directory\Util\remove;
 use function IB\directory\Util\cdfield;
 use function IB\directory\Util\cfield;
@@ -91,7 +91,7 @@ class ExperienceRestController extends Controller
             $o['tmpId'] = $tmpId;
             $o['synchronized'] = 1;
         }
-        return toCamelCase($o);
+        return mapKeysToCamelCase($o);
     }
 
     public function get($request)
@@ -107,7 +107,7 @@ class ExperienceRestController extends Controller
                 $o['people'][$key] = get_user_meta($e['people_id'], $field, true);
         }*/
         if ($wpdb->last_error) return t_error();
-        return toCamelCase($o);
+        return mapKeysToCamelCase($o);
     }
 
     public function pag($request)
@@ -132,7 +132,7 @@ class ExperienceRestController extends Controller
             ($to > 0 ? ("LIMIT " . $from . ', ' . $to) : ""), OBJECT);
 
         if ($wpdb->last_error) return t_error();
-        return $to > 0 ? array('data' => toCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
+        return $to > 0 ? array('data' => mapKeysToCamelCase($results), 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
     }
 
     public function delete($data)

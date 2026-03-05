@@ -7,7 +7,7 @@ use function IB\directory\Util\remove;
 use function IB\directory\Util\cdfield;
 use function IB\directory\Util\t_error;
 use function IB\directory\Util\get_param;
-use function IB\directory\Util\toCamelCase;
+use function IB\directory\Util\mapKeysToCamelCase;
 
 class AttentionRestController extends Controller
 {
@@ -78,15 +78,15 @@ class AttentionRestController extends Controller
         $erp = get_option('db_erp');
         $o = (array)$wpdb->get_row($wpdb->prepare("SELECT * FROM $erp.matm_atenciones WHERE id=" . $request['id']), OBJECT);
         if ($wpdb->last_error) return t_error();
-        $o = (array)toCamelCase($o);
+        $o = (array)mapKeysToCamelCase($o);
         $o['people'] = $wpdb->get_row($wpdb->prepare("SELECT documento_tipo,documento_nro,ape_paterno,ape_materno,nombres FROM $erp.matm_persona p WHERE id=" . $o['persona_id']), OBJECT);
 
         $ipress = $wpdb->get_row($wpdb->prepare("SELECT codigo_microred,codigo_red,codigo_cocadenado FROM grupoipe_master.ipress_eess p WHERE Codigo_Unico=" . $o['codigo_unico']), OBJECT);
-        $ipress = (array)toCamelCase($ipress);
+        $ipress = (array)mapKeysToCamelCase($ipress);
         $o['red'] = $ipress['codigo_red'];
         $o['microred'] = $ipress['codigo_cocadenado'];
         if ($wpdb->last_error) return t_error();
-        return toCamelCase($o);
+        return mapKeysToCamelCase($o);
     }
 
     public function pag($request)
@@ -109,7 +109,7 @@ class AttentionRestController extends Controller
         if ($to > 0) {
             $query .= " LIMIT $from, $to";
         }
-        $results = toCamelCase($wpdb->get_results($query, OBJECT));
+        $results = mapKeysToCamelCase($wpdb->get_results($query, OBJECT));
         if ($wpdb->last_error) return t_error();
         return $to > 0 ? ['data' => $results, 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')] : $results;
     }
