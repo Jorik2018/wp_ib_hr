@@ -901,6 +901,7 @@ class PayrollRestController extends Controller
             $items[] = [
                 'fullName' => $employee->fullName,
                 'peopleId' => $employee->people_id,
+                'payrollTypeId' => $employee->payroll_type_id,
                 'values'   => $values
             ];
         }
