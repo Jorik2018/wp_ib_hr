@@ -844,7 +844,8 @@ class PayrollRestController extends Controller
 
             foreach ($concepts as $c) {
                 if ($c->type_id == 3) {
-                    $amount = $amountMap[$c->id] ?? 0;
+                    $baseAmount = $this->resolveAmount($c->id, $employee, $payroll->id, $amountMap);
+                    $amount = $baseAmount;
                     $totalEgresos += $amount;
                     $values[] = $amount;
                 }
@@ -866,8 +867,8 @@ class PayrollRestController extends Controller
             $descuentos_ley = 0;
 
             foreach ($concepts as $c) {
-                $baseAmount = $amountMap[$c->id] ?? 0;
                 if ($c->type_id == 4) {
+                    $baseAmount = $this->resolveAmount($c->id, $employee, $payroll->id, $amountMap);
                     $calculated = round($baseAmount * $base_calculo_contribuciones, 2);
                     $descuentos_ley += $calculated;
                     $values[] = $calculated;
@@ -883,8 +884,8 @@ class PayrollRestController extends Controller
             $otros_descuentos = $x;
 
             foreach ($concepts as $c) {
-                $baseAmount = $amountMap[$c->id] ?? 0;
                 if ($c->type_id == 6) {
+                    $baseAmount = $this->resolveAmount($c->id, $employee, $payroll->id, $amountMap);
                     $otros_descuentos += $baseAmount;
                     $values[] = $baseAmount;
                 }
