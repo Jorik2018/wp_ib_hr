@@ -769,9 +769,9 @@ class PayrollRestController extends Controller
         $amountMap = [];
         foreach ($params as $p) {
             if($p->type=='PL') {
-                $amountMap[$p->concept_id][$p->type]['1' /*send the payroll_type_id*/] = $p->amount;
+                $amountMap[''.$p->concept_id][$p->type]['1' /*send the payroll_type_id*/] = $p->amount;
             } else {
-                $amountMap[$p->concept_id][$p->type][$p->target_id] = $p->amount;
+                $amountMap[''.$p->concept_id][$p->type][$p->target_id] = $p->amount;
             }
         }
          
@@ -912,7 +912,7 @@ class PayrollRestController extends Controller
     }
 
     private function resolveAmount($conceptId, $employee, $payrollId, $amountMap) {
-        return $conceptId;
+        $conceptId=''.$conceptId;
         if (!isset($amountMap[$conceptId])) {
 
             $map = $amountMap[$conceptId];
