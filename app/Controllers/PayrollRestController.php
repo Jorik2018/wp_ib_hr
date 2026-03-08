@@ -286,7 +286,7 @@ class PayrollRestController extends Controller
         $payroll_group_id = $o['payroll_group_id'] ?? null;
         $payroll_type_id  = $o['payroll_type_id'] ?? null;
         $type             = $o['type'] ?? null;
-        $target_id        = $o['target_id'] ?? null;
+        $target_id        = $o['target'] ?? null;
         $ini_date         = $o['ini_date'] ?? date('Y-m-d');
         $end_date         = $o['end_date'] ?? null;
 
