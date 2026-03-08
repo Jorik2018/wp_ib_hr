@@ -804,7 +804,7 @@ class PayrollRestController extends Controller
         );*/
         $employees = $wpdb->get_results(
             $wpdb->prepare(
-                "SELECT p.apellidos_nombres fullName, pp.payroll_type_id, pp.people_id
+                "SELECT p.apellidos_nombres fullName, pp.payroll_type_id, pp.people_id, p.afp_onp pensionSystem
          FROM rem_payroll_type_people pp
          INNER JOIN m_personal p ON p.n = pp.people_id
          ORDER BY 1 ",
@@ -922,8 +922,8 @@ class PayrollRestController extends Controller
             }
 
             // Prioridad 2: monto por sistema de pensión
-            if (isset($map['PS'][$employee->sistema_pension_id])) {
-                return $map['PS'][$employee->sistema_pension_id];
+            if (isset($map['PS'][$employee->pensionSystem])) {
+                return $map['PS'][$employee->pensionSystem];
             }
 
             // Prioridad 3: monto general de la planilla
