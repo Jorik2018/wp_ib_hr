@@ -895,6 +895,7 @@ class PayrollRestController extends Controller
             $items[] = [
                 'fullName' => $employee->fullName,
                 'peopleId' => $employee->people_id,
+                'pensionSystem' => $employee->pensionSystem,
                 'payrollTypeId' => $employee->payroll_type_id,
                 'values'   => $values
             ];
@@ -903,11 +904,8 @@ class PayrollRestController extends Controller
         return [
             'success' => true,
             'data' => $items,
-            'x' => 12,
             'headers' => $headers,
-            'payroll' => $payroll,
-            '$amountMap' => $amountMap,
-            '$concepts' => $concepts
+            'payroll' => $payroll
         ];
     }
 
