@@ -929,8 +929,8 @@ class PayrollRestController extends Controller
             }
 
             // Prioridad 3: monto general de la planilla
-            if (isset($map['PL'][$payrollId])) {
-                return $map['PL'][$payrollId];
+            if (isset($map['PL'][$employee->payroll_type_id])) {
+                return $map['PL'][$employee->payroll_type_id];
             }
         }
     }
