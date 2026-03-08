@@ -280,7 +280,7 @@ class PayrollRestController extends Controller
 
         $current_user = wp_get_current_user();
 
-        $concepts = $o['concepts'] ?? [];
+        $concept = $o['concept'] ?? [];
         $amount = $o['amount'] ?? null;
 
         $payroll_group_id = $o['payroll_group_id'] ?? null;
@@ -290,7 +290,7 @@ class PayrollRestController extends Controller
         $ini_date         = $o['ini_date'] ?? date('Y-m-d');
         $end_date         = $o['end_date'] ?? null;
 
-        if (!is_array($concepts) || empty($concepts)) {
+        if (!$concept) {
             $wpdb->select($original_db);
             return t_error('No concepts provided');
         }
@@ -300,27 +300,12 @@ class PayrollRestController extends Controller
             return t_error('target_id is required');
         }
 
-        if ($amount === null) {
-            $wpdb->select($original_db);
-            return t_error('amount is required');
-        }
-
-        $inserted = [];
-
-        foreach ($concepts as $concept) {
-
-            if (!is_array($concept)) continue;
-
-            $concept_id = $concept['id'] ?? null;
-
-            if (!$concept_id) continue;
-
             $data = [
                 'payroll_group_id' => $payroll_group_id,
                 'payroll_type_id'  => $payroll_type_id,
                 'type'             => $type,
                 'target_id'        => $target_id,
-                'concept_id'       => (int) $concept_id,
+                'concept_id'       => (int) $concept,
                 'ini_date'         => $ini_date,
                 'end_date'         => $end_date,
                 'amount'           => (float) $amount,
@@ -335,8 +320,8 @@ class PayrollRestController extends Controller
                 if ($last_error) return t_error($last_error);
             }
 
-            $inserted[] = $concept_id;
-        }
+            $inserted = $concept;
+        
 
         $wpdb->select($original_db);
 
