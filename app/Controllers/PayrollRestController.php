@@ -759,7 +759,7 @@ class PayrollRestController extends Controller
             ]
         ];
         $params = $wpdb->get_results($wpdb->prepare("
-            SELECT concept_id, amount, type, target_id
+            SELECT concept_id, amount, type, target_id, payroll_type_id
             FROM rem_payroll_amount
             WHERE canceled = 0
             AND ini_date <= %s
@@ -768,7 +768,11 @@ class PayrollRestController extends Controller
 
         $amountMap = [];
         foreach ($params as $p) {
-            $amountMap[$p->concept_id][$p->type][$p->target_id] = $p->amount;
+            if($p->type=='PL' ||) {
+                $amountMap[$p->concept_id][$p->type][1 /*send the payroll_type_id*/] = $p->amount;
+            } else {
+                $amountMap[$p->concept_id][$p->type][$p->target_id] = $p->amount;
+            }
         }
         $diasMes = 30; //cal_days_in_month(CAL_GREGORIAN, $month, $year);
         $headers = $this->assignLeafIndexes($headers);
@@ -783,7 +787,6 @@ class PayrollRestController extends Controller
                 }
             }
         }
-
 
         $payroll = $this->getOrCreatePayroll($year, $month, 1);
 
@@ -800,10 +803,9 @@ class PayrollRestController extends Controller
         );*/
         $employees = $wpdb->get_results(
             $wpdb->prepare(
-                "SELECT p.apellidos_nombres fullName, pp.people_id
+                "SELECT p.apellidos_nombres fullName, pp.payroll_type_id, pp.people_id
          FROM rem_payroll_type_people pp
          INNER JOIN m_personal p ON p.n = pp.people_id
-         
          ORDER BY 1 ",
                 $payroll->id
             )
@@ -825,7 +827,7 @@ class PayrollRestController extends Controller
             $totalIngresos = 0;
 
             foreach ($concepts as $c) {
-                $baseAmount = $this->resolveAmount($c->id, $employee, $payroll->id, $amountMap);
+                $baseAmount = $this->resolveAmount($c->id, $employee, $employee -> payroll_type_id, $amountMap);
                 if ($c->type_id == 1) {
                     $calculated = round(($baseAmount * $workedDays) / $diasMes, 2);
                     $totalIngresos += $calculated;
@@ -844,7 +846,7 @@ class PayrollRestController extends Controller
 
             foreach ($concepts as $c) {
                 if ($c->type_id == 3) {
-                    $baseAmount = $this->resolveAmount($c->id, $employee, $payroll->id, $amountMap);
+                    $baseAmount = $this->resolveAmount($c->id, $employee,  $employee -> payroll_type_id, $amountMap);
                     $amount = $baseAmount;
                     $totalEgresos += $amount;
                     $values[] = $amount;
@@ -868,7 +870,7 @@ class PayrollRestController extends Controller
 
             foreach ($concepts as $c) {
                 if ($c->type_id == 4) {
-                    $baseAmount = $this->resolveAmount($c->id, $employee, $payroll->id, $amountMap);
+                    $baseAmount = $this->resolveAmount($c->id, $employee,  $employee -> payroll_type_id, $amountMap);
                     $calculated = round($baseAmount * $base_calculo_contribuciones, 2);
                     $descuentos_ley += $calculated;
                     $values[] = $calculated;
@@ -885,7 +887,7 @@ class PayrollRestController extends Controller
 
             foreach ($concepts as $c) {
                 if ($c->type_id == 6) {
-                    $baseAmount = $this->resolveAmount($c->id, $employee, $payroll->id, $amountMap);
+                    $baseAmount = $this->resolveAmount($c->id, $employee,  $employee -> payroll_type_id, $amountMap);
                     $otros_descuentos += $baseAmount;
                     $values[] = $baseAmount;
                 }
@@ -912,25 +914,26 @@ class PayrollRestController extends Controller
     }
 
     private function resolveAmount($conceptId, $employee, $payrollId, $amountMap) {
-    if (!isset($amountMap[$conceptId])) return 0;
+        if (!isset($amountMap[$conceptId])) {
 
-    $map = $amountMap[$conceptId];
+            $map = $amountMap[$conceptId];
 
-    // Prioridad 1: monto específico a persona
-    if (isset($map['PE'][$employee->people_id])) {
-        return $map['PE'][$employee->people_id];
+            // Prioridad 1: monto específico a persona
+            if (isset($map['PE'][$employee->people_id])) {
+                return $map['PE'][$employee->people_id];
+            }
+
+            // Prioridad 2: monto por sistema de pensión
+            if (isset($map['PS'][$employee->sistema_pension_id])) {
+                return $map['PS'][$employee->sistema_pension_id];
+            }
+
+            // Prioridad 3: monto general de la planilla
+            if (isset($map['PL'][$payrollId])) {
+                return $map['PL'][$payrollId];
+            }
+        }
     }
-
-    // Prioridad 2: monto por sistema de pensión
-    if (isset($map['SP'][$employee->sistema_pension_id])) {
-        return $map['SP'][$employee->sistema_pension_id];
-    }
-
-    // Prioridad 3: monto general de la planilla
-    if (isset($map['PL'][$payrollId])) {
-        return $map['PL'][$payrollId];
-    }
-}
 
     public function get_personal($request){
         global $wpdb;
