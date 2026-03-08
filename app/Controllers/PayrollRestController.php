@@ -759,7 +759,7 @@ class PayrollRestController extends Controller
             ]
         ];
         $params = $wpdb->get_results($wpdb->prepare("
-            SELECT concept_id, amount, type, target_id, payroll_type_id
+            SELECT concept_id, amount, type, target_id
             FROM rem_payroll_amount
             WHERE canceled = 0
             AND ini_date <= %s
@@ -768,13 +768,8 @@ class PayrollRestController extends Controller
 
         $amountMap = [];
         foreach ($params as $p) {
-            if($p->type=='PL') {
-                $amountMap[$p->concept_id][$p->type]['1' /*send the payroll_type_id*/] = $p->amount;
-            } else {
-                $amountMap[$p->concept_id][$p->type][$p->target_id] = $p->amount;
-            }
+            $amountMap[$p->concept_id][$p->type][$p->target_id] = $p->amount;
         }
-         
         $diasMes = 30; //cal_days_in_month(CAL_GREGORIAN, $month, $year);
         $headers = $this->assignLeafIndexes($headers);
         $ingresoConceptIndexes = [];
@@ -901,7 +896,6 @@ class PayrollRestController extends Controller
             $items[] = [
                 'fullName' => $employee->fullName,
                 'peopleId' => $employee->people_id,
-                'payrollTypeId' => $employee->payroll_type_id,
                 'values'   => $values
             ];
         }
@@ -911,30 +905,26 @@ class PayrollRestController extends Controller
             'data' => $items,
             'x' => 12,
             'headers' => $headers,
-            'payroll' => $payroll,
-            '$amountMap' => $amountMap,
-            '$concepts' => $concepts
+            'payroll' => $payroll
         ];
     }
 
     private function resolveAmount($conceptId, $employee, $payrollId, $amountMap) {
         if (!isset($amountMap[$conceptId])) {
-
             $map = $amountMap[$conceptId];
-
             // Prioridad 1: monto específico a persona
             if (isset($map['PE'][$employee->people_id])) {
                 return $map['PE'][$employee->people_id];
             }
 
             // Prioridad 2: monto por sistema de pensión
-            if (isset($map['PS'][$employee->sistema_pension_id])) {
-                return $map['PS'][$employee->sistema_pension_id];
+            if (isset($map['SP'][$employee->sistema_pension_id])) {
+                return $map['SP'][$employee->sistema_pension_id];
             }
 
             // Prioridad 3: monto general de la planilla
-            if (isset($map['PL'][$employee->payroll_type_id])) {
-                return $map['PL'][$employee->payroll_type_id];
+            if (isset($map['PL'][$payrollId])) {
+                return $map['PL'][$payrollId];
             }
         }
     }
