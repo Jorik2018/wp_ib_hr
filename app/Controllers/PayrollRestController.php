@@ -710,6 +710,8 @@ class PayrollRestController extends Controller
 
         $headers = [
             ['title' => 'NOMBRE COMPLETO', 'width' => 200, 'index' => 'fullName'],
+            ['title' => 'AFP / ONP', 'width' => 200, 'index' => 'pensionSystem'],
+            ['title' => 'N° CUSPP', 'width' => 200, 'index' => 'nCUSPP'],
             ['title' => 'DIAS LABORADOS', 'width' => 100],
 
             [
