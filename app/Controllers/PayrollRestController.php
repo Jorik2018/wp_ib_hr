@@ -917,7 +917,7 @@ class PayrollRestController extends Controller
             $map = $amountMap[$conceptId];
 
             // Prioridad 1: monto específico a persona
-            if (isset($map['PE'][$employee->people_id])) {
+            /*if (isset($map['PE'][$employee->people_id])) {
                 return $map['PE'][$employee->people_id];
             }
 
@@ -929,7 +929,7 @@ class PayrollRestController extends Controller
             // Prioridad 3: monto general de la planilla
             if (isset($map['PL'][$employee->payroll_type_id])) {
                 return $map['PL'][$employee->payroll_type_id];
-            }
+            }*/
             return 111;
         }
     }
