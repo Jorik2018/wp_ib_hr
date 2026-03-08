@@ -759,7 +759,7 @@ class PayrollRestController extends Controller
             ]
         ];
         $params = $wpdb->get_results($wpdb->prepare("
-            SELECT concept_id, amount
+            SELECT concept_id, amount, type, target_id
             FROM rem_payroll_amount
             WHERE canceled = 0
             AND ini_date <= %s
@@ -768,7 +768,7 @@ class PayrollRestController extends Controller
 
         $amountMap = [];
         foreach ($params as $p) {
-            $amountMap[$p->concept_id] = $p->amount;
+            $amountMap[$p->concept_id][$p->type][$p->target_id] = $p->amount;
         }
         $diasMes = 30; //cal_days_in_month(CAL_GREGORIAN, $month, $year);
         $headers = $this->assignLeafIndexes($headers);
@@ -825,7 +825,7 @@ class PayrollRestController extends Controller
             $totalIngresos = 0;
 
             foreach ($concepts as $c) {
-                $baseAmount = $amountMap[$c->id] ?? 0;
+                $baseAmount = $this->resolveAmount($c->id, $employee, $payroll->id, $amountMap);
                 if ($c->type_id == 1) {
                     $calculated = round(($baseAmount * $workedDays) / $diasMes, 2);
                     $totalIngresos += $calculated;
@@ -909,6 +909,27 @@ class PayrollRestController extends Controller
             'payroll' => $payroll
         ];
     }
+
+    private function resolveAmount($conceptId, $employee, $payrollId, $amountMap) {
+    if (!isset($amountMap[$conceptId])) return 0;
+
+    $map = $amountMap[$conceptId];
+
+    // Prioridad 1: monto específico a persona
+    if (isset($map['PE'][$employee->people_id])) {
+        return $map['PE'][$employee->people_id];
+    }
+
+    // Prioridad 2: monto por sistema de pensión
+    if (isset($map['SP'][$employee->sistema_pension_id])) {
+        return $map['SP'][$employee->sistema_pension_id];
+    }
+
+    // Prioridad 3: monto general de la planilla
+    if (isset($map['PL'][$payrollId])) {
+        return $map['PL'][$payrollId];
+    }
+}
 
     public function get_personal($request){
         global $wpdb;
