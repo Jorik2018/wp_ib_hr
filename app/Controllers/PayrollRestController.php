@@ -930,6 +930,7 @@ class PayrollRestController extends Controller
             if (isset($map['PL'][$employee->payroll_type_id])) {
                 return $map['PL'][$employee->payroll_type_id];
             }
+            return 111;
         }
     }
 
