@@ -326,8 +326,7 @@ class PayrollRestController extends Controller
         $wpdb->select($original_db);
 
         return [
-            'inserted' => $inserted,
-            'count'    => count($inserted)
+            'inserted' => $inserted
         ];
     }
 
