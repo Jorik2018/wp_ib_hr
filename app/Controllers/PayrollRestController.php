@@ -774,6 +774,7 @@ class PayrollRestController extends Controller
                 $amountMap[$p->concept_id][$p->type][$p->target_id] = $p->amount;
             }
         }
+         
         $diasMes = 30; //cal_days_in_month(CAL_GREGORIAN, $month, $year);
         $headers = $this->assignLeafIndexes($headers);
         $ingresoConceptIndexes = [];
@@ -909,7 +910,8 @@ class PayrollRestController extends Controller
             'data' => $items,
             'x' => 12,
             'headers' => $headers,
-            'payroll' => $payroll
+            'payroll' => $payroll,
+            '$amountMap' => $amountMap
         ];
     }
 
