@@ -811,12 +811,6 @@ class PayrollRestController extends Controller
                 $payroll->id
             )
         );
-        $ingresoConceptIds = [];
-        foreach ($concepts as $c) {
-            if ($c->type_id == 1 || $c->type_id == 2) {
-                $ingresoConceptIds[] = $c->id;
-            }
-        }
         $items = [];
         foreach ($employees as $employee) {
 
