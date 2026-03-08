@@ -709,7 +709,7 @@ class PayrollRestController extends Controller
         ];
 
         $headers = [
-            ['title' => 'CODE', 'width' => 200, 'index' => 'code'],
+            ['title' => 'CODE', 'width' => 80, 'index' => 'code', 'class' => 'center'],
             ['title' => 'NOMBRE COMPLETO', 'width' => 200, 'index' => 'fullName'],
             ['title' => 'AFP / ONP', 'width' => 100, 'index' => 'pensionSystem', 'class' => 'center'],
             ['title' => 'N° CUSPP', 'width' => 120, 'index' => 'nCUSPP', 'class' => 'center'],
