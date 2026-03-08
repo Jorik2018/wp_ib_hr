@@ -823,7 +823,6 @@ class PayrollRestController extends Controller
 
             foreach ($concepts as $c) {
                 $baseAmount = $this->resolveAmount($c->id, $employee, $employee -> payroll_type_id, $amountMap);
-                return $baseAmount;
                 if ($c->type_id == 1) {
                     $calculated = round(($baseAmount * $workedDays) / $diasMes, 2);
                     $totalIngresos += $calculated;
@@ -914,12 +913,11 @@ class PayrollRestController extends Controller
 
     private function resolveAmount($conceptId, $employee, $payrollId, $amountMap) {
         
-        if (!isset($amountMap[$conceptId])) {
+        if (isset($amountMap[$conceptId])) {
 
             $map = $amountMap[$conceptId];
-
             // Prioridad 1: monto específico a persona
-            /*if (isset($map['PE'][$employee->people_id])) {
+            if (isset($map['PE'][$employee->people_id])) {
                 return $map['PE'][$employee->people_id];
             }
 
@@ -931,10 +929,8 @@ class PayrollRestController extends Controller
             // Prioridad 3: monto general de la planilla
             if (isset($map['PL'][$employee->payroll_type_id])) {
                 return $map['PL'][$employee->payroll_type_id];
-            }*/
-            return 111;
+            }
         }
-        return [$conceptId,$amountMap, $amountMap[$conceptId] ];
     }
 
     public function get_personal($request){
