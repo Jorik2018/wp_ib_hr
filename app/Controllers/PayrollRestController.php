@@ -912,6 +912,7 @@ class PayrollRestController extends Controller
     }
 
     private function resolveAmount($conceptId, $employee, $payrollId, $amountMap) {
+        return $conceptId;
         if (!isset($amountMap[$conceptId])) {
 
             $map = $amountMap[$conceptId];
