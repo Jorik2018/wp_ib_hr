@@ -769,9 +769,9 @@ class PayrollRestController extends Controller
         $amountMap = [];
         foreach ($params as $p) {
             if($p->type=='PL') {
-                $amountMap[''.$p->concept_id][$p->type]['1' /*send the payroll_type_id*/] = $p->amount;
+                $amountMap[$p->concept_id][$p->type]['1' /*send the payroll_type_id*/] = $p->amount;
             } else {
-                $amountMap[''.$p->concept_id][$p->type][$p->target_id] = $p->amount;
+                $amountMap[$p->concept_id][$p->type][$p->target_id] = $p->amount;
             }
         }
          
@@ -811,6 +811,12 @@ class PayrollRestController extends Controller
                 $payroll->id
             )
         );
+        $ingresoConceptIds = [];
+        foreach ($concepts as $c) {
+            if ($c->type_id == 1 || $c->type_id == 2) {
+                $ingresoConceptIds[] = $c->id;
+            }
+        }
         $items = [];
         foreach ($employees as $employee) {
 
@@ -912,13 +918,12 @@ class PayrollRestController extends Controller
     }
 
     private function resolveAmount($conceptId, $employee, $payrollId, $amountMap) {
-        $conceptId=''.$conceptId;
         if (!isset($amountMap[$conceptId])) {
 
             $map = $amountMap[$conceptId];
 
             // Prioridad 1: monto específico a persona
-            /*if (isset($map['PE'][$employee->people_id])) {
+            if (isset($map['PE'][$employee->people_id])) {
                 return $map['PE'][$employee->people_id];
             }
 
@@ -930,8 +935,7 @@ class PayrollRestController extends Controller
             // Prioridad 3: monto general de la planilla
             if (isset($map['PL'][$employee->payroll_type_id])) {
                 return $map['PL'][$employee->payroll_type_id];
-            }*/
-            return 111;
+            }
         }
     }
 
