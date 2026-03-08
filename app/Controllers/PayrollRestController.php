@@ -44,6 +44,11 @@ class PayrollRestController extends Controller
             'callback' => array($this, 'pag')
         ));
 
+        register_rest_route('api/payroll', '(?P<id>\d+)/personal', array(
+            'methods' => 'GET',
+            'callback' => array($this, 'get_personal')
+        ));
+
         register_rest_route('api/payroll', 'add-person', array(
             'methods' => 'POST',
             'callback' => array($this, 'add_person')
@@ -399,289 +404,6 @@ class PayrollRestController extends Controller
         ];
     }
 
-    function obtenerNomina($request)
-    {
-        global $wpdb;
-        $original_db = $wpdb->dbname;
-        $db_erp = get_option("db_ofis");
-        $wpdb->select($db_erp);
-        $year = get_param($request, 'year');
-        $month = get_param($request, 'month');
-        $concepts = $wpdb->get_results($wpdb->prepare("
-    SELECT DISTINCT c.id, c.name, c.pdt_code, c.type_id, c.weight
-    FROM rem_payroll_amount a
-    INNER JOIN per_concept c ON c.id = a.concept_id
-    WHERE a.canceled = 0
-      AND a.ini_date <= %s
-      AND (a.end_date IS NULL OR a.end_date >= %s)
-    ORDER BY c.weight
-", "$year-$month-01", "$year-$month-01"));
-        $ingresos = [];
-        $egresos = [];
-        $descuentos = [];
-        $otros_descuentos = [];
-        $aportaciones = [];
-        foreach ($concepts as $c) {
-
-            $item = [
-                'title' => $c->name,
-                'code'  => $c->pdt_code,
-                'concept_id' => $c->id
-            ];
-
-            if ($c->type_id == 1 || $c->type_id == 2) {
-                $ingresos[] = $item;
-            } elseif ($c->type_id == 3) {
-                $egresos[] = $item;
-            } elseif ($c->type_id == 4) {
-                $descuentos[] = $item;
-            } elseif ($c->type_id == 6) {
-                $otros_descuentos[] = $item;
-            } else {
-                $aportaciones[] = $item;
-            }
-        }
-
-        $ingresos[] = [
-            'title' => 'TOTAL INGRESOS I',
-            'is_total_ingresos' => true,
-            'backgroundColor' => '#badefd',
-            'color' => 'black'
-        ];
-        $egresos[] = [
-            'title' => 'TOTAL',
-            'is_total_ingresos' => true
-        ];
-        $egresos[] = [
-            'title' => 'TOTAL DSCTO. QUE AFECTAN LA BASE IMPONIBLE (A)',
-            'is_total_ingresos' => true,
-            'backgroundColor' => '#badefd',
-            'color' => 'black'
-        ];
-
-        $descuentos[] = [
-            'title' => 'TOTAL DESCUENTOS DE LEY (B)',
-            'is_total_ingresos' => true,
-            'backgroundColor' => '#badefd',
-            'color' => 'black'
-        ];
-
-        $otros_descuentos[] = [
-            'title' => 'TOTAL OTROS DESCUENTOS (C)',
-            'is_total_ingresos' => true,
-            'backgroundColor' => '#badefd',
-            'color' => 'black'
-        ];
-
-        $otros_descuentos[] = [
-            'title' => 'TOTAL DESCUENTOS II = (A + B + C)',
-            'is_total_ingresos' => true,
-            'backgroundColor' => '#badefd',
-            'color' => 'black'
-        ];
-
-        $headers = [
-            ['title' => 'NOMBRE COMPLETO', 'width' => 200, 'index' => 'fullName'],
-            ['title' => 'DIAS LABORADOS', 'width' => 100],
-
-            [
-                'title' => 'INGRESOS',
-                'backgroundColor' => '#fbff00',
-                'color' => 'black',
-                'width' => 110,
-                'children' => $ingresos
-            ],
-            [
-                'title' => 'EGRESOS QUE AFECTAN LA BASE IMPONIBLE',
-                'backgroundColor' => '#54e05e',
-                'color' => 'black',
-                'width' => 110,
-                'children' => $egresos
-            ],
-
-            [
-                'title' => 'BASE DE CALCULO CONTRIBUCIONES', ///este es calculado
-                'backgroundColor' => '#ad1805',
-                'color' => 'white'
-            ],
-            [
-                'title' => 'BASE DE CALCULO  4TA CATG.', ///este es calculado
-                'backgroundColor' => '#5f10c7',
-                'color' => 'white'
-            ],
-            [
-                'title' => 'DESCUENTOS DE LEY',
-                'backgroundColor' => '#54e05e',
-                'color' => 'black',
-                'children' => $descuentos
-            ],
-            [
-                'title' => 'APORTE SOLID. POR  CONV. COLECTIVO 0.5%',
-            ],
-            [
-                'title' => 'OTROS DESCUENTOS',
-                'backgroundColor' => '#54e05e',
-                'color' => 'black',
-                'children' => $otros_descuentos
-            ],
-            [
-                'title' => 'APORTES',
-                'backgroundColor' => '#54e05e',
-                'children' => $aportaciones
-            ]
-        ];
-        $params = $wpdb->get_results($wpdb->prepare("
-    SELECT concept_id, amount
-    FROM rem_payroll_amount
-    WHERE canceled = 0
-      AND ini_date <= %s
-      AND (end_date IS NULL OR end_date >= %s)
-", "$year-$month-01", "$year-$month-01"));
-
-        $amountMap = [];
-        foreach ($params as $p) {
-            $amountMap[$p->concept_id] = $p->amount;
-        }
-        $diasMes = 30; //cal_days_in_month(CAL_GREGORIAN, $month, $year);
-        $headers = $this->assignLeafIndexes($headers);
-        $ingresoConceptIndexes = [];
-
-        foreach ($headers as $h) {
-            if (!empty($h['children'])) {
-                foreach ($h['children'] as $child) {
-                    if (isset($child['concept_id']) && !empty($child['type']) === false) {
-                        $ingresoConceptIndexes[$child['concept_id']] = $child['index'];
-                    }
-                }
-            }
-        }
-
-
-        $payroll = $this->getOrCreatePayroll($year, $month, 1);
-
-        // Obtener nombres reales
-        /*$employees = $wpdb->get_results(
-            $wpdb->prepare(
-                "SELECT p.apellidos_nombres fullName
-         FROM rem_payroll_people pp
-         INNER JOIN m_personal p ON p.n = pp.people_id
-         WHERE pp.payroll_id = %d
-         ORDER BY 1 ",
-                $payroll->id
-            )
-        );*/
-        $employees = $wpdb->get_results(
-            $wpdb->prepare(
-                "SELECT p.apellidos_nombres fullName, pp.people_id
-         FROM rem_payroll_type_people pp
-         INNER JOIN m_personal p ON p.n = pp.people_id
-         
-         ORDER BY 1 ",
-                $payroll->id
-            )
-        );
-        $ingresoConceptIds = [];
-        foreach ($concepts as $c) {
-            if ($c->type_id == 1 || $c->type_id == 2) {
-                $ingresoConceptIds[] = $c->id;
-            }
-        }
-        $items = [];
-        foreach ($employees as $employee) {
-
-            $workedDays = $employee->worked_days ?? 30;
-
-            $values = [];
-            $values[] = $workedDays;
-
-            $totalIngresos = 0;
-
-            foreach ($concepts as $c) {
-                $baseAmount = $amountMap[$c->id] ?? 0;
-                if ($c->type_id == 1) {
-                    $calculated = round(($baseAmount * $workedDays) / $diasMes, 2);
-                    $totalIngresos += $calculated;
-                    $values[] = $calculated;
-                } else if ($c->type_id == 2) {
-                    $calculated = $baseAmount;
-                    $totalIngresos += $calculated;
-                    $values[] = $calculated;
-                }
-            }
-
-            // insertar TOTAL INGRESOS justo después de los ingresos
-            $values[] = $totalIngresos;
-
-            $totalEgresos = 0;
-
-            foreach ($concepts as $c) {
-                if ($c->type_id == 3) {
-                    $amount = $amountMap[$c->id] ?? 0;
-                    $totalEgresos += $amount;
-                    $values[] = $amount;
-                }
-            }
-
-            //Total
-            $values[] = $totalEgresos;
-
-            //debe caer en TOTAL DSCTO. QUE AFECTAN LA BASE IMPONIBLE (A)
-            $values[] = $totalEgresos;
-
-            //BASE DE CALCULO CONTRIBUCIONES
-            $base_calculo_contribuciones = $totalIngresos - $totalEgresos;
-            $values[] = $base_calculo_contribuciones;
-
-            //BASE DE CALCULO  4TA CATG.
-            $values[] = $totalIngresos - $totalEgresos;
-
-            $descuentos_ley = 0;
-
-            foreach ($concepts as $c) {
-                $baseAmount = $amountMap[$c->id] ?? 0;
-                if ($c->type_id == 4) {
-                    $calculated = round($baseAmount * $base_calculo_contribuciones, 2);
-                    $descuentos_ley += $calculated;
-                    $values[] = $calculated;
-                }
-            }
-
-            $values[] = $descuentos_ley;
-
-            //APORTE SOLID. POR  CONV. COLECTIVO
-            $x = round($base_calculo_contribuciones * 0.005, 2);
-            $values[] = $x;
-
-            $otros_descuentos = $x;
-
-            foreach ($concepts as $c) {
-                $baseAmount = $amountMap[$c->id] ?? 0;
-                if ($c->type_id == 6) {
-                    $otros_descuentos += $baseAmount;
-                    $values[] = $baseAmount;
-                }
-            }
-            $values[] = $otros_descuentos;
-
-            $values[] = $totalEgresos + $descuentos_ley + $otros_descuentos;
-
-
-            $items[] = [
-                'fullName' => $employee->fullName,
-                'peopleId' => $employee->people_id,
-                'values'   => $values
-            ];
-        }
-        $wpdb->select($original_db);
-        return [
-            'success' => true,
-            'data' => $items,
-            'x' => 12,
-            'headers' => $headers,
-            'payroll' => $payroll
-        ];
-    }
-
     function loadPayroll($id)
     {
         global $wpdb;
@@ -923,64 +645,309 @@ class PayrollRestController extends Controller
     public function period($request)
     {
         return $this->obtenerNomina($request);
-        global $wpdb;
-        $edb = 2;
-        $from = $request['from'];
-        $to = $request['to'];
-        $numeroDNI = get_param($request, 'numeroDNI');
-        $fullName = get_param($request, 'fullName');
-        $red = get_param($request, 'red');
-        $microred = get_param($request, 'microred');
-        $microredName = get_param($request, 'microredName');
-        $current_user = wp_get_current_user();
-        $wpdb->last_error  = '';
-
-        $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS g.*,r.red as nameRed,mr.microred as nameMicroRed,COUNT(v.id) AS visits FROM ds_gestante g " .
-            "LEFT JOIN ds_gestante_visita v ON v.gestante_id=g.id 
-            LEFT JOIN grupoipe_project.MAESTRO_RED r ON r.codigo_red=g.red
-            LEFT JOIN grupoipe_project.MAESTRO_MICRORED mr ON mr.codigo_cocadenado=g.microred
-            WHERE g.canceled=0 " . (isset($numeroDNI) ? " AND g.numero_dni like '%$numeroDNI%' " : "")
-            . (isset($fullName) ? " AND CONCAT(g.apellido_paterno,g.apellido_materno,g.nombres) like '%$fullName%' " : "")
-            . (isset($red) ? " AND g.red like '%$red%' " : "")
-            . (isset($microred) ? " AND g.microred like '%$microred%' " : "")
-            . (isset($microredName) ? " AND UPPER(mr.microred) like UPPER('%$microredName%') " : "") .
-            "GROUP BY g.id " .
-            "ORDER BY id desc LIMIT " . $from . ', ' . $to, ARRAY_A);
-
-        if ($wpdb->last_error) return t_error();
-        foreach ($results as &$r) {
-            cfield($r, 'numero_dni', 'numeroDNI');
-            if (isset($r['nameRed'])) $r['red'] = array('code' => $r['red'], 'name' => $r['nameRed']);
-            if (isset($r['nameMicroRed'])) $r['microred'] = array('code' => $r['microred'], 'name' => $r['nameMicroRed']);
-            cfield($r, 'estado_civil', 'estadoCivil');
-            cfield($r, 'emergency_microred', 'emergencyMicrored');
-            cfield($r, 'grado_instruccion', 'gradoInstruccion');
-        }
-        $count = $wpdb->get_var('SELECT FOUND_ROWS()');
-        if ($wpdb->last_error) return t_error();
-        return array('data' => $results, 'size' => $count);
     }
 
-
-    public function visit_pag($request)
+    function obtenerNomina($request)
     {
         global $wpdb;
-        $from = $request['from'];
-        $to = $request['to'];
-        $gestanteId = get_param($request, 'gestanteId');
-        $current_user = wp_get_current_user();
-        $wpdb->last_error  = '';
-        $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS * FROM ds_gestante_visita d Where canceled=0 " . ($gestanteId ? "AND gestante_id=$gestanteId" : "") . " ORDER BY id desc " . ($to ? "LIMIT " . $from . ', ' . $to : ""), ARRAY_A);
-        if ($wpdb->last_error) return t_error();
-        foreach ($results as &$r) {
-            cfield($r, 'fecha_visita', 'fechaVisita');
-            cfield($r, 'numero_visita', 'number');
-            cfield($r, 'gestante_id', 'gestanteId');
-        }
-        $count = $wpdb->get_var('SELECT FOUND_ROWS()');
-        if ($wpdb->last_error) return t_error();
+        $original_db = $wpdb->dbname;
+        $db_erp = get_option("db_ofis");
+        $wpdb->select($db_erp);
+        $year = get_param($request, 'year');
+        $month = get_param($request, 'month');
+        $concepts = $wpdb->get_results($wpdb->prepare("
+            SELECT DISTINCT c.id, c.name, c.pdt_code, c.type_id, c.weight
+            FROM rem_payroll_amount a
+            INNER JOIN per_concept c ON c.id = a.concept_id
+            WHERE a.canceled = 0
+                AND a.ini_date <= %s
+                AND (a.end_date IS NULL OR a.end_date >= %s)
+            ORDER BY c.weight
+            ", "$year-$month-01", "$year-$month-01"));
+        $ingresos = [];
+        $egresos = [];
+        $descuentos = [];
+        $otros_descuentos = [];
+        $aportaciones = [];
+        foreach ($concepts as $c) {
 
-        return $to ? array('data' => $results, 'size' => $count) : $results;
+            $item = [
+                'title' => $c->name,
+                'code'  => $c->pdt_code,
+                'concept_id' => $c->id
+            ];
+
+            if ($c->type_id == 1 || $c->type_id == 2) {
+                $ingresos[] = $item;
+            } elseif ($c->type_id == 3) {
+                $egresos[] = $item;
+            } elseif ($c->type_id == 4) {
+                $descuentos[] = $item;
+            } elseif ($c->type_id == 6) {
+                $otros_descuentos[] = $item;
+            } else {
+                $aportaciones[] = $item;
+            }
+        }
+
+        $ingresos[] = [
+            'title' => 'TOTAL INGRESOS I',
+            'is_total_ingresos' => true,
+            'backgroundColor' => '#badefd',
+            'color' => 'black'
+        ];
+        $egresos[] = [
+            'title' => 'TOTAL',
+            'is_total_ingresos' => true
+        ];
+        $egresos[] = [
+            'title' => 'TOTAL DSCTO. QUE AFECTAN LA BASE IMPONIBLE (A)',
+            'is_total_ingresos' => true,
+            'backgroundColor' => '#badefd',
+            'color' => 'black'
+        ];
+
+        $descuentos[] = [
+            'title' => 'TOTAL DESCUENTOS DE LEY (B)',
+            'is_total_ingresos' => true,
+            'backgroundColor' => '#badefd',
+            'color' => 'black'
+        ];
+
+        $otros_descuentos[] = [
+            'title' => 'TOTAL OTROS DESCUENTOS (C)',
+            'is_total_ingresos' => true,
+            'backgroundColor' => '#badefd',
+            'color' => 'black'
+        ];
+
+        $otros_descuentos[] = [
+            'title' => 'TOTAL DESCUENTOS II = (A + B + C)',
+            'is_total_ingresos' => true,
+            'backgroundColor' => '#badefd',
+            'color' => 'black'
+        ];
+
+        $headers = [
+            ['title' => 'NOMBRE COMPLETO', 'width' => 200, 'index' => 'fullName'],
+            ['title' => 'DIAS LABORADOS', 'width' => 100],
+
+            [
+                'title' => 'INGRESOS',
+                'backgroundColor' => '#fbff00',
+                'color' => 'black',
+                'width' => 110,
+                'children' => $ingresos
+            ],
+            [
+                'title' => 'EGRESOS QUE AFECTAN LA BASE IMPONIBLE',
+                'backgroundColor' => '#54e05e',
+                'color' => 'black',
+                'width' => 110,
+                'children' => $egresos
+            ],
+
+            [
+                'title' => 'BASE DE CALCULO CONTRIBUCIONES', ///este es calculado
+                'backgroundColor' => '#ad1805',
+                'color' => 'white'
+            ],
+            [
+                'title' => 'BASE DE CALCULO  4TA CATG.', ///este es calculado
+                'backgroundColor' => '#5f10c7',
+                'color' => 'white'
+            ],
+            [
+                'title' => 'DESCUENTOS DE LEY',
+                'backgroundColor' => '#54e05e',
+                'color' => 'black',
+                'children' => $descuentos
+            ],
+            [
+                'title' => 'APORTE SOLID. POR  CONV. COLECTIVO 0.5%',
+            ],
+            [
+                'title' => 'OTROS DESCUENTOS',
+                'backgroundColor' => '#54e05e',
+                'color' => 'black',
+                'children' => $otros_descuentos
+            ],
+            [
+                'title' => 'APORTES',
+                'backgroundColor' => '#54e05e',
+                'children' => $aportaciones
+            ]
+        ];
+        $params = $wpdb->get_results($wpdb->prepare("
+            SELECT concept_id, amount
+            FROM rem_payroll_amount
+            WHERE canceled = 0
+            AND ini_date <= %s
+            AND (end_date IS NULL OR end_date >= %s)
+        ", "$year-$month-01", "$year-$month-01"));
+
+        $amountMap = [];
+        foreach ($params as $p) {
+            $amountMap[$p->concept_id] = $p->amount;
+        }
+        $diasMes = 30; //cal_days_in_month(CAL_GREGORIAN, $month, $year);
+        $headers = $this->assignLeafIndexes($headers);
+        $ingresoConceptIndexes = [];
+
+        foreach ($headers as $h) {
+            if (!empty($h['children'])) {
+                foreach ($h['children'] as $child) {
+                    if (isset($child['concept_id']) && !empty($child['type']) === false) {
+                        $ingresoConceptIndexes[$child['concept_id']] = $child['index'];
+                    }
+                }
+            }
+        }
+
+
+        $payroll = $this->getOrCreatePayroll($year, $month, 1);
+
+        // Obtener nombres reales
+        /*$employees = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT p.apellidos_nombres fullName
+         FROM rem_payroll_people pp
+         INNER JOIN m_personal p ON p.n = pp.people_id
+         WHERE pp.payroll_id = %d
+         ORDER BY 1 ",
+                $payroll->id
+            )
+        );*/
+        $employees = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT p.apellidos_nombres fullName, pp.people_id
+         FROM rem_payroll_type_people pp
+         INNER JOIN m_personal p ON p.n = pp.people_id
+         
+         ORDER BY 1 ",
+                $payroll->id
+            )
+        );
+        $ingresoConceptIds = [];
+        foreach ($concepts as $c) {
+            if ($c->type_id == 1 || $c->type_id == 2) {
+                $ingresoConceptIds[] = $c->id;
+            }
+        }
+        $items = [];
+        foreach ($employees as $employee) {
+
+            $workedDays = $employee->worked_days ?? 30;
+
+            $values = [];
+            $values[] = $workedDays;
+
+            $totalIngresos = 0;
+
+            foreach ($concepts as $c) {
+                $baseAmount = $amountMap[$c->id] ?? 0;
+                if ($c->type_id == 1) {
+                    $calculated = round(($baseAmount * $workedDays) / $diasMes, 2);
+                    $totalIngresos += $calculated;
+                    $values[] = $calculated;
+                } else if ($c->type_id == 2) {
+                    $calculated = $baseAmount;
+                    $totalIngresos += $calculated;
+                    $values[] = $calculated;
+                }
+            }
+
+            // insertar TOTAL INGRESOS justo después de los ingresos
+            $values[] = $totalIngresos;
+
+            $totalEgresos = 0;
+
+            foreach ($concepts as $c) {
+                if ($c->type_id == 3) {
+                    $amount = $amountMap[$c->id] ?? 0;
+                    $totalEgresos += $amount;
+                    $values[] = $amount;
+                }
+            }
+
+            //Total
+            $values[] = $totalEgresos;
+
+            //debe caer en TOTAL DSCTO. QUE AFECTAN LA BASE IMPONIBLE (A)
+            $values[] = $totalEgresos;
+
+            //BASE DE CALCULO CONTRIBUCIONES
+            $base_calculo_contribuciones = $totalIngresos - $totalEgresos;
+            $values[] = $base_calculo_contribuciones;
+
+            //BASE DE CALCULO  4TA CATG.
+            $values[] = $totalIngresos - $totalEgresos;
+
+            $descuentos_ley = 0;
+
+            foreach ($concepts as $c) {
+                $baseAmount = $amountMap[$c->id] ?? 0;
+                if ($c->type_id == 4) {
+                    $calculated = round($baseAmount * $base_calculo_contribuciones, 2);
+                    $descuentos_ley += $calculated;
+                    $values[] = $calculated;
+                }
+            }
+
+            $values[] = $descuentos_ley;
+
+            //APORTE SOLID. POR  CONV. COLECTIVO
+            $x = round($base_calculo_contribuciones * 0.005, 2);
+            $values[] = $x;
+
+            $otros_descuentos = $x;
+
+            foreach ($concepts as $c) {
+                $baseAmount = $amountMap[$c->id] ?? 0;
+                if ($c->type_id == 6) {
+                    $otros_descuentos += $baseAmount;
+                    $values[] = $baseAmount;
+                }
+            }
+            $values[] = $otros_descuentos;
+
+            $values[] = $totalEgresos + $descuentos_ley + $otros_descuentos;
+
+
+            $items[] = [
+                'fullName' => $employee->fullName,
+                'peopleId' => $employee->people_id,
+                'values'   => $values
+            ];
+        }
+        $wpdb->select($original_db);
+        return [
+            'success' => true,
+            'data' => $items,
+            'x' => 12,
+            'headers' => $headers,
+            'payroll' => $payroll
+        ];
+    }
+
+    public function get_personal($request){
+        global $wpdb;
+        $original_db = $wpdb->dbname;
+        $db_erp = get_option("db_ofis");
+        $wpdb->select($db_erp);
+        $employees = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT p.apellidos_nombres fullName, pp.people_id id, p.dni code
+         FROM rem_payroll_type_people pp
+         INNER JOIN m_personal p ON p.n = pp.people_id
+         
+         ORDER BY 1 ",
+                1
+            )
+        );
+        $wpdb->select($original_db);
+        return $employees;
+
     }
 
     public function delete($data)
@@ -990,72 +957,4 @@ class PayrollRestController extends Controller
         return $row;
     }
 
-    function visit_post(&$request)
-    {
-        global $wpdb;
-        $o = get_param($request);
-        $current_user = wp_get_current_user();
-        cdfield($o, 'fechaVisita');
-
-        cfield($o, 'pregnantId', 'gestante_id');
-        cfield($o, 'fechaVisita', 'fecha_visita');
-        cfield($o, 'number', 'numero_visita');
-        cdfield($o, 'fechaProxVisita');
-        cfield($o, 'fechaProxVisita', 'fecha_prox_visita');
-        unset($o['people']);
-        unset($o['ext']);
-        $tmpId = remove($o, 'tmpId');
-        unset($o['synchronized']);
-        $o['uid'] = $current_user->ID;
-
-        $inserted = 0;
-        if ($o['id'] > 0) {
-            $o['updated_date'] = current_time('mysql', 1);
-            $updated = $wpdb->update('ds_gestante_visita', $o, array('id' => $o['id']));
-        } else {
-            unset($o['id']);
-            $max = $wpdb->get_row($wpdb->prepare("SELECT ifnull(max(`numero_visita`),0)+1 AS max FROM ds_gestante_visita WHERE gestante_id=" . $o['gestante_id']), ARRAY_A);
-            $o['numero_visita'] = $max['max'];
-            $o['user_register'] = $current_user->user_login;
-            $o['inserted_date'] = current_time('mysql', 1);
-            if ($tmpId) $o['offline'] = $tmpId;
-            $updated = $wpdb->insert('ds_gestante_visita', $o);
-            $o['id'] = $wpdb->insert_id;
-            $inserted = 1;
-        }
-        if (false === $updated) return t_error();
-        if ($inserted && $tmpId) {
-            $updated = $wpdb->update('ds_sivico_agreement', array('people_id' => $o['id']), array('people_id' => -$tmpId));
-            if (false === $updated) return t_error();
-        }
-        if ($tmpId) {
-            $o['tmpId'] = $tmpId;
-            $o['synchronized'] = 1;
-        }
-
-        cfield($o, 'numero_visita', 'numeroVisita');
-        return $o;
-    }
-
-    function visit_get($data)
-    {
-        global $wpdb;
-        //$data=method_exists($data,'get_params')?$data->get_params():$data;
-        $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM ds_gestante_visita WHERE id=" . $data['id']), ARRAY_A);
-        if ($wpdb->last_error) return t_error();
-        cfield($o, 'fecha_visita', 'fechaVisita');
-        cdfield($o, 'fechaProxVisita');
-        cfield($o, 'fecha_prox_visita', 'fechaProxVisita');
-        cfield($o, 'numero_visita', 'number');
-        cfield($o, 'gestante_id', 'pregnantId');
-        cdfield($o, 'fechaVisita');
-        return $o;
-    }
-
-    function visit_number_get($request)
-    {
-        global $wpdb;
-        $max = $wpdb->get_row($wpdb->prepare("SELECT ifnull(max(`numero_visita`),0)+1 AS max FROM ds_gestante_visita WHERE gestante_id=" . $request['pregnant']), ARRAY_A);
-        return $max['max'];
-    }
 }
