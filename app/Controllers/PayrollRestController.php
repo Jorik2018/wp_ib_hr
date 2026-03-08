@@ -626,7 +626,7 @@ class PayrollRestController extends Controller
     }
 
 
-    public function obtenerNomina($request)
+    public function period($request)
     {
         global $wpdb;
         $original_db = $wpdb->dbname;
