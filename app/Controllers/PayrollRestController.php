@@ -804,7 +804,7 @@ class PayrollRestController extends Controller
         );*/
         $employees = $wpdb->get_results(
             $wpdb->prepare(
-                "SELECT p.apellidos_nombres fullName, pp.payroll_type_id, pp.people_id, p.afp_onp pensionSystem
+                "SELECT p.apellidos_nombres fullName, pp.payroll_type_id, pp.people_id, p.afp_onp pensionSystem, p.n_cussp nCUSSP
          FROM rem_payroll_type_people pp
          INNER JOIN m_personal p ON p.n = pp.people_id
          ORDER BY 1 ",
@@ -896,6 +896,7 @@ class PayrollRestController extends Controller
                 'fullName' => $employee->fullName,
                 'peopleId' => $employee->people_id,
                 'pensionSystem' => $employee->pensionSystem,
+                'nCUSSP' => $employee->nCUSSP,
                 'payrollTypeId' => $employee->payroll_type_id,
                 'values'   => $values
             ];
