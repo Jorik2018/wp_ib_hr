@@ -912,7 +912,8 @@ class PayrollRestController extends Controller
             'x' => 12,
             'headers' => $headers,
             'payroll' => $payroll,
-            '$amountMap' => $amountMap
+            '$amountMap' => $amountMap,
+            '$concepts' => $concepts
         ];
     }
 
