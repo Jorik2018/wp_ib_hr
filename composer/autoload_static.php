@@ -506,6 +506,7 @@ class ComposerStaticInitab41187644036ee6d526b14dd1cb815f
         'PhpOffice\\PhpSpreadsheet\\Collection\\Memory\\SimpleCache3' => __DIR__ . '/../../vendor' . '/phpoffice/phpspreadsheet/src/PhpSpreadsheet/Collection/Memory/SimpleCache3.php',
         
         'Dompdf\\Dompdf' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Dompdf.php',
+        'Dompdf\\Options' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Options.php',
         
         
         'PhpOffice\\PhpSpreadsheet\\Document\\Properties' => __DIR__ . '/../../vendor' . '/phpoffice/phpspreadsheet/src/PhpSpreadsheet/Document/Properties.php',
