@@ -522,6 +522,7 @@ class ComposerStaticInitab41187644036ee6d526b14dd1cb815f
         'Dompdf\\Css\\Content\\StringPart' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Css/Content/StringPart.php',
         'Dompdf\\Frame\\FrameTree' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Frame/FrameTree.php',
         'Dompdf\\FrameDecorator\\Page' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/FrameDecorator/Page.php',
+        'Dompdf\\FrameDecorator\\Text' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/FrameDecorator/Text.php',
         'Dompdf\\FrameReflower\\Page' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/FrameReflower/Page.php',
         'Dompdf\\FrameReflower\\Block' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/FrameReflower/Block.php',
         'Dompdf\\FrameReflower\\AbstractFrameReflower' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/FrameReflower/AbstractFrameReflower.php',
