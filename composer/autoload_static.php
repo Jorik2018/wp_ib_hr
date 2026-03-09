@@ -519,6 +519,7 @@ class ComposerStaticInitab41187644036ee6d526b14dd1cb815f
         'Dompdf\\Css\\Content\\OpenQuote' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Css/Content/OpenQuote.php',
         'Dompdf\\Css\\Content\\StringPart' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Css/Content/StringPart.php',
         'Dompdf\\Frame\\FrameTree' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Frame/FrameTree.php',
+        'Dompdf\\Frame' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Frame.php',
         'Dompdf\\Frame\\FrameTreeIterator' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Frame/FrameTreeIterator.php',
         'Dompdf\\Dompdf' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Dompdf.php',
         'Dompdf\\Cpdf' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/lib/Cpdf.php',
