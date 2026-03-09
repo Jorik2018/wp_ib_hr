@@ -991,88 +991,92 @@ class PayrollRestController extends Controller
         exit;
     }
 
-    function render_template($data)
-    {
-        ob_start();
-        ?>
+function render_template($data)
+{
+ob_start();
+?>
 
-        <style>
-        body{
-            font-family: Arial;
-            font-size:11px;
-        }
+<style>
+body{
+    font-family: Arial;
+    font-size:11px;
+}
 
-        table{
-            width:100%;
-            border-collapse:collapse;
-        }
+table{
+    width:100%;
+    border-collapse:collapse;
+}
 
-        td,th{
-            border:1px solid #888;
-            padding:4px;
-        }
+td,th{
+    border:1px solid #999;
+    padding:4px;
+}
 
-        .title{
-            text-align:center;
-            font-weight:bold;
-        }
+.title{
+    text-align:center;
+    font-weight:bold;
+}
 
-        .right{
-            text-align:right;
-        }
+.right{
+    text-align:right;
+}
 
-        .bold{
-            font-weight:bold;
-        }
-        </style>
+.page{
+    page-break-after: always;
+}
+</style>
 
-        <table>
-        <tr>
-        <td colspan="6" class="title">
-        BOLETA DE PAGOS CAS - D.LEG. N° 1057
-        </td>
-        </tr>
+<?php foreach($data as $worker): ?>
 
-        <tr>
-        <td><b>Nombre</b></td>
-        <td><?= $data['fullName'] ?></td>
+<div class="page">
 
-        <td><b>RUC</b></td>
-        <td><?= $data['ruc'] ?></td>
+<table>
+<tr>
+<td colspan="6" class="title">
+BOLETA DE PAGOS CAS - D.LEG. N° 1057
+</td>
+</tr>
 
-        <td><b>Mes</b></td>
-        <td><?= $data['month'] ?></td>
-        </tr>
-        </table>
+<tr>
+<td><b>Nombre</b></td>
+<td><?= $worker['fullName'] ?></td>
 
-        <br>
+<td><b>RUC</b></td>
+<td><?= $worker['ruc'] ?></td>
 
-        <table>
-        <tr>
-        <th>INGRESOS</th>
-        <th>MONTO</th>
-        <th>DESCUENTOS</th>
-        <th>MONTO</th>
-        </tr>
+<td><b>Mes</b></td>
+<td><?= $worker['month'] ?? '' ?></td>
+</tr>
+</table>
 
-        <?php foreach($data['values'] as $v): ?>
+<br>
 
-        <tr>
-        <td><?= $v['name'] ?></td>
-        <td class="right"><?= number_format($v['value'],2) ?></td>
+<table>
 
-        <td></td>
-        <td></td>
-        </tr>
+<tr>
+<th>CONCEPTO</th>
+<th>MONTO</th>
+</tr>
 
-        <?php endforeach; ?>
+<?php foreach($worker['values'] as $v): ?>
 
-        </table>
+<tr>
+<td><?= $v['name'] ?></td>
+<td class="right"><?= number_format($v['value'],2) ?></td>
+</tr>
 
-        <?php
+<?php endforeach; ?>
 
-        return ob_get_clean();
-    }
+</table>
+
+</div>
+
+<?php endforeach; ?>
+
+<?php
+
+return ob_get_clean();
+}
 
     public function download($request)
     {
@@ -1099,6 +1103,6 @@ $data = [
 ]
 
 ];
-        $this->export_pdf($data,'data.pdf');
+        $this->export_pdf('data.pdf',$data);
     }
 }
