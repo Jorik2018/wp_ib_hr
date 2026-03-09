@@ -505,10 +505,14 @@ class ComposerStaticInitab41187644036ee6d526b14dd1cb815f
         'PhpOffice\\PhpSpreadsheet\\Collection\\Cells' => __DIR__ . '/../../vendor' . '/phpoffice/phpspreadsheet/src/PhpSpreadsheet/Collection/Cells.php',
         'PhpOffice\\PhpSpreadsheet\\Collection\\Memory\\SimpleCache3' => __DIR__ . '/../../vendor' . '/phpoffice/phpspreadsheet/src/PhpSpreadsheet/Collection/Memory/SimpleCache3.php',
         
+        'Dompdf\\Canvas' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Canvas.php',
         'Dompdf\\Dompdf' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Dompdf.php',
+        'Dompdf\\Exception' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Exception.php',
+        'Dompdf\\FontMetrics' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/FontMetrics.php',
         'Dompdf\\Options' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Options.php',
         'Dompdf\\CanvasFactory' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/CanvasFactory.php',
         'Dompdf\\Helpers' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Helpers.php',
+        'Dompdf\\Adapter\\CPDF' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Adapter/CPDF.php',
         
         
         'PhpOffice\\PhpSpreadsheet\\Document\\Properties' => __DIR__ . '/../../vendor' . '/phpoffice/phpspreadsheet/src/PhpSpreadsheet/Document/Properties.php',
