@@ -533,6 +533,7 @@ class ComposerStaticInitab41187644036ee6d526b14dd1cb815f
         'Masterminds\\HTML5\\Parser\\TreeBuildingRules' => __DIR__ . '/../../vendor' . '/masterminds/html5/src/HTML5/Parser/TreeBuildingRules.php',
         'Masterminds\\HTML5\\Parser\\Scanner' => __DIR__ . '/../../vendor' . '/masterminds/html5/src/HTML5/Parser/Scanner.php',
         'Masterminds\\HTML5\\Parser\\Tokenizer' => __DIR__ . '/../../vendor' . '/masterminds/html5/src/HTML5/Parser/Tokenizer.php',
+        'Masterminds\\HTML5\\Parser\\UTF8Utils' => __DIR__ . '/../../vendor' . '/masterminds/html5/src/HTML5/Parser/UTF8Utils.php',
         'Masterminds\\HTML5\\Parser\\EventHandler' => __DIR__ . '/../../vendor' . '/masterminds/html5/src/HTML5/Parser/EventHandler.php',
         'Masterminds\\HTML5\\Serializer\\OutputRules' => __DIR__ . '/../../vendor' . '/masterminds/html5/src/HTML5/Serializer/OutputRules.php',
         'Masterminds\\HTML5\\Serializer\\Traverser' => __DIR__ . '/../../vendor' . '/masterminds/html5/src/HTML5/Serializer/Traverser.php',
