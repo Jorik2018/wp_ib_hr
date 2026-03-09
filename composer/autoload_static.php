@@ -529,7 +529,12 @@ class ComposerStaticInitab41187644036ee6d526b14dd1cb815f
         'Dompdf\\Adapter\\CPDF' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Adapter/CPDF.php',
         
         'Masterminds\\HTML5' => __DIR__ . '/../../vendor' . '/masterminds/html5/src/HTML5.php',
-        
+        'Masterminds\\HTML5\\Parser\\DOMTreeBuilder' => __DIR__ . '/../../vendor' . '/masterminds/html5/src/HTML5/Parser/DOMTreeBuilder.php',
+        'Masterminds\\HTML5\\Parser\\Scanner' => __DIR__ . '/../../vendor' . '/masterminds/html5/src/HTML5/Parser/Scanner.php',
+        'Masterminds\\HTML5\\Parser\\Tokenizer' => __DIR__ . '/../../vendor' . '/masterminds/html5/src/HTML5/Parser/Tokenizer.php',
+        'Masterminds\\HTML5\\Serializer\\OutputRules' => __DIR__ . '/../../vendor' . '/masterminds/html5/src/HTML5/Serializer/OutputRules.php',
+        'Masterminds\\HTML5\\Serializer\\Traverser' => __DIR__ . '/../../vendor' . '/masterminds/html5/src/HTML5/Serializer/Traverser.php',
+                
         'PhpOffice\\PhpSpreadsheet\\Document\\Properties' => __DIR__ . '/../../vendor' . '/phpoffice/phpspreadsheet/src/PhpSpreadsheet/Document/Properties.php',
         'PhpOffice\\PhpSpreadsheet\\Document\\Security' => __DIR__ . '/../../vendor' . '/phpoffice/phpspreadsheet/src/PhpSpreadsheet/Document/Security.php',
         'PhpOffice\\PhpSpreadsheet\\Theme' => __DIR__ . '/../../vendor' . '/phpoffice/phpspreadsheet/src/PhpSpreadsheet/Theme.php',
