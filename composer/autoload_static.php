@@ -554,6 +554,7 @@ class ComposerStaticInitab41187644036ee6d526b14dd1cb815f
         'Dompdf\\Exception' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Exception.php',
         'Dompdf\\FontMetrics' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/FontMetrics.php',
         'Dompdf\\Options' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Options.php',
+        'Dompdf\\Renderer' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Renderer.php',
         'Dompdf\\CanvasFactory' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/CanvasFactory.php',
         'Dompdf\\Helpers' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Helpers.php',
         'Dompdf\\Adapter\\CPDF' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Adapter/CPDF.php',
