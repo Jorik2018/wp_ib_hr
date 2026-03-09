@@ -507,6 +507,8 @@ class ComposerStaticInitab41187644036ee6d526b14dd1cb815f
         
         'Dompdf\\Dompdf' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Dompdf.php',
         'Dompdf\\Options' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Options.php',
+        'Dompdf\\CanvasFactory' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/CanvasFactory.php',
+        'Dompdf\\Helpers' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Helpers.php',
         
         
         'PhpOffice\\PhpSpreadsheet\\Document\\Properties' => __DIR__ . '/../../vendor' . '/phpoffice/phpspreadsheet/src/PhpSpreadsheet/Document/Properties.php',
