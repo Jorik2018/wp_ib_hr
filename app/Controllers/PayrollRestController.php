@@ -8,6 +8,7 @@ use function IB\directory\Util\cfield;
 use function IB\directory\Util\get_param;
 use function IB\directory\Util\cdfield;
 use function IB\directory\Util\t_error;
+use Dompdf\Dompdf;
 
 class PayrollRestController extends Controller
 {
@@ -57,6 +58,11 @@ class PayrollRestController extends Controller
         register_rest_route('api/payroll', 'add-concept', array(
             'methods' => 'POST',
             'callback' => array($this, 'add_concept')
+        ));
+
+        register_rest_route('api/payroll', '/download', array(
+            'methods' => 'POST',
+            'callback' => array($this, 'download')
         ));
     }
 
@@ -963,4 +969,136 @@ class PayrollRestController extends Controller
         return $row;
     }
 
+    function export_pdf($filename, $data)
+    {
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+
+        $html = $this->render_template($data);
+
+        $dompdf = new Dompdf([
+            'isRemoteEnabled' => true
+        ]);
+
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        header("Content-Type: application/pdf");
+        header("Content-Disposition: attachment; filename=\"{$filename}.pdf\"");
+        echo $dompdf->output();
+        exit;
+    }
+
+    function render_template($data)
+    {
+        ob_start();
+        ?>
+
+        <style>
+        body{
+            font-family: Arial;
+            font-size:11px;
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+        }
+
+        td,th{
+            border:1px solid #888;
+            padding:4px;
+        }
+
+        .title{
+            text-align:center;
+            font-weight:bold;
+        }
+
+        .right{
+            text-align:right;
+        }
+
+        .bold{
+            font-weight:bold;
+        }
+        </style>
+
+        <table>
+        <tr>
+        <td colspan="6" class="title">
+        BOLETA DE PAGOS CAS - D.LEG. N° 1057
+        </td>
+        </tr>
+
+        <tr>
+        <td><b>Nombre</b></td>
+        <td><?= $data['fullName'] ?></td>
+
+        <td><b>RUC</b></td>
+        <td><?= $data['ruc'] ?></td>
+
+        <td><b>Mes</b></td>
+        <td><?= $data['month'] ?></td>
+        </tr>
+        </table>
+
+        <br>
+
+        <table>
+        <tr>
+        <th>INGRESOS</th>
+        <th>MONTO</th>
+        <th>DESCUENTOS</th>
+        <th>MONTO</th>
+        </tr>
+
+        <?php foreach($data['values'] as $v): ?>
+
+        <tr>
+        <td><?= $v['name'] ?></td>
+        <td class="right"><?= number_format($v['value'],2) ?></td>
+
+        <td></td>
+        <td></td>
+        </tr>
+
+        <?php endforeach; ?>
+
+        </table>
+
+        <?php
+
+        return ob_get_clean();
+    }
+
+    public function download($request)
+    {
+$data = [
+
+[
+    "fullName"=>"VEGA TARAZONA TROY",
+    "ruc"=>"20613449869",
+    "month"=>"ENERO 2026",
+    "values"=>[
+        ["type"=>1,"name"=>"CONTRAPRESTACION","value"=>2500],
+        ["type"=>1,"name"=>"D.S. 313","value"=>64.19],
+    ]
+],
+
+[
+    "fullName"=>"JUAN PEREZ",
+    "ruc"=>"20111111111",
+    "month"=>"ENERO 2026",
+    "values"=>[
+        ["type"=>1,"name"=>"CONTRAPRESTACION","value"=>2300],
+        ["type"=>1,"name"=>"BONO","value"=>200],
+    ]
+]
+
+];
+        $this->export_pdf($data,'data.pdf');
+    }
 }
