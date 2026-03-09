@@ -506,6 +506,9 @@ class ComposerStaticInitab41187644036ee6d526b14dd1cb815f
         'PhpOffice\\PhpSpreadsheet\\Collection\\Memory\\SimpleCache3' => __DIR__ . '/../../vendor' . '/phpoffice/phpspreadsheet/src/PhpSpreadsheet/Collection/Memory/SimpleCache3.php',
         
         'Dompdf\\Canvas' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Canvas.php',
+        'Dompdf\\Css\\Stylesheet' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Css/Stylesheet.php',
+        'Dompdf\\Css\\Content\\Url' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Css/Content/Url.php',
+        'Dompdf\\Frame\\FrameTree' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Frame/FrameTree.php',
         'Dompdf\\Dompdf' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Dompdf.php',
         'Dompdf\\Cpdf' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/lib/Cpdf.php',
         'Dompdf\\Exception' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Exception.php',
