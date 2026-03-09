@@ -568,6 +568,7 @@ class ComposerStaticInitab41187644036ee6d526b14dd1cb815f
         'Dompdf\\CanvasFactory' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/CanvasFactory.php',
         'Dompdf\\Helpers' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Helpers.php',
         'Dompdf\\Adapter\\CPDF' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Adapter/CPDF.php',
+        'Dompdf\\Image\\Cache' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Image/Cache.php',
         
         'Masterminds\\HTML5' => __DIR__ . '/../../vendor' . '/masterminds/html5/src/HTML5.php',
         'Masterminds\\HTML5\\Parser\\DOMTreeBuilder' => __DIR__ . '/../../vendor' . '/masterminds/html5/src/HTML5/Parser/DOMTreeBuilder.php',
