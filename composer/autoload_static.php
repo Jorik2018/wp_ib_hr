@@ -538,6 +538,7 @@ class ComposerStaticInitab41187644036ee6d526b14dd1cb815f
         'Masterminds\\HTML5\\Parser\\EventHandler' => __DIR__ . '/../../vendor' . '/masterminds/html5/src/HTML5/Parser/EventHandler.php',
         'Masterminds\\HTML5\\Serializer\\OutputRules' => __DIR__ . '/../../vendor' . '/masterminds/html5/src/HTML5/Serializer/OutputRules.php',
         'Masterminds\\HTML5\\Serializer\\Traverser' => __DIR__ . '/../../vendor' . '/masterminds/html5/src/HTML5/Serializer/Traverser.php',
+        'Masterminds\\HTML5\\Serializer\\RulesInterface' => __DIR__ . '/../../vendor' . '/masterminds/html5/src/HTML5/Serializer/RulesInterface.php',
                 
         'PhpOffice\\PhpSpreadsheet\\Document\\Properties' => __DIR__ . '/../../vendor' . '/phpoffice/phpspreadsheet/src/PhpSpreadsheet/Document/Properties.php',
         'PhpOffice\\PhpSpreadsheet\\Document\\Security' => __DIR__ . '/../../vendor' . '/phpoffice/phpspreadsheet/src/PhpSpreadsheet/Document/Security.php',
