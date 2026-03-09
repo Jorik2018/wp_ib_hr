@@ -508,6 +508,7 @@ class ComposerStaticInitab41187644036ee6d526b14dd1cb815f
         'Dompdf\\Canvas' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Canvas.php',
         'Dompdf\\Css\\Stylesheet' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Css/Stylesheet.php',
         'Dompdf\\Css\\Style' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Css/Style.php',
+        'Dompdf\\Css\\Color' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Css/Color.php',
         'Dompdf\\Css\\Content\\Url' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Css/Content/Url.php',
         'Dompdf\\Css\\Content\\Attr' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Css/Content/Attr.php',
         'Dompdf\\Css\\Content\\CloseQuote' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/Css/Content/CloseQuote.php',
