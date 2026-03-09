@@ -533,6 +533,7 @@ class ComposerStaticInitab41187644036ee6d526b14dd1cb815f
         'Dompdf\\FrameReflower\\AbstractFrameReflower' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/FrameReflower/AbstractFrameReflower.php',
         'Dompdf\\FrameDecorator\\AbstractFrameDecorator' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/FrameDecorator/AbstractFrameDecorator.php',
         'Dompdf\\FrameDecorator\\Block' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/FrameDecorator/Block.php',
+        'Dompdf\\FrameDecorator\\Inline' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/FrameDecorator/Inline.php',
         'Dompdf\\FrameDecorator\\Table' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/FrameDecorator/Table.php',
         'Dompdf\\FrameDecorator\\TableCell' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/FrameDecorator/TableCell.php',
         'Dompdf\\FrameDecorator\\TableRowGroup' => __DIR__ . '/../../vendor' . '/dompdf/dompdf/src/FrameDecorator/TableRowGroup.php',
