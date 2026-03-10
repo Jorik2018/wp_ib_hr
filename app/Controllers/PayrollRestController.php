@@ -1111,12 +1111,15 @@ class PayrollRestController extends Controller
                 <td class="right"><?= number_format($worker['netIncome'],2) ?></td>
                 <td colspan="4"></td>
             </tr>
+        </table>
+        <table>
             <tr>
-            <th colspan="6" height="50"></th>
+            <th height="50"></th>
+            <th height="50"></th>
             </tr>
             <tr>
-            <th colspan="3">EMPLEADOR</th>
-            <th colspan="3">TRABAJADOR</th>
+            <th>EMPLEADOR</th>
+            <th>TRABAJADOR</th>
             </tr>
         </table>
 
