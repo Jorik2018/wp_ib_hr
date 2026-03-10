@@ -1029,22 +1029,28 @@ class PayrollRestController extends Controller
         <div class="boleta">
 
         <table>
-        <tr>
-        <td colspan="6" class="title">
-        BOLETA DE PAGOS CAS - D.LEG. N° 1057
-        </td>
-        </tr>
+            <tr>
+                <td colspan="6" class="title">
+                BOLETA DE PAGOS CAS - D.LEG. N° 1057
+                </td>
+            </tr>
+            <tr>
+                <td colspan="3"><b>RUC: <?= $worker['code'] ?></b></td>
+                <td colspan="3" class="right">MES DE PAGO: <?= $worker['month'] ?? '' ?></td>
+            </tr>
+            <tr>
+                <td colspan="6"></td>
+            </tr>
+            <tr>
+                <td><b>Dependencia:</b></td>
+                <td><?= $worker['fullName'] ?></td>
 
-        <tr>
-        <td><b>Nombre</b></td>
-        <td><?= $worker['fullName'] ?></td>
+                <td><b>RUC</b></td>
+                <td><?= $worker['code'] ?></td>
 
-        <td><b>RUC</b></td>
-        <td><?= $worker['code'] ?></td>
-
-        <td><b>Mes</b></td>
-        <td><?= $worker['month'] ?? '' ?></td>
-        </tr>
+                <td><b>Nivel Remunerativo:</b></td>
+                <td><?= $worker['period'] ?? '' ?></td>
+            </tr>
         </table>
 
         <br>
