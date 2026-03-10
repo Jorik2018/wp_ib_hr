@@ -991,118 +991,152 @@ class PayrollRestController extends Controller
         exit;
     }
 
-function render_template($data)
-{
-ob_start();
-?>
+    function render_template($data) {
+            ob_start();
+        ?>
+        <style>
+            body{
+                font-family: Arial;
+                font-size:11px;
+            }
 
-<style>
-body{
-    font-family: Arial;
-    font-size:11px;
-}
+            table{
+                width:100%;
+                border-collapse:collapse;
+            }
 
-table{
-    width:100%;
-    border-collapse:collapse;
-}
+            td,th{
+                border:1px solid #999;
+                padding:4px;
+            }
 
-td,th{
-    border:1px solid #999;
-    padding:4px;
-}
+            .title{
+                text-align:center;
+                font-weight:bold;
+            }
 
-.title{
-    text-align:center;
-    font-weight:bold;
-}
+            .right{
+                text-align:right;
+            }
 
-.right{
-    text-align:right;
-}
+            .boleta{
+                margin-bottom:20px;
+                page-break-inside: avoid;
+            }
+        </style>
+        <?php foreach($data as $worker): ?>
 
-.boleta{
-    margin-bottom:20px;
-    page-break-inside: avoid;
-}
-</style>
+        <div class="boleta">
 
-<?php foreach($data as $worker): ?>
+        <table>
+        <tr>
+        <td colspan="6" class="title">
+        BOLETA DE PAGOS CAS - D.LEG. N° 1057
+        </td>
+        </tr>
 
-<div class="boleta">
+        <tr>
+        <td><b>Nombre</b></td>
+        <td><?= $worker['fullName'] ?></td>
 
-<table>
-<tr>
-<td colspan="6" class="title">
-BOLETA DE PAGOS CAS - D.LEG. N° 1057
-</td>
-</tr>
+        <td><b>RUC</b></td>
+        <td><?= $worker['ruc'] ?></td>
 
-<tr>
-<td><b>Nombre</b></td>
-<td><?= $worker['fullName'] ?></td>
+        <td><b>Mes</b></td>
+        <td><?= $worker['month'] ?? '' ?></td>
+        </tr>
+        </table>
 
-<td><b>RUC</b></td>
-<td><?= $worker['ruc'] ?></td>
+        <br>
 
-<td><b>Mes</b></td>
-<td><?= $worker['month'] ?? '' ?></td>
-</tr>
-</table>
+        <table>
+        <tr>
+        <th>CONCEPTO</th>
+        <th>MONTO</th>
+        </tr>
 
-<br>
+        <?php foreach($worker['values'] as $v): ?>
 
-<table>
-<tr>
-<th>CONCEPTO</th>
-<th>MONTO</th>
-</tr>
+        <tr>
+        <td><?= $v['name'] ?></td>
+        <td class="right"><?= number_format($v['value'],2) ?></td>
+        </tr>
 
-<?php foreach($worker['values'] as $v): ?>
+        <?php endforeach; ?>
 
-<tr>
-<td><?= $v['name'] ?></td>
-<td class="right"><?= number_format($v['value'],2) ?></td>
-</tr>
+        </table>
 
-<?php endforeach; ?>
+        </div>
 
-</table>
+        <?php endforeach; ?>
 
-</div>
+        <?php
 
-<?php endforeach; ?>
-
-<?php
-
-return ob_get_clean();
-}
-
-    public function download($request)
-    {
-$data = [
-
-[
-    "fullName"=>"VEGA TARAZONA TROY",
-    "ruc"=>"20613449869",
-    "month"=>"ENERO 2026",
-    "values"=>[
-        ["type"=>1,"name"=>"CONTRAPRESTACION","value"=>2500],
-        ["type"=>1,"name"=>"D.S. 313","value"=>64.19],
-    ]
-],
-
-[
-    "fullName"=>"JUAN PEREZ",
-    "ruc"=>"20111111111",
-    "month"=>"ENERO 2026",
-    "values"=>[
-        ["type"=>1,"name"=>"CONTRAPRESTACION","value"=>2300],
-        ["type"=>1,"name"=>"BONO","value"=>200],
-    ]
-]
-
-];
-        $this->export_pdf('data.pdf',$data);
+        return ob_get_clean();
     }
+
+    public function download($request) {
+        global $wpdb;
+
+        $original_db = $wpdb->dbname;
+        $db_erp = get_option("db_ofis");
+        $wpdb->select($db_erp);
+
+        $year = get_param($request, 'year');
+        $month = get_param($request, 'month');
+
+        $employees = $wpdb->get_results(
+            "SELECT p.apellidos_nombres fullName,
+                    pp.payroll_type_id,
+                    pp.people_id,
+                    p.afp_onp pensionSystem,
+                    p.n_cuspp nCUSPP,
+                    p.dni code
+            FROM rem_payroll_type_people pp
+            INNER JOIN m_personal p ON p.n = pp.people_id
+            ORDER BY 1 "
+        );
+
+        $data = [];
+
+        // posibles conceptos
+        $concepts = [
+            ["type"=>1,"name"=>"CONTRAPRESTACION"],
+            ["type"=>1,"name"=>"D.S. 313"],
+            ["type"=>1,"name"=>"BONO"],
+            ["type"=>1,"name"=>"MOVILIDAD"],
+            ["type"=>1,"name"=>"ASIGNACION"],
+        ];
+
+        foreach ($employees as $employee) {
+
+            $values = [];
+
+            // cantidad aleatoria de conceptos
+            $n = rand(2,4);
+
+            for($i=0;$i<$n;$i++){
+
+                $c = $concepts[array_rand($concepts)];
+
+                $values[] = [
+                    "type"=>$c["type"],
+                    "name"=>$c["name"],
+                    "value"=>rand(500,3000) + rand(0,99)/100
+                ];
+            }
+
+            $data[] = [
+                "fullName"=>$employee->fullName,
+                "ruc"=>"",
+                "month"=>$month." ".$year,
+                "values"=>$values
+            ];
+        }
+
+        $wpdb->select($original_db);
+
+        $this->export_pdf('data',$data);
+    }
+
 }
