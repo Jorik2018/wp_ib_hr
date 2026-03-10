@@ -1021,14 +1021,15 @@ td,th{
     text-align:right;
 }
 
-.page{
-    page-break-after: always;
+.boleta{
+    margin-bottom:20px;
+    page-break-inside: avoid;
 }
 </style>
 
 <?php foreach($data as $worker): ?>
 
-<div class="page">
+<div class="boleta">
 
 <table>
 <tr>
@@ -1052,7 +1053,6 @@ BOLETA DE PAGOS CAS - D.LEG. N° 1057
 <br>
 
 <table>
-
 <tr>
 <th>CONCEPTO</th>
 <th>MONTO</th>
