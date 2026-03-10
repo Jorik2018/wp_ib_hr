@@ -1040,7 +1040,7 @@ class PayrollRestController extends Controller
         <td><?= $worker['fullName'] ?></td>
 
         <td><b>RUC</b></td>
-        <td><?= $worker['ruc'] ?></td>
+        <td><?= $worker['code'] ?></td>
 
         <td><b>Mes</b></td>
         <td><?= $worker['month'] ?? '' ?></td>
