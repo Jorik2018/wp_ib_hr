@@ -1030,26 +1030,48 @@ class PayrollRestController extends Controller
 
         <table>
             <tr>
-                <td colspan="6" class="title">
+                <td colspan="8" class="title">
                 BOLETA DE PAGOS CAS - D.LEG. N° 1057
                 </td>
             </tr>
             <tr>
-                <td colspan="3"><b>RUC: <?= $worker['code'] ?></b></td>
-                <td colspan="3" class="right">MES DE PAGO: <?= $worker['month'] ?? '' ?></td>
+                <td colspan="4"><b>RUC: <?= $worker['code'] ?></b></td>
+                <td colspan="4" class="right">MES DE PAGO: <?= $worker['month'] ?? '' ?></td>
             </tr>
             <tr>
-                <td colspan="6"></td>
+                <td colspan="8"></td>
             </tr>
             <tr>
                 <td><b>Dependencia:</b></td>
-                <td><?= $worker['fullName'] ?></td>
-
-                <td><b>RUC</b></td>
-                <td><?= $worker['code'] ?></td>
-
+                <td colspan="3"><?= $worker['dependence'] ?></td>
                 <td><b>Nivel Remunerativo:</b></td>
-                <td><?= $worker['period'] ?? '' ?></td>
+                <td colspan="3"><?= $worker['remunerativeLevel'] ?? '' ?></td>
+            </tr>
+            <tr>
+                <td><b>Nombre:</b></td>
+                <td colspan="3"><?= $worker['fullName'] ?></td>
+                <td><b>Cargo Estructural:</b></td>
+                <td colspan="3"><?= $worker['position'] ?? '' ?></td>
+            </tr>
+            <tr>
+                <td><b>CUSSP:</b></td>
+                <td colspan="3"><?= $worker['nCUSSP'] ?></td>
+                <td><b>Fecha del Ultimo Contrato:</b></td>
+                <td colspan="3"><?= $worker['period'] ?? '' ?></td>
+            </tr>
+            <tr>
+                <td><b>SNP/AFP:</b></td>
+                <td colspan="3"><?= $worker['pensionSystem'] ?></td>
+                <td><b>Nº de Cuenta Bancaria:</b></td>
+                <td colspan="3"><?= $worker['period'] ?? '' ?></td>
+            </tr>
+            <tr>
+                <td><b>VACACIONES:</b></td>
+                <td><?= $worker['vacations'] ?></td>
+                <td><b>DESC. MED.:</b></td>
+                <td><?= $worker['pensionSystem'] ?></td>
+                <td><b>Monto de Contrato:</b></td>
+                <td colspan="3"><?= $worker['amount'] ?? '' ?></td>
             </tr>
         </table>
 
