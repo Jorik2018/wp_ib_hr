@@ -1096,7 +1096,14 @@ class PayrollRestController extends Controller
             </tr>
 
             <?php endforeach; ?>
-
+            <tr>
+                <td>TOTAL INGRESO</td>
+                <td class="right"><?= number_format($worker['allIncomes'],2) ?></td>
+                <td>TOTAL DESCUENTO</td>
+                <td class="right"><?= number_format($worker['fullName'],2) ?></td>
+                <td>TOTAL APORTE</td>
+                <td class="right"><?= number_format($worker['fullName'],2) ?></td>
+            </tr>
         </table>
 
         </div>
