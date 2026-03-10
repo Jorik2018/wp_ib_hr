@@ -1078,19 +1078,24 @@ class PayrollRestController extends Controller
         <br>
 
         <table>
-        <tr>
-        <th>CONCEPTO</th>
-        <th>MONTO</th>
-        </tr>
+            <tr>
+            <th colspan="2">INGRESOS</th>
+            <th colspan="2">DESCUENTOS</th>
+            <th colspan="2">APORTES</th>
+            </tr>
 
-        <?php foreach($worker['values'] as $v): ?>
+            <?php foreach($worker['values'] as $v): ?>
 
-        <tr>
-        <td><?= $v['name'] ?></td>
-        <td class="right"><?= number_format($v['value'],2) ?></td>
-        </tr>
+            <tr>
+                <td><?= $v['name'] ?></td>
+                <td class="right"><?= number_format($v['value'],2) ?></td>
+                <td><?= $v['name'] ?></td>
+                <td class="right"><?= number_format($v['value'],2) ?></td>
+                <td><?= $v['name'] ?></td>
+                <td class="right"><?= number_format($v['value'],2) ?></td>
+            </tr>
 
-        <?php endforeach; ?>
+            <?php endforeach; ?>
 
         </table>
 
