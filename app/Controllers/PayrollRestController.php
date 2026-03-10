@@ -1074,9 +1074,6 @@ class PayrollRestController extends Controller
                 <td colspan="3"><?= $worker['amount'] ?? '' ?></td>
             </tr>
         </table>
-
-        <br>
-
         <table>
             <tr>
             <th colspan="2">INGRESOS</th>
@@ -1114,8 +1111,8 @@ class PayrollRestController extends Controller
         </table>
         <table>
             <tr>
-            <th height="50"></th>
-            <th height="50"></th>
+            <th height="40"></th>
+            <th height="40"></th>
             </tr>
             <tr>
             <th>EMPLEADOR</th>
