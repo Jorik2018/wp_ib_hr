@@ -64,6 +64,11 @@ class PayrollRestController extends Controller
             'methods' => 'POST',
             'callback' => array($this, 'download')
         ));
+
+        register_rest_route('api/payroll', '/process', array(
+            'methods' => 'POST',
+            'callback' => array($this, 'process')
+        ));
     }
 
     /*
@@ -940,6 +945,289 @@ class PayrollRestController extends Controller
                 return $map['PL'][$employee->payroll_type_id];
             }
         }
+    }
+
+    public function process($request)
+    {
+        global $wpdb;
+
+        $original_db = $wpdb->dbname;
+        $db_erp = get_option("db_ofis");
+        $wpdb->select($db_erp);
+
+        $year=get_param($request,'year');
+        $month=get_param($request,'month');
+
+        $payroll=$this->getOrCreatePayroll($year,$month,1);
+
+        $items=$this->calculatePayroll($year,$month);
+
+        return [$payroll, $items];
+        /*
+        limpiar planilla previa
+        */
+
+        $wpdb->delete("rem_payroll_concept",[
+            "payroll_id"=>$payroll->id
+        ]);
+
+        $wpdb->delete("rem_payroll_people",[
+            "payroll_id"=>$payroll->id
+        ]);
+
+        foreach($items as $item){
+
+            $wpdb->insert("rem_payroll_people",[
+                "payroll_id"=>$payroll->id,
+                "people_id"=>$item["people_id"]
+            ]);
+
+            foreach($item["concepts"] as $c){
+
+                if($c["amount"]==0){
+                    continue;
+                }
+
+                $wpdb->insert("rem_payroll_concept",[
+                    "payroll_id"=>$payroll->id,
+                    "people_id"=>$item["people_id"],
+                    "concept_id"=>$c["concept_id"],
+                    "concept"=>$c["concept"],
+                    "concept_type_id"=>$c["type_id"],
+                    "amount"=>$c["amount"]
+                ]);
+            }
+        }
+
+        $wpdb->select($original_db);
+
+        return [
+            "success"=>true,
+            "payroll_id"=>$payroll->id
+        ];
+    }
+
+    private function calculatePayroll($year,$month)
+    {
+        global $wpdb;
+
+        $date="$year-$month-01";
+
+        /*
+        CONCEPTOS
+        */
+        $concepts=$wpdb->get_results($wpdb->prepare("
+            SELECT c.id,c.name,c.type_id
+            FROM rem_payroll_amount a
+            INNER JOIN per_concept c ON c.id=a.concept_id
+            WHERE a.canceled=0
+            AND a.ini_date<=%s
+            AND (a.end_date IS NULL OR a.end_date>=%s)
+            GROUP BY c.id
+            ORDER BY c.weight
+        ",$date,$date));
+
+        /*
+        AGRUPAR CONCEPTOS POR TIPO
+        */
+
+        $conceptGroups=[
+            1=>[],
+            2=>[],
+            3=>[],
+            4=>[],
+            6=>[]
+        ];
+
+        foreach($concepts as $c){
+            $conceptGroups[$c->type_id][]=$c;
+        }
+
+        /*
+        PARAMETROS DE MONTO
+        */
+
+        $params=$wpdb->get_results($wpdb->prepare("
+            SELECT concept_id,amount,type,target_id,payroll_type_id
+            FROM rem_payroll_amount
+            WHERE canceled=0
+            AND ini_date<=%s
+            AND (end_date IS NULL OR end_date>=%s)
+        ",$date,$date));
+
+        $amountMap=[];
+
+        foreach($params as $p){
+
+            if($p->type=='PL'){
+                $amountMap[$p->concept_id]['PL'][$p->payroll_type_id]=$p->amount;
+            }else{
+                $amountMap[$p->concept_id][$p->type][$p->target_id]=$p->amount;
+            }
+
+        }
+
+        /*
+        EMPLEADOS
+        */
+
+        $employees=$wpdb->get_results("
+            SELECT
+                p.apellidos_nombres fullName,
+                pp.payroll_type_id,
+                pp.people_id,
+                p.afp_onp pensionSystem,
+                p.n_cuspp nCUSPP,
+                p.dni code
+            FROM rem_payroll_type_people pp
+            INNER JOIN m_personal p ON p.n=pp.people_id
+            ORDER BY 1
+        ");
+
+        $diasMes=30;
+
+        $items=[];
+
+        foreach($employees as $employee){
+
+            $workedDays=30;
+
+            $totalIngresos=0;
+            $totalEgresos=0;
+            $descuentosLey=0;
+            $otrosDescuentos=0;
+
+            $conceptResults=[];
+
+            /*
+            INGRESOS PROPORCIONALES
+            */
+
+            foreach($conceptGroups[1] as $c){
+
+                $base=$this->resolveAmount($c->id,$employee,$employee->payroll_type_id,$amountMap);
+
+                $value=round(($base*$workedDays)/$diasMes,2);
+
+                $totalIngresos+=$value;
+
+                $conceptResults[]=[
+                    "concept_id"=>$c->id,
+                    "concept"=>$c->name,
+                    "type_id"=>$c->type_id,
+                    "amount"=>$value
+                ];
+            }
+
+            /*
+            INGRESOS FIJOS
+            */
+
+            foreach($conceptGroups[2] as $c){
+
+                $value=$this->resolveAmount($c->id,$employee,$employee->payroll_type_id,$amountMap);
+
+                $totalIngresos+=$value;
+
+                $conceptResults[]=[
+                    "concept_id"=>$c->id,
+                    "concept"=>$c->name,
+                    "type_id"=>$c->type_id,
+                    "amount"=>$value
+                ];
+            }
+
+            /*
+            EGRESOS
+            */
+
+            foreach($conceptGroups[3] as $c){
+
+                $value=$this->resolveAmount($c->id,$employee,$employee->payroll_type_id,$amountMap);
+
+                $totalEgresos+=$value;
+
+                $conceptResults[]=[
+                    "concept_id"=>$c->id,
+                    "concept"=>$c->name,
+                    "type_id"=>$c->type_id,
+                    "amount"=>$value
+                ];
+            }
+
+            /*
+            BASE CALCULO
+            */
+
+            $baseContrib=$totalIngresos-$totalEgresos;
+
+            /*
+            DESCUENTOS LEY
+            */
+
+            foreach($conceptGroups[4] as $c){
+
+                $base=$this->resolveAmount($c->id,$employee,$employee->payroll_type_id,$amountMap);
+
+                $value=round($base*$baseContrib,2);
+
+                $descuentosLey+=$value;
+
+                $conceptResults[]=[
+                    "concept_id"=>$c->id,
+                    "concept"=>$c->name,
+                    "type_id"=>$c->type_id,
+                    "amount"=>$value
+                ];
+            }
+
+            /*
+            APORTE SOLIDARIO
+            */
+
+            $aporteSolidario=round($baseContrib*0.005,2);
+
+            $otrosDescuentos+=$aporteSolidario;
+
+            /*
+            OTROS DESCUENTOS
+            */
+
+            foreach($conceptGroups[6] as $c){
+
+                $value=$this->resolveAmount($c->id,$employee,$employee->payroll_type_id,$amountMap);
+
+                $otrosDescuentos+=$value;
+
+                $conceptResults[]=[
+                    "concept_id"=>$c->id,
+                    "concept"=>$c->name,
+                    "type_id"=>$c->type_id,
+                    "amount"=>$value
+                ];
+            }
+
+            $items[]=[
+
+                "people_id"=>$employee->people_id,
+                "payroll_type_id"=>$employee->payroll_type_id,
+                "fullName"=>$employee->fullName,
+                "code"=>$employee->code,
+                "pensionSystem"=>$employee->pensionSystem,
+                "nCUSPP"=>$employee->nCUSPP,
+
+                "totals"=>[
+                    "ingresos"=>$totalIngresos,
+                    "egresos"=>$totalEgresos,
+                    "descuentos"=>$descuentosLey,
+                    "otros"=>$otrosDescuentos
+                ],
+
+                "concepts"=>$conceptResults
+            ];
+        }
+
+        return $items;
     }
 
     public function get_personal($request){
