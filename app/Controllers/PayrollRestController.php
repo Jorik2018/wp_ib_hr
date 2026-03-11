@@ -1162,7 +1162,7 @@ class PayrollRestController extends Controller
                 p.dni code,
                 pp.position,
                 pp.remunerative_level remunerativeLevel,
-                d.maestro_unidad dependence
+                d.unidad_organica dependence
             FROM rem_payroll_people pp
             LEFT JOIN m_personal p ON p.n = pp.people_id
             LEFT JOIN maestro_unidad d ON d.id = pp.dependency_id
