@@ -1261,6 +1261,7 @@ class PayrollRestController extends Controller
             ob_end_clean();
         }
 
+        
         $html = $this->render_template($data);
 
         $dompdf = new Dompdf([
@@ -1362,9 +1363,9 @@ class PayrollRestController extends Controller
         </table>
         <table>
             <tr>
-            <th colspan="2">INGRESOS</th>
-            <th colspan="2">DESCUENTOS</th>
-            <th colspan="2">APORTES</th>
+            <th colspan="2" width="33.33">INGRESOS</th>
+            <th colspan="2" width="33.34">DESCUENTOS</th>
+            <th colspan="2" width="33.33">APORTES</th>
             </tr>
             <?php
             $max = max(
@@ -1389,7 +1390,21 @@ class PayrollRestController extends Controller
                 <td class="right"><?= isset($apo) ? number_format($apo['value'],2) : '' ?></td>
             </tr>
             <?php endfor; ?>
-            
+            <tr>
+                <td><b>TOTAL INGRESO</b></td>
+                <td class="right"><?= number_format($worker['totalIncome']??0,2) ?></td>
+
+                <td><b>TOTAL DESCUENTO</b></td>
+                <td class="right"><?= number_format($worker['totalDiscount']??0,2) ?></td>
+
+                <td><b>TOTAL APORTE</b></td>
+                <td class="right"><?= number_format($worker['totalContribution']??0,2) ?></td>
+            </tr>
+            <tr>
+                <td><b>INGRESO NETO</b></td>
+                <td class="right"><?= number_format($worker['netIncome'],2) ?></td>
+                <td colspan="4"></td>
+            </tr>
         </table>
         <table>
             <tr>
@@ -1550,6 +1565,7 @@ class PayrollRestController extends Controller
 
         $wpdb->select($original_db);
 
+        return $data;
         $this->export_pdf("boletas_payroll_".$id,$data);
     }
 
