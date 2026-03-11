@@ -1149,7 +1149,7 @@ class PayrollRestController extends Controller
             wp_die("Payroll no encontrado");
         }
 
-        return $payroll;
+  
         /*
         * 1️⃣ EMPLEADOS DE LA PLANILLA
         */
@@ -1170,6 +1170,7 @@ class PayrollRestController extends Controller
             ORDER BY p.apellidos_nombres
         ",$id));
 
+        return $employees;
         /*
         * 2️⃣ TODOS LOS CONCEPTOS DE LA PLANILLA
         */
