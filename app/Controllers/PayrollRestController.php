@@ -1325,7 +1325,7 @@ class PayrollRestController extends Controller
                 <td colspan="4" class="right">MES DE PAGO: <?= $worker['month'] ?? '' ?></td>
             </tr>
             <tr>
-                <td colspan="8">&nbsp</td>
+                <td colspan="8"><br/></td>
             </tr>
             <tr>
                 <td><b>Dependencia:</b></td>
