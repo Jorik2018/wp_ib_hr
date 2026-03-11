@@ -1278,6 +1278,7 @@ class PayrollRestController extends Controller
 
         $wpdb->select($original_db);
 
+        return $data;
         $this->export_pdf("boletas_payroll_".$id,$data);
     }
 
