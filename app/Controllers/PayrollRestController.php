@@ -977,7 +977,10 @@ class PayrollRestController extends Controller
 
             $wpdb->insert("rem_payroll_people",[
                 "payroll_id"=>$payroll->id,
-                "people_id"=>$item["people_id"]
+                "people_id"=>$item["people_id"],
+                "position"=>$item["position"],
+                "dependency_id"=>$item["dependency_id"],
+
             ]);
 
             foreach($item["concepts"] as $c){
@@ -1072,7 +1075,9 @@ class PayrollRestController extends Controller
         $employees=$wpdb->get_results("
             SELECT
                 p.apellidos_nombres fullName,
-                pp.payroll_type_id,
+                pp.payroll_type_id payrollTypeId,
+                p.unidad_id dependency_id,
+                p.cargo position,
                 pp.people_id,
                 p.afp_onp pensionSystem,
                 p.n_cuspp nCUSPP,
@@ -1207,13 +1212,7 @@ class PayrollRestController extends Controller
 
             $items[]=[
 
-                "people_id"=>$employee->people_id,
-                "payroll_type_id"=>$employee->payroll_type_id,
-                "fullName"=>$employee->fullName,
-                "code"=>$employee->code,
-                "pensionSystem"=>$employee->pensionSystem,
-                "nCUSPP"=>$employee->nCUSPP,
-
+                ... (array)$employee,
                 "totals"=>[
                     "ingresos"=>$totalIngresos,
                     "egresos"=>$totalEgresos,
