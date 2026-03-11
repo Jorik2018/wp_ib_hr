@@ -1169,7 +1169,7 @@ class PayrollRestController extends Controller
             WHERE pp.payroll_id=%d
             ORDER BY p.apellidos_nombres
         ",$id));
-
+        if ($wpdb->last_error) return t_error();
         return $employees;
         /*
         * 2️⃣ TODOS LOS CONCEPTOS DE LA PLANILLA
