@@ -1149,6 +1149,7 @@ class PayrollRestController extends Controller
             wp_die("Payroll no encontrado");
         }
 
+        return $payroll;
         /*
         * 1️⃣ EMPLEADOS DE LA PLANILLA
         */
