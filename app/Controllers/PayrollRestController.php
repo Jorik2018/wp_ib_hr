@@ -1080,17 +1080,17 @@ class PayrollRestController extends Controller
             <th colspan="2">DESCUENTOS</th>
             <th colspan="2">APORTES</th>
             </tr>
-
+<?  /*$worker['values'] en ves de values quiero q tenga 3 arrays (totalIncome,totalDiscount, totalContribution) y q usen un for con el mayor leng entre los 3*/  ?>
             <?php foreach($worker['values'] as $v): ?>
 
-            <tr>
-                <td><?= $v['name'] ?></td>
-                <td class="right"><?= number_format($v['value'],2) ?></td>
-                <td><?= $v['name'] ?></td>
-                <td class="right"><?= number_format($v['value'],2) ?></td>
-                <td><?= $v['name'] ?></td>
-                <td class="right"><?= number_format($v['value'],2) ?></td>
-            </tr>
+                <tr>
+                    <td><?= $v['name'] ?></td>
+                    <td class="right"><?= number_format($v['value'],2) ?></td>
+                    <td><?= $v['name'] ?></td>
+                    <td class="right"><?= number_format($v['value'],2) ?></td>
+                    <td><?= $v['name'] ?></td>
+                    <td class="right"><?= number_format($v['value'],2) ?></td>
+                </tr>
 
             <?php endforeach; ?>
             <tr>
@@ -1130,67 +1130,143 @@ class PayrollRestController extends Controller
     }
 
     public function download($request) {
+
         global $wpdb;
 
         $original_db = $wpdb->dbname;
         $db_erp = get_option("db_ofis");
         $wpdb->select($db_erp);
 
-        $year = get_param($request, 'year');
-        $month = get_param($request, 'month');
+        $id = get_param($request,'id');
 
-        $employees = $wpdb->get_results(
-            "SELECT p.apellidos_nombres fullName,
-                    pp.payroll_type_id,
-                    pp.people_id,
-                    p.afp_onp pensionSystem,
-                    p.n_cuspp nCUSPP,
-                    p.dni code
-            FROM rem_payroll_type_people pp
-            INNER JOIN m_personal p ON p.n = pp.people_id
-            ORDER BY 1 "
-        );
+        $payroll = $wpdb->get_row($wpdb->prepare("
+            SELECT year,month
+            FROM rem_payroll
+            WHERE id=%d
+        ",$id));
 
-        $data = [];
+        if(!$payroll){
+            wp_die("Payroll no encontrado");
+        }
 
-        // posibles conceptos
-        $concepts = [
-            ["type"=>1,"name"=>"CONTRAPRESTACION"],
-            ["type"=>1,"name"=>"D.S. 313"],
-            ["type"=>1,"name"=>"BONO"],
-            ["type"=>1,"name"=>"MOVILIDAD"],
-            ["type"=>1,"name"=>"ASIGNACION"],
-        ];
+        /*
+        * 1️⃣ EMPLEADOS DE LA PLANILLA
+        */
+        $employees = $wpdb->get_results($wpdb->prepare("
+            SELECT
+                pp.people_id,
+                p.apellidos_nombres fullName,
+                p.afp_onp pensionSystem,
+                p.n_cuspp nCUSSP,
+                p.dni code,
+                pp.position,
+                pp.remunerative_level remunerativeLevel,
+                d.maestro_unidad dependence
+            FROM rem_payroll_people pp
+            LEFT JOIN m_personal p ON p.n = pp.people_id
+            LEFT JOIN maestro_unidad d ON d.id = pp.dependency_id
+            WHERE pp.payroll_id=%d
+            ORDER BY p.apellidos_nombres
+        ",$id));
 
-        foreach ($employees as $employee) {
+        /*
+        * 2️⃣ TODOS LOS CONCEPTOS DE LA PLANILLA
+        */
+        $conceptRows = $wpdb->get_results($wpdb->prepare("
+            SELECT
+                people_id,
+                concept,
+                amount,
+                concept_type_id
+            FROM rem_payroll_concept
+            WHERE payroll_id=%d
+        ",$id));
 
-            $values = [];
+        /*
+        * 3️⃣ AGRUPAR CONCEPTOS POR PERSONA
+        */
+        $conceptsByPeople=[];
 
-            // cantidad aleatoria de conceptos
-            $n = rand(2,4);
+        foreach($conceptRows as $c){
 
-            for($i=0;$i<$n;$i++){
+            $pid = $c->people_id;
 
-                $c = $concepts[array_rand($concepts)];
-
-                $values[] = [
-                    "type"=>$c["type"],
-                    "name"=>$c["name"],
-                    "value"=>rand(500,3000) + rand(0,99)/100
-                ];
+            if(!isset($conceptsByPeople[$pid])){
+                $conceptsByPeople[$pid]=[];
             }
 
-            $data[] = [
+            $conceptsByPeople[$pid][]=$c;
+        }
+
+        $data=[];
+
+        foreach($employees as $employee){
+
+            $income=[];
+            $discount=[];
+            $contribution=[];
+
+            $totalIncome=0;
+            $totalDiscount=0;
+            $totalContribution=0;
+
+            $concepts = $conceptsByPeople[$employee->people_id] ?? [];
+
+            foreach($concepts as $c){
+
+                $row=[
+                    "name"=>$c->concept,
+                    "value"=>(float)$c->amount
+                ];
+
+                switch((int)$c->concept_type_id){
+
+                    case 1:
+                        $income[]=$row;
+                        $totalIncome += $c->amount;
+                        break;
+
+                    case 2:
+                        $discount[]=$row;
+                        $totalDiscount += $c->amount;
+                        break;
+
+                    case 3:
+                        $contribution[]=$row;
+                        $totalContribution += $c->amount;
+                        break;
+                }
+            }
+
+            $netIncome = $totalIncome - $totalDiscount;
+
+            $data[]=[
+
                 "fullName"=>$employee->fullName,
-                "ruc"=>"",
-                "month"=>$month." ".$year,
-                "values"=>$values
+                "code"=>$employee->code,
+                "dependence"=>$employee->dependence,
+                "remunerativeLevel"=>$employee->remunerativeLevel,
+                "position"=>$employee->position,
+                "pensionSystem"=>$employee->pensionSystem,
+                "nCUSSP"=>$employee->nCUSSP,
+
+                "month"=>$payroll->month." / ".$payroll->year,
+
+                "totalIncome"=>$income,
+                "totalDiscount"=>$discount,
+                "totalContribution"=>$contribution,
+
+                "totalIncomeSum"=>$totalIncome,
+                "totalDiscountSum"=>$totalDiscount,
+                "totalContributionSum"=>$totalContribution,
+
+                "netIncome"=>$netIncome
             ];
         }
 
         $wpdb->select($original_db);
 
-        $this->export_pdf('data',$data);
+        $this->export_pdf("boletas_payroll_".$id,$data);
     }
 
 }
