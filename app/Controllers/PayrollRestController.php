@@ -1389,21 +1389,7 @@ class PayrollRestController extends Controller
                 <td class="right"><?= isset($apo) ? number_format($apo['value'],2) : '' ?></td>
             </tr>
             <?php endfor; ?>
-            <tr>
-                <td><b>TOTAL INGRESO</b></td>
-                <td class="right"><?= number_format($worker['totalIncome']??0,2) ?></td>
-
-                <td><b>TOTAL DESCUENTO</b></td>
-                <td class="right"><?= number_format($worker['totalDiscount']??0,2) ?></td>
-
-                <td><b>TOTAL APORTE</b></td>
-                <td class="right"><?= number_format($worker['totalContribution']??0,2) ?></td>
-            </tr>
-            <tr>
-                <td><b>INGRESO NETO</b></td>
-                <td class="right"><?= number_format($worker['netIncome'],2) ?></td>
-                <td colspan="4"></td>
-            </tr>
+            
         </table>
         <table>
             <tr>
