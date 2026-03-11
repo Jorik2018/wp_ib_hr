@@ -1080,19 +1080,29 @@ class PayrollRestController extends Controller
             <th colspan="2">DESCUENTOS</th>
             <th colspan="2">APORTES</th>
             </tr>
-<?  /*$worker['values'] en ves de values quiero q tenga 3 arrays (totalIncome,totalDiscount, totalContribution) y q usen un for con el mayor leng entre los 3*/  ?>
-            <?php foreach($worker['values'] as $v): ?>
+            <?php
+            $max = max(
+                count($worker['totalIncome'] ?? []),
+                count($worker['totalDiscount'] ?? []),
+                count($worker['totalContribution'] ?? [])
+            );
 
-                <tr>
-                    <td><?= $v['name'] ?></td>
-                    <td class="right"><?= number_format($v['value'],2) ?></td>
-                    <td><?= $v['name'] ?></td>
-                    <td class="right"><?= number_format($v['value'],2) ?></td>
-                    <td><?= $v['name'] ?></td>
-                    <td class="right"><?= number_format($v['value'],2) ?></td>
-                </tr>
+            for($i=0;$i<$max;$i++):
+                $inc = $worker['totalIncome'][$i] ?? null;
+                $des = $worker['totalDiscount'][$i] ?? null;
+                $apo = $worker['totalContribution'][$i] ?? null;
+            ?>
+            <tr>
+                <td><?= $inc['name'] ?? '' ?></td>
+                <td class="right"><?= isset($inc) ? number_format($inc['value'],2) : '' ?></td>
 
-            <?php endforeach; ?>
+                <td><?= $des['name'] ?? '' ?></td>
+                <td class="right"><?= isset($des) ? number_format($des['value'],2) : '' ?></td>
+
+                <td><?= $apo['name'] ?? '' ?></td>
+                <td class="right"><?= isset($apo) ? number_format($apo['value'],2) : '' ?></td>
+            </tr>
+            <?php endfor; ?>
             <tr>
                 <td><b>TOTAL INGRESO</b></td>
                 <td class="right"><?= number_format($worker['totalIncome']??0,2) ?></td>
