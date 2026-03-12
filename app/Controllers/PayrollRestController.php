@@ -836,7 +836,7 @@ class PayrollRestController extends Controller
             $totalIngresos = 0;
 
             foreach ($concepts as $c) {
-                $baseAmount = $this->resolveAmount($c->id, $employee, $employee -> payroll_type_id, $amountMap);
+                $baseAmount = $this->resolveAmount($c->id, $employee, $employee -> payrollTypeId, $amountMap);
                 if ($c->type_id == 1) {
                     $calculated = round(($baseAmount * $workedDays) / $diasMes, 2);
                     $totalIngresos += $calculated;
@@ -855,7 +855,7 @@ class PayrollRestController extends Controller
 
             foreach ($concepts as $c) {
                 if ($c->type_id == 3) {
-                    $baseAmount = $this->resolveAmount($c->id, $employee,  $employee -> payroll_type_id, $amountMap);
+                    $baseAmount = $this->resolveAmount($c->id, $employee,  $employee -> payrollTypeId, $amountMap);
                     $amount = $baseAmount;
                     $totalEgresos += $amount;
                     $values[] = $amount;
@@ -879,7 +879,7 @@ class PayrollRestController extends Controller
 
             foreach ($concepts as $c) {
                 if ($c->type_id == 4) {
-                    $baseAmount = $this->resolveAmount($c->id, $employee,  $employee -> payroll_type_id, $amountMap);
+                    $baseAmount = $this->resolveAmount($c->id, $employee,  $employee -> payrollTypeId, $amountMap);
                     $calculated = round($baseAmount * $base_calculo_contribuciones, 2);
                     $descuentos_ley += $calculated;
                     $values[] = $calculated;
@@ -896,7 +896,7 @@ class PayrollRestController extends Controller
 
             foreach ($concepts as $c) {
                 if ($c->type_id == 6) {
-                    $baseAmount = $this->resolveAmount($c->id, $employee,  $employee -> payroll_type_id, $amountMap);
+                    $baseAmount = $this->resolveAmount($c->id, $employee,  $employee -> payrollTypeId, $amountMap);
                     $otros_descuentos += $baseAmount;
                     $values[] = $baseAmount;
                 }
@@ -931,8 +931,8 @@ class PayrollRestController extends Controller
 
             $map = $amountMap[$conceptId];
             // Prioridad 1: monto específico a persona
-            if (isset($map['PE'][$employee->people_id])) {
-                return $map['PE'][$employee->people_id];
+            if (isset($map['PE'][$employee->peopleId])) {
+                return $map['PE'][$employee->peopleId];
             }
 
             // Prioridad 2: monto por sistema de pensión
@@ -941,8 +941,8 @@ class PayrollRestController extends Controller
             }
 
             // Prioridad 3: monto general de la planilla
-            if (isset($map['PL'][$employee->payroll_type_id])) {
-                return $map['PL'][$employee->payroll_type_id];
+            if (isset($map['PL'][$employee->payrollTypeId])) {
+                return $map['PL'][$employee->payrollTypeId];
             }
         }
     }
@@ -1081,7 +1081,7 @@ class PayrollRestController extends Controller
                 pp.payroll_type_id payrollTypeId,
                 p.unidad_id dependency_id,
                 p.cargo position,
-                pp.people_id,
+                pp.people_id peopleId,
                 p.afp_onp pensionSystem,
                 p.n_cuspp nCUSPP,
                 p.dni code
@@ -1111,7 +1111,7 @@ class PayrollRestController extends Controller
 
             foreach($conceptGroups[1] as $c){
 
-                $base=$this->resolveAmount($c->id,$employee,$employee->payroll_type_id,$amountMap);
+                $base=$this->resolveAmount($c->id,$employee,$employee->payrollTypeId,$amountMap);
 
                 $value=round(($base*$workedDays)/$diasMes,2);
 
@@ -1132,7 +1132,7 @@ class PayrollRestController extends Controller
 
             foreach($conceptGroups[2] as $c){
 
-                $value=$this->resolveAmount($c->id,$employee,$employee->payroll_type_id,$amountMap);
+                $value=$this->resolveAmount($c->id,$employee,$employee->payrollTypeId,$amountMap);
 
                 $totalIngresos+=$value;
 
@@ -1150,7 +1150,7 @@ class PayrollRestController extends Controller
 
             foreach($conceptGroups[3] as $c){
 
-                $value=$this->resolveAmount($c->id,$employee,$employee->payroll_type_id,$amountMap);
+                $value=$this->resolveAmount($c->id,$employee,$employee->payrollTypeId,$amountMap);
 
                 $totalEgresos+=$value;
 
@@ -1174,7 +1174,7 @@ class PayrollRestController extends Controller
 
             foreach($conceptGroups[4] as $c){
 
-                $base=$this->resolveAmount($c->id,$employee,$employee->payroll_type_id,$amountMap);
+                $base=$this->resolveAmount($c->id,$employee,$employee->payrollTypeId,$amountMap);
 
                 $value=round($base*$baseContrib,2);
 
@@ -1202,7 +1202,7 @@ class PayrollRestController extends Controller
 
             foreach($conceptGroups[6] as $c){
 
-                $value=$this->resolveAmount($c->id,$employee,$employee->payroll_type_id,$amountMap);
+                $value=$this->resolveAmount($c->id,$employee,$employee->payrollTypeId,$amountMap);
 
                 $otrosDescuentos+=$value;
 
