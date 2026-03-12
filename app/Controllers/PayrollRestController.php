@@ -759,6 +759,7 @@ class PayrollRestController extends Controller
 
             $workedDays = $employee->worked_days ?? 30;
 
+            $data = [];
             $values = [];
             $values[] = $workedDays;
 
@@ -769,6 +770,7 @@ class PayrollRestController extends Controller
                     $calculated = round(($baseAmount * $workedDays) / $diasMes, 2);
                     $totalGroups[1] += $calculated;
                     $values[] = $calculated;
+                    $data[$c->id] = $calculated;
                 }
             }
             if(isset($conceptGroups[2])) {
@@ -777,21 +779,20 @@ class PayrollRestController extends Controller
                     $baseAmount = $this->resolveAmount($c->id, $employee, $employee -> payrollTypeId, $amountMap);
                     $totalGroups[2] += $baseAmount;
                     $values[] = $baseAmount;
+                    $data[$c->id] = $baseAmount;
                 }
             }
 
             $totalIngresos = $totalGroups[1]+$totalGroups[2];//formula G1+G2
             // insertar TOTAL INGRESOS justo después de los ingresos
             $values[] = $totalIngresos;
-
-            
-
             if(isset($conceptGroups[3])) {
                 $totalGroups[3] = 0;
                 foreach($conceptGroups[3] as $c){
                     $baseAmount = $this->resolveAmount($c->id, $employee,  $employee -> payrollTypeId, $amountMap);
                     $totalGroups[3] += $baseAmount;
                     $values[] = $baseAmount;
+                    $data[$c->id] = $baseAmount;
                 }
             }
 
@@ -817,6 +818,7 @@ class PayrollRestController extends Controller
                     $calculated = round($baseAmount * $base_calculo_contribuciones, 2);
                     $descuentos_ley += $calculated;
                     $values[] = $calculated;
+                    $data[$c->id] = $calculated;
                 }
             }
 
@@ -833,6 +835,7 @@ class PayrollRestController extends Controller
                     $baseAmount = $this->resolveAmount($c->id, $employee,  $employee -> payrollTypeId, $amountMap);
                     $otros_descuentos += $baseAmount;
                     $values[] = $baseAmount;
+                    $data[$c->id] = $baseAmount;
                 }
             }
             $values[] = $otros_descuentos;
@@ -850,12 +853,12 @@ class PayrollRestController extends Controller
                         $rate = 0.09;//(float) $rows['essalud_rate']->config_value;
                         $base_min = 1130;//(float) $rows['essalud_base_min']->config_value;
                         $base_max = 2475;//(float) $rows['essalud_base_max']->config_value;
-                        $baseAmount = $this->resolveAmount(1, $employee,  $employee -> payrollTypeId, $amountMap)??0;
-                        $base_calculo = min(max( $baseAmount, $base_min), $base_max);
-                        $baseAmount = round($base_calculo * $rate, 2);
+                        $baseAmount = $data[1] ?? $this->resolveAmount(1, $employee,  $employee -> payrollTypeId, $amountMap)??0;
+                        $baseAmount = round(min(max( $baseAmount, $base_min), $base_max) * $rate, 2);
                     }
                     $totalGroups[100] += $baseAmount;
                     $values[] = $baseAmount;
+                    $data[$c->id] = $baseAmount;
                 }
             }
 
@@ -863,7 +866,8 @@ class PayrollRestController extends Controller
 
             $items[] = [
                 ... (array)$employee,
-                'values'   => $values
+                'values'   => $values,
+                'concepts' => $data
             ];
         }
         $calc=$this->calculatePayroll($year,$month);
