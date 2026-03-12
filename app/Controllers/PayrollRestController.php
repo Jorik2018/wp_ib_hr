@@ -696,12 +696,14 @@ class PayrollRestController extends Controller
             [
                 'title' => 'BASE DE CALCULO CONTRIBUCIONES', ///este es calculado
                 'backgroundColor' => '#ad1805',
-                'color' => 'white'
+                'color' => 'white',
+                'concept_id' => 27
             ],
             [
                 'title' => 'BASE DE CALCULO  4TA CATG.', ///este es calculado
                 'backgroundColor' => '#5f10c7',
-                'color' => 'white'
+                'color' => 'white',
+                'concept_id' => 28
             ],
             [
                 'title' => 'DESCUENTOS DE LEY',
@@ -799,6 +801,9 @@ class PayrollRestController extends Controller
                     }else if($c->formula=='C23-C26'){
                         $baseAmount = ($values[23]?? $this->resolveAmount(23, $employee,  $employee -> payrollTypeId, $amountMap)??0)
                         -$values[26]?? $this->resolveAmount(26, $employee,  $employee -> payrollTypeId, $amountMap)??0;;
+                    }else if($c->formula=='C27+C28'){
+                        $baseAmount = ($values[27]?? $this->resolveAmount(27, $employee,  $employee -> payrollTypeId, $amountMap)??0)
+                        +$values[28]?? $this->resolveAmount(28, $employee,  $employee -> payrollTypeId, $amountMap)??0;;
                     }
                 }
                 $values[$c->id] = $baseAmount;
