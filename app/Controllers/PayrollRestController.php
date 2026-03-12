@@ -703,7 +703,7 @@ class PayrollRestController extends Controller
                 'title' => 'BASE DE CALCULO  4TA CATG.', ///este es calculado
                 'backgroundColor' => '#5f10c7',
                 'color' => 'white',
-                'concept_id' => 28
+                'concept_id' => 29
             ],
             [
                 'title' => 'DESCUENTOS DE LEY',
