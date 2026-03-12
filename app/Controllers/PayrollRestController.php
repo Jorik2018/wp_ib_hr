@@ -961,6 +961,8 @@ class PayrollRestController extends Controller
         $payroll=$this->getOrCreatePayroll($year,$month,1);
 
         $items=$this->calculatePayroll($year,$month);
+
+        return $items;
         /*
         limpiar planilla previa
         */
