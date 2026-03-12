@@ -916,10 +916,11 @@ class PayrollRestController extends Controller
                 'values'   => $values
             ];
         }
+        $calc=$this->calculatePayroll($year,$month);
         $wpdb->select($original_db);
         return [
             'success' => true,
-            'calculated'=>$this->calculatePayroll($year,$month),
+            'calculated'=>$calc,
             'data' => $items,
             'headers' => $headers,
             'payroll' => $payroll
