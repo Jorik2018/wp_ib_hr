@@ -1063,9 +1063,9 @@ class PayrollRestController extends Controller
         foreach($params as $p){
 
             if($p->type=='PL'){
-                $amountMap[$p->concept_id]['PL'][$p->payroll_type_id]=$p->amount;
+                $amountMap[''.$p->concept_id]['PL'][$p->payroll_type_id]=$p->amount;
             }else{
-                $amountMap[$p->concept_id][$p->type][$p->target_id]=$p->amount;
+                $amountMap[''.$p->concept_id][$p->type][$p->target_id]=$p->amount;
             }
 
         }
