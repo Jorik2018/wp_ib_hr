@@ -919,7 +919,7 @@ class PayrollRestController extends Controller
         $wpdb->select($original_db);
         return [
             'success' => true,
-            'calculated'=>$this->calculatePayroll($year,$month);
+            'calculated'=>$this->calculatePayroll($year,$month),
             'data' => $items,
             'headers' => $headers,
             'payroll' => $payroll
