@@ -588,7 +588,7 @@ class PayrollRestController extends Controller
             AND a.ini_date <= %s
             AND (a.end_date IS NULL OR a.end_date >= %s)
             WHERE a.concept_id IS NOT NULL OR (c.formula IS NOT NULL AND c.formula <> '')
-            ORDER BY c.weight
+            ORDER BY c.weight, 
         ", "$year-$month-01", "$year-$month-01"));
 
         /*
@@ -797,7 +797,7 @@ class PayrollRestController extends Controller
                                 +$values[25]?? $this->resolveAmount(25, $employee,  $employee -> payrollTypeId, $amountMap)??0;
                             }else if($c->formula=='C23-C26'){
                                 $baseAmount = ($values[23]?? $this->resolveAmount(23, $employee,  $employee -> payrollTypeId, $amountMap)??0)
-                                +$values[26]?? $this->resolveAmount(26, $employee,  $employee -> payrollTypeId, $amountMap)??0;;
+                                -$values[26]?? $this->resolveAmount(26, $employee,  $employee -> payrollTypeId, $amountMap)??0;;
                             }
                         }
                         $values[$c->id] = $baseAmount;
