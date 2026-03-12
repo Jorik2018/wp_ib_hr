@@ -1226,7 +1226,7 @@ class PayrollRestController extends Controller
                 "concepts"=>$conceptResults
             ];
         }
-return ['$conceptGroups'=>$conceptGroups,'$amountMap'=>$amountMap.'$items'=>$items];
+return ['$conceptGroups'=>$conceptGroups,'$amountMap'=>$amountMap,'$items'=>$items];
         return $items;
     }
 
