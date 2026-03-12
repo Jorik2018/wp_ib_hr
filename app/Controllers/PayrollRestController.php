@@ -802,7 +802,7 @@ class PayrollRestController extends Controller
             $values[] = $base_calculo_contribuciones;
 
             //BASE DE CALCULO  4TA CATG.
-            $values[] = $totalIngresos - $totalEgresos;
+            $values[] = 0;//$totalIngresos - $totalEgresos;
 
             $descuentos_ley = 0;
 
