@@ -1526,7 +1526,7 @@ class PayrollRestController extends Controller
                         $totalIncome += $c->amount;
                         break;
 
-                    case 2:
+                    case 4:
                         $discount[]=$row;
                         $totalDiscount += $c->amount;
                         break;
