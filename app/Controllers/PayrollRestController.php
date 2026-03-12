@@ -778,30 +778,29 @@ class PayrollRestController extends Controller
                         $totalGroups[$typeId] += $value;
                         $values[$c->id] = $value;
                     }
-                }else if($typeId == 0) {
-                    foreach($conceptGroups[0] as $c){
-                        $baseAmount = $this->resolveAmount($c->id, $employee,  $employee -> payrollTypeId, $amountMap);
-                        if(isset($c->formula)){
-                            if($c->id=='22'){
-                                $rate = 0.09;//(float) $rows['essalud_rate']->config_value;
-                                $base_min = 1130;//(float) $rows['essalud_base_min']->config_value;
-                                $base_max = 2475;//(float) $rows['essalud_base_max']->config_value;
-                                $baseAmount = $values[1] ?? $this->resolveAmount(1, $employee,  $employee -> payrollTypeId, $amountMap)??0;
-                                $baseAmount = round(min(max( $baseAmount, $base_min), $base_max) * $rate, 2);
-                            }else if($c->formula=='G1+G2'){
-                                $baseAmount = $totalGroups[1]??0+$totalGroups[2]??0;
-                            }else if($c->formula=='G3'){
-                                $baseAmount = $totalGroups[3]??0;
-                            }else if($c->formula=='C24+C25'){
-                                $baseAmount = ($values[24]?? $this->resolveAmount(24, $employee,  $employee -> payrollTypeId, $amountMap)??0)
-                                +$values[25]?? $this->resolveAmount(25, $employee,  $employee -> payrollTypeId, $amountMap)??0;
-                            }else if($c->formula=='C23-C26'){
-                                $baseAmount = ($values[23]?? $this->resolveAmount(23, $employee,  $employee -> payrollTypeId, $amountMap)??0)
-                                -$values[26]?? $this->resolveAmount(26, $employee,  $employee -> payrollTypeId, $amountMap)??0;;
-                            }
+                }
+                foreach($conceptGroups[0] as $c){
+                    $baseAmount = $this->resolveAmount($c->id, $employee,  $employee -> payrollTypeId, $amountMap);
+                    if(isset($c->formula)){
+                        if($c->id=='22'){
+                            $rate = 0.09;//(float) $rows['essalud_rate']->config_value;
+                            $base_min = 1130;//(float) $rows['essalud_base_min']->config_value;
+                            $base_max = 2475;//(float) $rows['essalud_base_max']->config_value;
+                            $baseAmount = $values[1] ?? $this->resolveAmount(1, $employee,  $employee -> payrollTypeId, $amountMap)??0;
+                            $baseAmount = round(min(max( $baseAmount, $base_min), $base_max) * $rate, 2);
+                        }else if($c->formula=='G1+G2'){
+                            $baseAmount = $totalGroups[1]??0+$totalGroups[2]??0;
+                        }else if($c->formula=='G3'){
+                            $baseAmount = $totalGroups[3]??0;
+                        }else if($c->formula=='C24+C25'){
+                            $baseAmount = ($values[24]?? $this->resolveAmount(24, $employee,  $employee -> payrollTypeId, $amountMap)??0)
+                            +$values[25]?? $this->resolveAmount(25, $employee,  $employee -> payrollTypeId, $amountMap)??0;
+                        }else if($c->formula=='C23-C26'){
+                            $baseAmount = ($values[23]?? $this->resolveAmount(23, $employee,  $employee -> payrollTypeId, $amountMap)??0)
+                            -$values[26]?? $this->resolveAmount(26, $employee,  $employee -> payrollTypeId, $amountMap)??0;;
                         }
-                        $values[$c->id] = $baseAmount;
                     }
+                    $values[$c->id] = $baseAmount;
                 }
             }
             $items[] = [
