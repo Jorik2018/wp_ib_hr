@@ -1070,6 +1070,7 @@ class PayrollRestController extends Controller
 
         }
 
+        return ['$conceptGroups'=>$conceptGroups,'$amountMap'=>$amountMap];
         /*
         EMPLEADOS
         */
