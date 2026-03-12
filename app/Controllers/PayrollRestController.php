@@ -763,96 +763,45 @@ class PayrollRestController extends Controller
 
             $workedDays = $employee->worked_days ?? 30;
 
-            $data = [];
             $values = [];
+
             $values[] = $workedDays;
 
-            if(isset($conceptGroups[1])){ 
-                $totalGroups[1] = 0;
-                foreach($conceptGroups[1] as $c){
-                    $baseAmount = $this->resolveAmount($c->id, $employee, $employee -> payrollTypeId, $amountMap);
-                    $calculated = round(($baseAmount * $workedDays) / $diasMes, 2);
-                    $totalGroups[1] += $calculated;
-                    $values[$c->id] = $calculated;
-                }
-            }
-            if(isset($conceptGroups[2])) {
-                $totalGroups[2] = 0;
-                foreach($conceptGroups[2] as $c){
-                    $baseAmount = $this->resolveAmount($c->id, $employee, $employee -> payrollTypeId, $amountMap);
-                    $totalGroups[2] += $baseAmount;
-                    $values[$c->id] = $baseAmount;
-                }
-            }
-            if(isset($conceptGroups[3])) {
-                $totalGroups[3] = 0;
-                foreach($conceptGroups[3] as $c){
-                    $baseAmount = $this->resolveAmount($c->id, $employee,  $employee -> payrollTypeId, $amountMap);
-                    $totalGroups[3] += $baseAmount;
-                    $values[$c->id] = $baseAmount;
-                }
-            }
-            $totalEgresos = $totalGroups[3];
-
-            //BASE DE CALCULO CONTRIBUCIONES
-            $base_calculo_contribuciones = 0;//$totalIngresos - $totalEgresos;
-            $values[] = $base_calculo_contribuciones;
-
-            //BASE DE CALCULO  4TA CATG.
-            $values[] = 0;//$totalIngresos - $totalEgresos;
-
-            $descuentos_ley = 0;
-
-            foreach ($concepts as $c) {
-                if ($c->type_id == 4) {
-                    $baseAmount = $this->resolveAmount($c->id, $employee,  $employee -> payrollTypeId, $amountMap);
-                    $calculated = round($baseAmount * $base_calculo_contribuciones, 2);
-                    $descuentos_ley += $calculated;
-                    $values[$c->id] = $calculated;
-                }
-            }
-
-            $values[] = $descuentos_ley;
-
-            //APORTE SOLID. POR  CONV. COLECTIVO
-            $x = round($base_calculo_contribuciones * 0.005, 2);
-            $values[] = $x;
-            $otros_descuentos = $x;
-
-            foreach ($concepts as $c) {
-                if ($c->type_id == 6) {
-                    $baseAmount = $this->resolveAmount($c->id, $employee,  $employee -> payrollTypeId, $amountMap);
-                    $otros_descuentos += $baseAmount;
-                    $values[$c->id] = $baseAmount;
-                }
-            }
-
-            $values[] = $otros_descuentos;
-            $values[] = $totalEgresos + $descuentos_ley + $otros_descuentos;
-
-            if(isset($conceptGroups[0])) {
-                foreach($conceptGroups[0] as $c){
-                    $baseAmount = $this->resolveAmount($c->id, $employee,  $employee -> payrollTypeId, $amountMap);
-                    if(isset($c->formula)){
-                        if($c->id=='22'){
-                            $rate = 0.09;//(float) $rows['essalud_rate']->config_value;
-                            $base_min = 1130;//(float) $rows['essalud_base_min']->config_value;
-                            $base_max = 2475;//(float) $rows['essalud_base_max']->config_value;
-                            $baseAmount = $data[1] ?? $this->resolveAmount(1, $employee,  $employee -> payrollTypeId, $amountMap)??0;
-                            $baseAmount = round(min(max( $baseAmount, $base_min), $base_max) * $rate, 2);
-                        }else if($c->formula=='G1+G2'){
-                            $baseAmount = $totalGroups[1]??0+$totalGroups[2]??0;
-                        }else if($c->formula=='G3'){
-                            $baseAmount = $totalGroups[3]??0;
-                        }else if($c->formula=='C24+C25'){
-                            $baseAmount = ($data[24]?? $this->resolveAmount(24, $employee,  $employee -> payrollTypeId, $amountMap)??0)
-                            +$data[25]?? $this->resolveAmount(25, $employee,  $employee -> payrollTypeId, $amountMap)??0;
-                        }else if($c->formula=='C23-C26'){
-                            $baseAmount = ($data[23]?? $this->resolveAmount(23, $employee,  $employee -> payrollTypeId, $amountMap)??0)
-                            +$data[26]?? $this->resolveAmount(26, $employee,  $employee -> payrollTypeId, $amountMap)??0;;
-                        }
+            foreach ($conceptGroups as $typeId => $conceptsOfType) {
+                if($typeId > 0) {
+                    $totalGroups[$typeId] = 0;
+                    foreach ($conceptsOfType as $c) {
+                        $baseAmount = $this->resolveAmount($c->id, $employee, $employee->payrollTypeId, $amountMap);
+                        $value = ($typeId == 1)
+                            ? round(($baseAmount * $workedDays) / $diasMes, 2)
+                            : $baseAmount;
+                        $totalGroups[$typeId] += $value;
+                        $values[$c->id] = $value;
                     }
-                    $values[$c->id] = $baseAmount;
+                }else if($typeId == 0) {
+                    foreach($conceptGroups[0] as $c){
+                        $baseAmount = $this->resolveAmount($c->id, $employee,  $employee -> payrollTypeId, $amountMap);
+                        if(isset($c->formula)){
+                            if($c->id=='22'){
+                                $rate = 0.09;//(float) $rows['essalud_rate']->config_value;
+                                $base_min = 1130;//(float) $rows['essalud_base_min']->config_value;
+                                $base_max = 2475;//(float) $rows['essalud_base_max']->config_value;
+                                $baseAmount = $values[1] ?? $this->resolveAmount(1, $employee,  $employee -> payrollTypeId, $amountMap)??0;
+                                $baseAmount = round(min(max( $baseAmount, $base_min), $base_max) * $rate, 2);
+                            }else if($c->formula=='G1+G2'){
+                                $baseAmount = $totalGroups[1]??0+$totalGroups[2]??0;
+                            }else if($c->formula=='G3'){
+                                $baseAmount = $totalGroups[3]??0;
+                            }else if($c->formula=='C24+C25'){
+                                $baseAmount = ($values[24]?? $this->resolveAmount(24, $employee,  $employee -> payrollTypeId, $amountMap)??0)
+                                +$values[25]?? $this->resolveAmount(25, $employee,  $employee -> payrollTypeId, $amountMap)??0;
+                            }else if($c->formula=='C23-C26'){
+                                $baseAmount = ($values[23]?? $this->resolveAmount(23, $employee,  $employee -> payrollTypeId, $amountMap)??0)
+                                +$values[26]?? $this->resolveAmount(26, $employee,  $employee -> payrollTypeId, $amountMap)??0;;
+                            }
+                        }
+                        $values[$c->id] = $baseAmount;
+                    }
                 }
             }
             $items[] = [
@@ -860,14 +809,13 @@ class PayrollRestController extends Controller
                 'values'   => $values
             ];
         }
-        $calc=$this->calculatePayroll($year,$month);
         $wpdb->select($original_db);
         return [
             'success' => true,
-            'calculated'=>$calc,
             'data' => $items,
             'headers' => $headers,
-            'payroll' => $payroll
+            'payroll' => $payroll,
+            '$conceptGroups' => $conceptGroups
         ];
     }
 
