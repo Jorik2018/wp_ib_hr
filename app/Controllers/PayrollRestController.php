@@ -962,7 +962,6 @@ class PayrollRestController extends Controller
 
         $items=$this->calculatePayroll($year,$month);
 
-        return $items;
         /*
         limpiar planilla previa
         */
