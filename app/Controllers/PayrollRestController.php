@@ -71,73 +71,6 @@ class PayrollRestController extends Controller
         ));
     }
 
-    /*
-        $headers = [
-            ['title' => 'NOMBRE COMPLETO', 'width' => 200, 'index' => 'fullName'],
-            ['title' => 'DIAS LABORADOS', 'width' => 100],
-            [
-                'title' => 'INGRESO',
-                'backgroundColor' => '#20ab29',
-                'children' => [
-                    ['title' => 'REMUNERACION', 'width' => 120, 'code' => '0131', 'type' => 1],
-                    ['title' => 'D.S. N° 311-2022-EF', 'code' => '0897', 'type' => 1],
-                    ['title' => 'D.S. N° 313-2023-EF', 'code' => '0981', 'type' => 1],
-                    ['title' => 'D.S. N° 265-2024-EF', 'code' => '1051', 'type' => 1],
-                    ['title' => 'D.S. N° 279-2024-EF', 'code' => '1053', 'type' => 1],
-                    ['title' => 'DS 327-2025-EF', 'code' => '', 'type' => 1],
-                    ['title' => 'DIFERENCIAL SUBSIDIO', 'width' => 100, 'code' => '', 'type' => 1],
-                    ['title' => 'REINTEGRO / COPAGO', 'code' => '0236'],
-
-                    ['title' => 'CLASIFICADOR INGRESOS', 'width' => 100],
-                    ['title' => 'TOTAL INGRESOS', 'backgroundColor' => '#badefd', 'color' => 'black']
-                ]
-            ],
-            [
-                'title' => 'EGRESOS QUE AFECTAN LA BASE IMPONIBLE',
-                'backgroundColor' => '#20ab29',
-                'children' => [
-                    ['title' => 'TARDANZAS', 'type' => 2],
-                    ['title' => 'JORN. INCOMPLETA', 'width' => 100, 'type' => 2],
-                    ['title' => 'PERMISO PERSONAL', 'type' => 2],
-                    ['title' => 'INASISTENCIAS/ LSGH', 'type' => 2],
-                    ['title' => 'TOTAL'],
-                    ['title' => 'PAGO EN EXCESO'],
-                    ['title' => 'TOTAL DSCTO. QUE AFECTAN LA BASE IMPONIBLE (A)', 'width' => 120, 'backgroundColor' => '#badefd', 'color' => 'black']
-                ]
-            ],
-            ['title' => 'BASE DE CALCULO CONTRIBUCIONES'],
-            ['title' => 'BASE DE CALCULO  4TA CATG.', 'backgroundColor' => '#5f2da3'],
-            [
-                'title' => 'DESCUENTOS DE LEY',
-                'backgroundColor' => '#20ab29',
-                'children' => [
-                    ['title' => 'SUSPENSIÓN 4TA SI/NO'],
-                    ['title' => 'RETENCION DE 4TA', 'type' => 3],
-                    ['title' => 'APORTE ONP', 'type' => 3],
-                    ['title' => 'APORTE OBLIGATORIO AFP 10%', 'width' => 100, 'type' => 3],
-                    ['title' => 'APORTE SEGURO AFP', 'type' => 3],
-                    ['title' => 'APORTE COMISION AFP', 'type' => 3],
-                    ['title' => 'TOTAL DESCUENTOS DE LEY (B)', 'backgroundColor' => '#badefd', 'color' => 'black']
-                ]
-            ],
-            ['title' => 'SI/NO'],
-            ['title' => 'APORTE SOLID. POR  CONV. COLECTIVO 0.5%', 'width' => 100],
-            [
-                'title' => 'OTROS DESCUENTOS',
-                'backgroundColor' => '#20ab29',
-                'children' => [
-                    ['title' => 'OTROS COOPAC SAN MIGUEL', 'width' => 100],
-                    ['title' => 'ESSALUD + VIDA'],
-                    ['title' => 'JUDICIAL / COACTIVO'],
-                    ['title' => 'TOTAL OTROS DESCUENTOS (C)', 'width' => 100, 'backgroundColor' => '#badefd', 'color' => 'black'],
-                    ['title' => 'TOTAL DESCUENTOS II = (A + B + C)', 'width' => 100, 'backgroundColor' => '#badefd', 'color' => 'black']
-                ]
-            ],
-            ['title' => 'AGUINALDO', 'width' => 90],
-            ['title' => 'NETO A PAGAR (I) - (II)', 'width' => 100, 'backgroundColor' => '#badefd', 'color' => 'black'],
-            ['title' => 'ESSALUD CAS']
-        ];*/
-
     function getOrCreatePayroll($year, $month, $typeId, $fuenteFinanc = null, $preparedBy = null)
     {
         global $wpdb;
@@ -645,16 +578,30 @@ class PayrollRestController extends Controller
         $wpdb->select($db_erp);
         $year = get_param($request, 'year');
         $month = get_param($request, 'month');
+        $payroll_type_id = get_param($request, 'payrollType')??1;
     
         $concepts = $wpdb->get_results($wpdb->prepare("
             SELECT DISTINCT c.id, c.name, c.pdt_code, c.type_id, c.weight
-            FROM rem_payroll_amount a
-            INNER JOIN per_concept c ON c.id = a.concept_id
-            WHERE a.canceled = 0
-                AND a.ini_date <= %s
-                AND (a.end_date IS NULL OR a.end_date >= %s)
+            FROM per_concept c
+            LEFT JOIN rem_payroll_amount a ON c.id = a.concept_id
+            AND a.canceled = 0
+            AND a.ini_date <= %s
+            AND (a.end_date IS NULL OR a.end_date >= %s)
+            WHERE a.concept_id IS NOT NULL OR (c.formula IS NOT NULL AND c.formula <> '')
             ORDER BY c.weight
-            ", "$year-$month-01", "$year-$month-01"));
+        ", "$year-$month-01", "$year-$month-01"));
+
+        /*
+        AGRUPAR CONCEPTOS POR TIPO
+        */
+        $conceptGroups = [];
+        foreach ($concepts as $c) {
+            if (!isset($conceptGroups[$c->type_id])) {
+                $conceptGroups[$c->type_id] = [];
+            }
+            $conceptGroups[$c->type_id][] = $c;
+        }
+
         $ingresos = [];
         $egresos = [];
         $descuentos = [];
@@ -783,39 +730,18 @@ class PayrollRestController extends Controller
         $amountMap = [];
         foreach ($params as $p) {
             if($p->type=='PL') {
-                $amountMap[''.$p->concept_id][$p->type]['1' /*send the payroll_type_id*/] = $p->amount;
+                $amountMap[''.$p->concept_id][$p->type][$payroll_type_id] = $p->amount;
             } else {
                 $amountMap[''.$p->concept_id][$p->type][$p->target_id] = $p->amount;
             }
         }
          
         $diasMes = 30; //cal_days_in_month(CAL_GREGORIAN, $month, $year);
-        $headers = $this->assignLeafIndexes($headers);
-        $ingresoConceptIndexes = [];
 
-        foreach ($headers as $h) {
-            if (!empty($h['children'])) {
-                foreach ($h['children'] as $child) {
-                    if (isset($child['concept_id']) && !empty($child['type']) === false) {
-                        $ingresoConceptIndexes[$child['concept_id']] = $child['index'];
-                    }
-                }
-            }
-        }
+        $headers = $this->assignLeafIndexes($headers);
 
         $payroll = $this->getOrCreatePayroll($year, $month, 1);
 
-        // Obtener nombres reales
-        /*$employees = $wpdb->get_results(
-            $wpdb->prepare(
-                "SELECT p.apellidos_nombres fullName
-         FROM rem_payroll_people pp
-         INNER JOIN m_personal p ON p.n = pp.people_id
-         WHERE pp.payroll_id = %d
-         ORDER BY 1 ",
-                $payroll->id
-            )
-        );*/
         $employees = $wpdb->get_results(
             $wpdb->prepare(
                 "SELECT p.apellidos_nombres fullName, pp.payroll_type_id payrollTypeId, pp.people_id peopleId, p.afp_onp  pensionSystem, p.n_cuspp nCUSPP, p.dni code 
@@ -825,7 +751,9 @@ class PayrollRestController extends Controller
                 $payroll->id
             )
         );
+
         $items = [];
+        
         foreach ($employees as $employee) {
 
             $workedDays = $employee->worked_days ?? 30;
@@ -905,6 +833,9 @@ class PayrollRestController extends Controller
 
             $values[] = $totalEgresos + $descuentos_ley + $otros_descuentos;
 
+    
+
+
 
             $items[] = [
                 ... (array)$employee,
@@ -918,7 +849,8 @@ class PayrollRestController extends Controller
             'calculated'=>$calc,
             'data' => $items,
             'headers' => $headers,
-            'payroll' => $payroll
+            'payroll' => $payroll,
+            '$conceptGroups' => $conceptGroups
         ];
     }
 
@@ -1029,24 +961,18 @@ class PayrollRestController extends Controller
         /*
         AGRUPAR CONCEPTOS POR TIPO
         */
-
-        $conceptGroups=[
-            1=>[],
-            2=>[],
-            3=>[],
-            4=>[],
-            6=>[]
-        ];
-
-        foreach($concepts as $c){
-            $conceptGroups[$c->type_id][]=$c;
+        $conceptGroups = [];
+        foreach ($concepts as $c) {
+            if (!isset($conceptGroups[$c->type_id])) {
+                $conceptGroups[$c->type_id] = [];
+            }
+            $conceptGroups[$c->type_id][] = $c;
         }
 
         /*
         PARAMETROS DE MONTO
         */
 
-        //payroll_type_id can be null
         $params=$wpdb->get_results($wpdb->prepare("
             SELECT concept_id,amount,type,target_id,payroll_type_id
             FROM rem_payroll_amount
@@ -1141,7 +1067,7 @@ class PayrollRestController extends Controller
             }
 
             /*
-            EGRESOS
+            EGRESOS //PODRIA AGREGARSE EN TABLA CONCEPTO CON FORMULA G3 PARA SUMAR TODO
             */
 
             foreach($conceptGroups[3] as $c){
@@ -1165,7 +1091,7 @@ class PayrollRestController extends Controller
             $baseContrib=$totalIngresos-$totalEgresos;
 
             /*
-            DESCUENTOS LEY
+            DESCUENTOS LEY //PODRIA AGREGARSE EN TABLA CONCEPTO CON FORMULA G4 PARA SUMAR TODO
             */
 
             foreach($conceptGroups[4] as $c){
