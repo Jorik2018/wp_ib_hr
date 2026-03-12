@@ -845,7 +845,6 @@ class PayrollRestController extends Controller
                             $baseAmount = round(min(max( $baseAmount, $base_min), $base_max) * $rate, 2);
                         }else if($c->formula=='G1+G2'){
                             $baseAmount = $totalGroups[1]+$totalGroups[2];
-                            $baseAmount = round(min(max( $baseAmount, $base_min), $base_max) * $rate, 2);
                         }
                     }
                     $values[$c->id] = $baseAmount;
