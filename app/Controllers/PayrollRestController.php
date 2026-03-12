@@ -978,7 +978,7 @@ class PayrollRestController extends Controller
 
             $wpdb->insert("rem_payroll_people",[
                 "payroll_id"=>$payroll->id,
-                "people_id"=>$item["people_id"],
+                "people_id"=>$item["peopleId"],
                 "position"=>$item["position"],
                 "dependency_id"=>$item["dependency_id"],
 
@@ -992,7 +992,7 @@ class PayrollRestController extends Controller
 
                 $wpdb->insert("rem_payroll_concept",[
                     "payroll_id"=>$payroll->id,
-                    "people_id"=>$item["people_id"],
+                    "people_id"=>$item["peopleId"],
                     "concept_id"=>$c["concept_id"],
                     "concept"=>$c["concept"],
                     "concept_type_id"=>$c["type_id"],
