@@ -639,13 +639,15 @@ class PayrollRestController extends Controller
         ];
         $egresos[] = [
             'title' => 'TOTAL',
-            'is_total_ingresos' => true
+            'is_total_ingresos' => true,
+            'concept_id' => 24
         ];
         $egresos[] = [
             'title' => 'TOTAL DSCTO. QUE AFECTAN LA BASE IMPONIBLE (A)',
             'is_total_ingresos' => true,
             'backgroundColor' => '#badefd',
-            'color' => 'black'
+            'color' => 'black',
+            'concept_id' => 26
         ];
 
         $descuentos[] = [
@@ -791,11 +793,6 @@ class PayrollRestController extends Controller
                 }
             }
             $totalEgresos = $totalGroups[3];
-            //Total
-            $values[] = $totalGroups[3];//G3;
-
-            //debe caer en TOTAL DSCTO. QUE AFECTAN LA BASE IMPONIBLE (A)
-            $values[] = $totalGroups[3];//G3;
 
             //BASE DE CALCULO CONTRIBUCIONES
             $base_calculo_contribuciones = 0;//$totalIngresos - $totalEgresos;
@@ -844,7 +841,15 @@ class PayrollRestController extends Controller
                             $baseAmount = $data[1] ?? $this->resolveAmount(1, $employee,  $employee -> payrollTypeId, $amountMap)??0;
                             $baseAmount = round(min(max( $baseAmount, $base_min), $base_max) * $rate, 2);
                         }else if($c->formula=='G1+G2'){
-                            $baseAmount = $totalGroups[1]+$totalGroups[2];
+                            $baseAmount = $totalGroups[1]??0+$totalGroups[2]??0;
+                        }else if($c->formula=='G3'){
+                            $baseAmount = $totalGroups[3]??0;
+                        }else if($c->formula=='C24+C25'){
+                            $baseAmount = ($data[24]?? $this->resolveAmount(24, $employee,  $employee -> payrollTypeId, $amountMap)??0)
+                            +$data[25]?? $this->resolveAmount(25, $employee,  $employee -> payrollTypeId, $amountMap)??0;
+                        }else if($c->formula=='C23-C26'){
+                            $baseAmount = ($data[23]?? $this->resolveAmount(23, $employee,  $employee -> payrollTypeId, $amountMap)??0)
+                            +$data[26]?? $this->resolveAmount(26, $employee,  $employee -> payrollTypeId, $amountMap)??0;;
                         }
                     }
                     $values[$c->id] = $baseAmount;
@@ -862,8 +867,7 @@ class PayrollRestController extends Controller
             'calculated'=>$calc,
             'data' => $items,
             'headers' => $headers,
-            'payroll' => $payroll,
-            '$conceptGroups' => $conceptGroups
+            'payroll' => $payroll
         ];
     }
 
