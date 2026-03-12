@@ -581,7 +581,7 @@ class PayrollRestController extends Controller
         $payroll_type_id = get_param($request, 'payrollType')??1;
     
         $concepts = $wpdb->get_results($wpdb->prepare("
-            SELECT DISTINCT c.id, c.name, c.pdt_code, c.type_id, c.weight
+            SELECT DISTINCT c.id, c.name, c.pdt_code, c.type_id, c.weight, c.formula
             FROM per_concept c
             LEFT JOIN rem_payroll_amount a ON c.id = a.concept_id
             AND a.canceled = 0
@@ -595,6 +595,7 @@ class PayrollRestController extends Controller
         AGRUPAR CONCEPTOS POR TIPO
         */
         $conceptGroups = [];
+        $totalGroups = [];
         foreach ($concepts as $c) {
             if (!isset($conceptGroups[$c->type_id])) {
                 $conceptGroups[$c->type_id] = [];
@@ -761,40 +762,45 @@ class PayrollRestController extends Controller
             $values = [];
             $values[] = $workedDays;
 
-            $totalIngresos = 0;
-
-            foreach ($concepts as $c) {
-                $baseAmount = $this->resolveAmount($c->id, $employee, $employee -> payrollTypeId, $amountMap);
-                if ($c->type_id == 1) {
+            if(isset($conceptGroups[1])){ 
+                $totalGroups[1] = 0;
+                foreach($conceptGroups[1] as $c){
+                    $baseAmount = $this->resolveAmount($c->id, $employee, $employee -> payrollTypeId, $amountMap);
                     $calculated = round(($baseAmount * $workedDays) / $diasMes, 2);
-                    $totalIngresos += $calculated;
-                    $values[] = $calculated;
-                } else if ($c->type_id == 2) {
-                    $calculated = $baseAmount;
-                    $totalIngresos += $calculated;
+                    $totalGroups[1] += $calculated;
                     $values[] = $calculated;
                 }
             }
+            if(isset($conceptGroups[2])) {
+                $totalGroups[2] = 0;
+                foreach($conceptGroups[2] as $c){
+                    $baseAmount = $this->resolveAmount($c->id, $employee, $employee -> payrollTypeId, $amountMap);
+                    $totalGroups[2] += $baseAmount;
+                    $values[] = $baseAmount;
+                }
+            }
 
+            $totalIngresos = $totalGroups[1]+$totalGroups[2];//formula G1+G2
             // insertar TOTAL INGRESOS justo después de los ingresos
             $values[] = $totalIngresos;
 
-            $totalEgresos = 0;
+            
 
-            foreach ($concepts as $c) {
-                if ($c->type_id == 3) {
+            if(isset($conceptGroups[3])) {
+                $totalGroups[3] = 0;
+                foreach($conceptGroups[3] as $c){
                     $baseAmount = $this->resolveAmount($c->id, $employee,  $employee -> payrollTypeId, $amountMap);
-                    $amount = $baseAmount;
-                    $totalEgresos += $amount;
-                    $values[] = $amount;
+                    $totalGroups[3] += $baseAmount;
+                    $values[] = $baseAmount;
                 }
             }
 
+            $totalEgresos = $totalGroups[3];
             //Total
-            $values[] = $totalEgresos;
+            $values[] = $totalGroups[3];//G3;
 
             //debe caer en TOTAL DSCTO. QUE AFECTAN LA BASE IMPONIBLE (A)
-            $values[] = $totalEgresos;
+            $values[] = $totalGroups[3];//G3;
 
             //BASE DE CALCULO CONTRIBUCIONES
             $base_calculo_contribuciones = $totalIngresos - $totalEgresos;
@@ -834,6 +840,24 @@ class PayrollRestController extends Controller
             $values[] = $totalEgresos + $descuentos_ley + $otros_descuentos;
 
     
+
+
+            if(isset($conceptGroups[100])) {
+                $totalGroups[100] = 0;
+                foreach($conceptGroups[100] as $c){
+                    $baseAmount = $this->resolveAmount($c->id, $employee,  $employee -> payrollTypeId, $amountMap);
+                    if(isset($c->formula)){
+                        $rate = 0.09;//(float) $rows['essalud_rate']->config_value;
+                        $base_min = 1130;//(float) $rows['essalud_base_min']->config_value;
+                        $base_max = 2475;//(float) $rows['essalud_base_max']->config_value;
+                        $baseAmount = $this->resolveAmount(1, $employee,  $employee -> payrollTypeId, $amountMap)??0;
+                        $base_calculo = min(max( $baseAmount, $base_min), $base_max);
+                        $baseAmount = round($base_calculo * $rate, 2);
+                    }
+                    $totalGroups[100] += $baseAmount;
+                    $values[] = $baseAmount;
+                }
+            }
 
 
 
