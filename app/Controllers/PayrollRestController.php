@@ -595,19 +595,20 @@ class PayrollRestController extends Controller
         AGRUPAR CONCEPTOS POR TIPO
         */
         $conceptGroups = [];
-        $totalGroups = [];
+        
         foreach ($concepts as $c) {
-            if (!isset($conceptGroups[$c->type_id])) {
-                $conceptGroups[$c->type_id] = [];
+            $type_id = $c->type_id ?? 0;
+            if (!isset($conceptGroups[$type_id])) {
+                $conceptGroups[$type_id] = [];
             }
-            $conceptGroups[$c->type_id][] = $c;
+            $conceptGroups[$type_id][] = $c;
         }
-
         $ingresos = [];
         $egresos = [];
         $descuentos = [];
         $otros_descuentos = [];
         $aportaciones = [];
+        $totalGroups = [];
         foreach ($concepts as $c) {
 
             $item = [
@@ -633,7 +634,8 @@ class PayrollRestController extends Controller
             'title' => 'TOTAL INGRESOS I',
             'is_total_ingresos' => true,
             'backgroundColor' => '#badefd',
-            'color' => 'black'
+            'color' => 'black',
+            'concept_id' => 23
         ];
         $egresos[] = [
             'title' => 'TOTAL',
@@ -780,10 +782,6 @@ class PayrollRestController extends Controller
                     $values[$c->id] = $baseAmount;
                 }
             }
-
-            $totalIngresos = $totalGroups[1]+$totalGroups[2];//formula G1+G2
-            // insertar TOTAL INGRESOS justo después de los ingresos
-            $values[] = $totalIngresos;
             if(isset($conceptGroups[3])) {
                 $totalGroups[3] = 0;
                 foreach($conceptGroups[3] as $c){
@@ -792,7 +790,6 @@ class PayrollRestController extends Controller
                     $values[$c->id] = $baseAmount;
                 }
             }
-
             $totalEgresos = $totalGroups[3];
             //Total
             $values[] = $totalGroups[3];//G3;
@@ -801,7 +798,7 @@ class PayrollRestController extends Controller
             $values[] = $totalGroups[3];//G3;
 
             //BASE DE CALCULO CONTRIBUCIONES
-            $base_calculo_contribuciones = $totalIngresos - $totalEgresos;
+            $base_calculo_contribuciones = 0;//$totalIngresos - $totalEgresos;
             $values[] = $base_calculo_contribuciones;
 
             //BASE DE CALCULO  4TA CATG.
@@ -836,18 +833,21 @@ class PayrollRestController extends Controller
             $values[] = $otros_descuentos;
             $values[] = $totalEgresos + $descuentos_ley + $otros_descuentos;
 
-            if(isset($conceptGroups[100])) {
-                $totalGroups[100] = 0;
-                foreach($conceptGroups[100] as $c){
+            if(isset($conceptGroups[0])) {
+                foreach($conceptGroups[0] as $c){
                     $baseAmount = $this->resolveAmount($c->id, $employee,  $employee -> payrollTypeId, $amountMap);
                     if(isset($c->formula)){
-                        $rate = 0.09;//(float) $rows['essalud_rate']->config_value;
-                        $base_min = 1130;//(float) $rows['essalud_base_min']->config_value;
-                        $base_max = 2475;//(float) $rows['essalud_base_max']->config_value;
-                        $baseAmount = $data[1] ?? $this->resolveAmount(1, $employee,  $employee -> payrollTypeId, $amountMap)??0;
-                        $baseAmount = round(min(max( $baseAmount, $base_min), $base_max) * $rate, 2);
+                        if($c->id=='22'){
+                            $rate = 0.09;//(float) $rows['essalud_rate']->config_value;
+                            $base_min = 1130;//(float) $rows['essalud_base_min']->config_value;
+                            $base_max = 2475;//(float) $rows['essalud_base_max']->config_value;
+                            $baseAmount = $data[1] ?? $this->resolveAmount(1, $employee,  $employee -> payrollTypeId, $amountMap)??0;
+                            $baseAmount = round(min(max( $baseAmount, $base_min), $base_max) * $rate, 2);
+                        }else if($c->formula=='G1+G2'){
+                            $baseAmount = $totalGroups[1]+$totalGroups[2];
+                            $baseAmount = round(min(max( $baseAmount, $base_min), $base_max) * $rate, 2);
+                        }
                     }
-                    $totalGroups[100] += $baseAmount;
                     $values[$c->id] = $baseAmount;
                 }
             }
