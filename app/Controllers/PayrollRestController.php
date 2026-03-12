@@ -1049,6 +1049,7 @@ class PayrollRestController extends Controller
         PARAMETROS DE MONTO
         */
 
+        //payroll_type_id can be null
         $params=$wpdb->get_results($wpdb->prepare("
             SELECT concept_id,amount,type,target_id,payroll_type_id
             FROM rem_payroll_amount
@@ -1062,7 +1063,7 @@ class PayrollRestController extends Controller
         foreach($params as $p){
 
             if($p->type=='PL'){
-                $amountMap[$p->concept_id]['PL'][$p->payroll_type_id]=$p->amount;
+                $amountMap[$p->concept_id]['PL'][$p->payroll_type_id??'1']=$p->amount;
             }else{
                 $amountMap[$p->concept_id][$p->type][$p->target_id]=$p->amount;
             }
