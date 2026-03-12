@@ -1121,7 +1121,8 @@ class PayrollRestController extends Controller
                     "concept_id"=>$c->id,
                     "concept"=>$c->name,
                     "type_id"=>$c->type_id,
-                    "amount"=>$value
+                    "amount"=>$value,
+                    "XXX"=>"---->".$base
                 ];
             }
 
