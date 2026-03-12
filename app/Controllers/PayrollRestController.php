@@ -1070,7 +1070,7 @@ class PayrollRestController extends Controller
 
         }
 
-        return ['$conceptGroups'=>$conceptGroups,'$amountMap'=>$amountMap];
+        
         /*
         EMPLEADOS
         */
@@ -1226,7 +1226,7 @@ class PayrollRestController extends Controller
                 "concepts"=>$conceptResults
             ];
         }
-
+return ['$conceptGroups'=>$conceptGroups,'$amountMap'=>$amountMap.'$items'=>$items];
         return $items;
     }
 
