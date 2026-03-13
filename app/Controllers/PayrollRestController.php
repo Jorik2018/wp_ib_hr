@@ -741,6 +741,7 @@ class PayrollRestController extends Controller
                     }else if($c->formula=='G5'){
                         $baseAmount = $totalGroups[5]??0;
                     }
+                    if(isset($baseAmount))$baseAmount = round($baseAmount,2);
                 }
                 $values[$c->id] = $baseAmount;
             }
