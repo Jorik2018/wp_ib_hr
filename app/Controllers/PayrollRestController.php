@@ -617,7 +617,7 @@ function buildHeaders($parentId, $conceptTree) {
             AND a.canceled = 0
             AND a.ini_date <= %s
             AND (a.end_date IS NULL OR a.end_date >= %s)
-            WHERE a.concept_id IS NOT NULL OR (c.formula IS NOT NULL AND c.formula <> '') OR c.parent_id IS NULL
+            WHERE a.concept_id IS NOT NULL OR (c.formula IS NOT NULL AND c.formula <> '') OR c.is_parent
             ORDER BY c.weight
         ", "$year-$month-01", "$year-$month-01"));
 
