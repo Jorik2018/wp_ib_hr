@@ -570,35 +570,41 @@ class PayrollRestController extends Controller
     }
 
     function buildHeaders($parentId, $conceptTree) {
-        $headers = [];
+    $headers = [];
 
-        if (!isset($conceptTree[$parentId])) {
-            return $headers;
-        }
-
-        foreach ($conceptTree[$parentId] as $c) {
-            $children = $this -> buildHeaders($c->id, $conceptTree);
-            $header = [
-                'title' => $c->name,
-            ];
-
-            // Si tiene hijos, los ponemos como 'children'
-            if (!empty($children)) {
-                $header['children'] = $children;
-            } else {
-                // Si no tiene hijos, podemos mapear código u otros atributos
-                $header['concept_id'] = $c->id;
-                if (!empty($c->pdt_code)) {
-                    $header['index'] = $c->pdt_code; // opcional, según lo que enlaza a data
-                }
-            }
-
-            $headers[] = $header;
-        }
-
+    if (!isset($conceptTree[$parentId])) {
         return $headers;
     }
 
+    foreach ($conceptTree[$parentId] as $c) {
+        // Construir recursivamente los hijos
+        $children = $this->buildHeaders($c->id, $conceptTree);
+
+        // Si es 'is_parent' y no tiene hijos, lo omitimos
+        if (!empty($c->is_parent) && empty($children)) {
+            continue; // salta este concepto
+        }
+
+        $header = [
+            'title' => $c->name,
+        ];
+
+        // Si tiene hijos, agregamos 'children'
+        if (!empty($children)) {
+            $header['children'] = $children;
+        } else {
+            // Si no tiene hijos, asignamos concept_id e index para data
+            $header['concept_id'] = $c->id;
+            if (!empty($c->pdt_code)) {
+                $header['index'] = $c->pdt_code;
+            }
+        }
+
+        $headers[] = $header;
+    }
+
+    return $headers;
+}
 
     public function period($request)
     {
