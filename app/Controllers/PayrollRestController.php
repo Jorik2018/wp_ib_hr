@@ -42,6 +42,11 @@ class PayrollRestController extends Controller
 
         register_rest_route('api/payroll', 'concept/(?P<from>\d+)/(?P<to>\d+)', array(
             'methods' => 'GET',
+            'callback' => array($this, 'pag_concept')
+        ));
+
+        register_rest_route('api/payroll', '(?P<from>\d+)/(?P<to>\d+)', array(
+            'methods' => 'GET',
             'callback' => array($this, 'pag')
         ));
 
@@ -69,6 +74,37 @@ class PayrollRestController extends Controller
             'methods' => 'POST',
             'callback' => array($this, 'process')
         ));
+    }
+
+    public function pag($request)
+    {
+
+        global $wpdb;
+
+        $from = intval($request['from']);
+        $to = intval($request['to']);
+
+        $query = get_param($request, 'query');
+
+        $db_erp = get_option("db_ofis");
+
+        $results = $wpdb->get_results(
+            "SELECT SQL_CALC_FOUND_ROWS * 
+             FROM $db_erp.rem_payroll 
+             WHERE canceled=0 " .
+            (isset($query) ? " AND (comments LIKE '%$query%')" : "") .
+            ($to > 0 ? " LIMIT $from,$to" : ""),
+            ARRAY_A
+        );
+
+        if ($wpdb->last_error) return t_error($wpdb->last_error);
+
+        $results = mapKeysToCamelCase($results);
+
+        return $to > 0 ? [
+            'data' => $results,
+            'size' => $wpdb->get_var('SELECT FOUND_ROWS()')
+        ] : $results;
     }
 
     function getOrCreatePayroll($year, $month, $typeId, $fuenteFinanc = null, $preparedBy = null)
@@ -148,7 +184,7 @@ class PayrollRestController extends Controller
         return $headers;
     }
 
-    public function pag($request)
+    public function pag_concept($request)
     {
         global $wpdb;
 
