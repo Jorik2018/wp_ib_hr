@@ -569,31 +569,36 @@ class PayrollRestController extends Controller
         return $result;
     }
 
-    function buildColumns($concepts) {
-        $cols = [];
-        foreach ($concepts as $c) {
-            $childConcepts = array_filter($concepts, fn($ch) => $ch->parent_id == $c->id);
-            if (!empty($childConcepts)) {
-                // Si tiene hijos, genera children
-                $cols[] = [
-                    'title' => $c->name,
-                    'backgroundColor' => $c->background_color ?? '#ffffff',
-                    'color' => $c->color ?? 'black',
-                    'concept_id' => $c->id,
-                    'children' => $this -> buildColumns($childConcepts)
-                ];
-            } else {
-                // Columna simple
-                $cols[] = [
-                    'title' => $c->name,
-                    'color' => $c->color ?? 'black',
-                    'backgroundColor' => $c->background_color ?? '#ffffff',
-                    'concept_id' => $c->id
-                ];
+function buildHeaders($parentId, $conceptTree) {
+    $headers = [];
+
+    if (!isset($conceptTree[$parentId])) {
+        return $headers;
+    }
+
+    foreach ($conceptTree[$parentId] as $c) {
+        $children = $this -> buildHeaders($c->id, $conceptTree);
+        $header = [
+            'title' => $c->name,
+        ];
+
+        // Si tiene hijos, los ponemos como 'children'
+        if (!empty($children)) {
+            $header['children'] = $children;
+        } else {
+            // Si no tiene hijos, podemos mapear código u otros atributos
+            $header['concept_id'] = $c->id;
+            if (!empty($c->pdt_code)) {
+                $header['index'] = $c->pdt_code; // opcional, según lo que enlaza a data
             }
         }
-        return $cols;
+
+        $headers[] = $header;
     }
+
+    return $headers;
+}
+
 
     public function period($request)
     {
@@ -628,6 +633,14 @@ class PayrollRestController extends Controller
             $conceptGroups[$type_id][] = $c;
         }
         $totalGroups = [];
+        $conceptTree = [];
+        foreach ($concepts as $c) {
+            $parentId = $c->parent_id ?? 0; // 0 indica que es root
+            if (!isset($conceptTree[$parentId])) {
+                $conceptTree[$parentId] = [];
+            }
+            $conceptTree[$parentId][] = $c;
+        }
         $headers = [
             ['title' => 'CODE', 'width' => 80, 'index' => 'code', 'class' => 'center'],
             ['title' => 'NOMBRE COMPLETO', 'width' => 200, 'index' => 'fullName'],
@@ -635,19 +648,11 @@ class PayrollRestController extends Controller
             ['title' => 'N° CUSPP', 'width' => 120, 'index' => 'nCUSPP', 'class' => 'center'],
             ['title' => 'DIAS LABORADOS', 'width' => 100]
         ];
-        foreach ($conceptGroups as $type_id => $groupConcepts) {
-            // Solo agregamos los que no son hijos de otro
-            $topLevelConcepts = array_filter($groupConcepts, fn($c) => $c->parent_id === null);
+        $dynamicHeaders = $this -> buildHeaders(0, $conceptTree);
 
-            if (!empty($topLevelConcepts)) {
-                $headers[] = [
-                    'title' => $topLevelConcepts[0]->type_name ?? 'Tipo ' . $type_id, // si tienes un nombre de tipo en db
-                    'backgroundColor' => $topLevelConcepts[0]->background_color ?? '#ffffff',
-                    'color' => $topLevelConcepts[0]->color ?? 'black',
-                    'children' => $this->buildColumns($topLevelConcepts)
-                ];
-            }
-        }
+        // Unir columnas fijas con las dinámicas
+        $headers = array_merge($headers, $dynamicHeaders);
+
         $params = $wpdb->get_results($wpdb->prepare("
             SELECT concept_id, amount, type, target_id, payroll_type_id
             FROM rem_payroll_amount
