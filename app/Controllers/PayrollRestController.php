@@ -737,6 +737,8 @@ class PayrollRestController extends Controller
                     }else if($c->formula=='C27+C28'){
                         $baseAmount = ($values[27]?? $this->resolveAmount(27, $employee,  $employee -> payrollTypeId, $amountMap)??0)
                         +$values[28]?? $this->resolveAmount(28, $employee,  $employee -> payrollTypeId, $amountMap)??0;;
+                    }else if($c->formula=='G5'){
+                        $baseAmount = $totalGroups[5]??0;
                     }
                 }
                 $values[$c->id] = $baseAmount;
