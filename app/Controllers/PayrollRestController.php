@@ -569,35 +569,35 @@ class PayrollRestController extends Controller
         return $result;
     }
 
-function buildHeaders($parentId, $conceptTree) {
-    $headers = [];
+    function buildHeaders($parentId, $conceptTree) {
+        $headers = [];
 
-    if (!isset($conceptTree[$parentId])) {
-        return $headers;
-    }
-
-    foreach ($conceptTree[$parentId] as $c) {
-        $children = $this -> buildHeaders($c->id, $conceptTree);
-        $header = [
-            'title' => $c->name,
-        ];
-
-        // Si tiene hijos, los ponemos como 'children'
-        if (!empty($children)) {
-            $header['children'] = $children;
-        } else {
-            // Si no tiene hijos, podemos mapear código u otros atributos
-            $header['concept_id'] = $c->id;
-            if (!empty($c->pdt_code)) {
-                $header['index'] = $c->pdt_code; // opcional, según lo que enlaza a data
-            }
+        if (!isset($conceptTree[$parentId])) {
+            return $headers;
         }
 
-        $headers[] = $header;
-    }
+        foreach ($conceptTree[$parentId] as $c) {
+            $children = $this -> buildHeaders($c->id, $conceptTree);
+            $header = [
+                'title' => $c->name,
+            ];
 
-    return $headers;
-}
+            // Si tiene hijos, los ponemos como 'children'
+            if (!empty($children)) {
+                $header['children'] = $children;
+            } else {
+                // Si no tiene hijos, podemos mapear código u otros atributos
+                $header['concept_id'] = $c->id;
+                if (!empty($c->pdt_code)) {
+                    $header['index'] = $c->pdt_code; // opcional, según lo que enlaza a data
+                }
+            }
+
+            $headers[] = $header;
+        }
+
+        return $headers;
+    }
 
 
     public function period($request)
@@ -611,7 +611,7 @@ function buildHeaders($parentId, $conceptTree) {
         $payroll_type_id = get_param($request, 'payrollType')??1;
     
         $concepts = $wpdb->get_results($wpdb->prepare("
-            SELECT DISTINCT c.id, c.name, c.pdt_code, c.type_id, c.weight, c.formula, c.parent_id
+            SELECT DISTINCT c.id, c.name, c.pdt_code, c.type_id, c.weight, c.formula, c.parent_id, c.is_parent
             FROM per_concept c
             LEFT JOIN rem_payroll_amount a ON c.id = a.concept_id
             AND a.canceled = 0
@@ -664,9 +664,9 @@ function buildHeaders($parentId, $conceptTree) {
         $amountMap = [];
         foreach ($params as $p) {
             if($p->type=='PL') {
-                $amountMap[''.$p->concept_id][$p->type][$payroll_type_id] = $p->amount;
+                $amountMap[$p->concept_id][$p->type][$payroll_type_id] = $p->amount;
             } else {
-                $amountMap[''.$p->concept_id][$p->type][$p->target_id] = $p->amount;
+                $amountMap[$p->concept_id][$p->type][$p->target_id] = $p->amount;
             }
         }
          
