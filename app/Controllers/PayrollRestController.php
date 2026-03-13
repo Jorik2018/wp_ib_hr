@@ -569,6 +569,31 @@ class PayrollRestController extends Controller
         return $result;
     }
 
+    function buildColumns($concepts) {
+        $cols = [];
+        foreach ($concepts as $c) {
+            $childConcepts = array_filter($concepts, fn($ch) => $ch->parent_id == $c->id);
+            if (!empty($childConcepts)) {
+                // Si tiene hijos, genera children
+                $cols[] = [
+                    'title' => $c->name,
+                    'backgroundColor' => $c->background_color ?? '#ffffff',
+                    'color' => $c->color ?? 'black',
+                    'concept_id' => $c->id,
+                    'children' => $this -> buildColumns($childConcepts)
+                ];
+            } else {
+                // Columna simple
+                $cols[] = [
+                    'title' => $c->name,
+                    'color' => $c->color ?? 'black',
+                    'backgroundColor' => $c->background_color ?? '#ffffff',
+                    'concept_id' => $c->id
+                ];
+            }
+        }
+        return $cols;
+    }
 
     public function period($request)
     {
@@ -581,7 +606,7 @@ class PayrollRestController extends Controller
         $payroll_type_id = get_param($request, 'payrollType')??1;
     
         $concepts = $wpdb->get_results($wpdb->prepare("
-            SELECT DISTINCT c.id, c.name, c.pdt_code, c.type_id, c.weight, c.formula
+            SELECT DISTINCT c.id, c.name, c.pdt_code, c.type_id, c.weight, c.formula, c.parent_id
             FROM per_concept c
             LEFT JOIN rem_payroll_amount a ON c.id = a.concept_id
             AND a.canceled = 0
@@ -595,7 +620,6 @@ class PayrollRestController extends Controller
         AGRUPAR CONCEPTOS POR TIPO
         */
         $conceptGroups = [];
-        
         foreach ($concepts as $c) {
             $type_id = $c->type_id ?? 0;
             if (!isset($conceptGroups[$type_id])) {
@@ -603,129 +627,27 @@ class PayrollRestController extends Controller
             }
             $conceptGroups[$type_id][] = $c;
         }
-        $ingresos = [];
-        $egresos = [];
-        $descuentos = [];
-        $otros_descuentos = [];
-        $aportaciones = [];
         $totalGroups = [];
-        foreach ($concepts as $c) {
-
-            $item = [
-                'title' => $c->name,
-                'code'  => $c->pdt_code,
-                'concept_id' => $c->id
-            ];
-
-            if ($c->type_id == 1 || $c->type_id == 2) {
-                $ingresos[] = $item;
-            } elseif ($c->type_id == 3) {
-                $egresos[] = $item;
-            } elseif ($c->type_id == 4) {
-                $descuentos[] = $item;
-            } elseif ($c->type_id == 6) {
-                $otros_descuentos[] = $item;
-            } else {
-                $aportaciones[] = $item;
-            }
-        }
-
-        $ingresos[] = [
-            'title' => 'TOTAL INGRESOS I',
-            'is_total_ingresos' => true,
-            'backgroundColor' => '#badefd',
-            'color' => 'black',
-            'concept_id' => 23
-        ];
-        $egresos[] = [
-            'title' => 'TOTAL',
-            'is_total_ingresos' => true,
-            'concept_id' => 24
-        ];
-        $egresos[] = [
-            'title' => 'TOTAL DSCTO. QUE AFECTAN LA BASE IMPONIBLE (A)',
-            'is_total_ingresos' => true,
-            'backgroundColor' => '#badefd',
-            'color' => 'black',
-            'concept_id' => 26
-        ];
-
-        $descuentos[] = [
-            'title' => 'TOTAL DESCUENTOS DE LEY (B)',
-            'is_total_ingresos' => true,
-            'backgroundColor' => '#badefd',
-            'color' => 'black'
-        ];
-
-        $otros_descuentos[] = [
-            'title' => 'TOTAL OTROS DESCUENTOS (C)',
-            'is_total_ingresos' => true,
-            'backgroundColor' => '#badefd',
-            'color' => 'black'
-        ];
-
-        $otros_descuentos[] = [
-            'title' => 'TOTAL DESCUENTOS II = (A + B + C)',
-            'is_total_ingresos' => true,
-            'backgroundColor' => '#badefd',
-            'color' => 'black'
-        ];
-
         $headers = [
             ['title' => 'CODE', 'width' => 80, 'index' => 'code', 'class' => 'center'],
             ['title' => 'NOMBRE COMPLETO', 'width' => 200, 'index' => 'fullName'],
             ['title' => 'AFP / ONP', 'width' => 100, 'index' => 'pensionSystem', 'class' => 'center'],
             ['title' => 'N° CUSPP', 'width' => 120, 'index' => 'nCUSPP', 'class' => 'center'],
-            ['title' => 'DIAS LABORADOS', 'width' => 100],
-
-            [
-                'title' => 'INGRESOS',
-                'backgroundColor' => '#fbff00',
-                'color' => 'black',
-                'width' => 110,
-                'children' => $ingresos
-            ],
-            [
-                'title' => 'EGRESOS QUE AFECTAN LA BASE IMPONIBLE',
-                'backgroundColor' => '#54e05e',
-                'color' => 'black',
-                'width' => 110,
-                'children' => $egresos
-            ],
-
-            [
-                'title' => 'BASE DE CALCULO CONTRIBUCIONES', ///este es calculado
-                'backgroundColor' => '#ad1805',
-                'color' => 'white',
-                'concept_id' => 27
-            ],
-            [
-                'title' => 'BASE DE CALCULO  4TA CATG.', ///este es calculado
-                'backgroundColor' => '#5f10c7',
-                'color' => 'white',
-                'concept_id' => 29
-            ],
-            [
-                'title' => 'DESCUENTOS DE LEY',
-                'backgroundColor' => '#54e05e',
-                'color' => 'black',
-                'children' => $descuentos
-            ],
-            [
-                'title' => 'APORTE SOLID. POR  CONV. COLECTIVO 0.5%',
-            ],
-            [
-                'title' => 'OTROS DESCUENTOS',
-                'backgroundColor' => '#54e05e',
-                'color' => 'black',
-                'children' => $otros_descuentos
-            ],
-            [
-                'title' => 'APORTES',
-                'backgroundColor' => '#54e05e',
-                'children' => $aportaciones
-            ]
+            ['title' => 'DIAS LABORADOS', 'width' => 100]
         ];
+        foreach ($conceptGroups as $type_id => $groupConcepts) {
+            // Solo agregamos los que no son hijos de otro
+            $topLevelConcepts = array_filter($groupConcepts, fn($c) => $c->parent_id === null);
+
+            if (!empty($topLevelConcepts)) {
+                $headers[] = [
+                    'title' => $topLevelConcepts[0]->type_name ?? 'Tipo ' . $type_id, // si tienes un nombre de tipo en db
+                    'backgroundColor' => $topLevelConcepts[0]->background_color ?? '#ffffff',
+                    'color' => $topLevelConcepts[0]->color ?? 'black',
+                    'children' => $this->buildColumns($topLevelConcepts)
+                ];
+            }
+        }
         $params = $wpdb->get_results($wpdb->prepare("
             SELECT concept_id, amount, type, target_id, payroll_type_id
             FROM rem_payroll_amount
