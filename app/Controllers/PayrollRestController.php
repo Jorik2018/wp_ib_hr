@@ -587,6 +587,7 @@ class PayrollRestController extends Controller
 
         $header = [
             'title' => $c->name,
+            'class' => $c->class
         ];
 
         // Si tiene hijos, agregamos 'children'
@@ -617,7 +618,7 @@ class PayrollRestController extends Controller
         $payroll_type_id = get_param($request, 'payrollType')??1;
     
         $concepts = $wpdb->get_results($wpdb->prepare("
-            SELECT DISTINCT c.id, c.name, c.pdt_code, c.type_id, c.weight, c.formula, c.parent_id, c.is_parent
+            SELECT DISTINCT c.id, c.name, c.pdt_code, c.type_id, c.weight, c.formula, c.parent_id, c.is_parent, c.class
             FROM per_concept c
             LEFT JOIN rem_payroll_amount a ON c.id = a.concept_id
             AND a.canceled = 0
