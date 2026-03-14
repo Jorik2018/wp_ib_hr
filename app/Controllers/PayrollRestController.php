@@ -3,10 +3,8 @@
 namespace IB\cv\Controllers;
 
 use WPMVC\MVC\Controller;
-use function IB\directory\Util\remove;
 use function IB\directory\Util\mapKeysToCamelCase;
 use function IB\directory\Util\get_param;
-use function IB\directory\Util\cdfield;
 use function IB\directory\Util\t_error;
 use Dompdf\Dompdf;
 
@@ -89,8 +87,9 @@ class PayrollRestController extends Controller
         $db_erp = get_option("db_ofis");
 
         $results = $wpdb->get_results(
-            "SELECT SQL_CALC_FOUND_ROWS * 
-             FROM $db_erp.rem_payroll 
+            "SELECT SQL_CALC_FOUND_ROWS p.*, pt.name typeName
+             FROM $db_erp.rem_payroll p 
+             LEFT JOIN $db_erp.rem_payroll_type pt ON pt.id=p.type_id
              WHERE canceled=0 " .
             (isset($query) ? " AND (comments LIKE '%$query%')" : "") .
             ($to > 0 ? " LIMIT $from,$to" : ""),
