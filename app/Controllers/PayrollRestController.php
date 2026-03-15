@@ -867,7 +867,8 @@ class PayrollRestController extends Controller
             ... (array)$payroll,
             'items' => $items,
             'headers' => $headers,
-            'conceptGroups' => $conceptGroups
+            'conceptGroups' => $conceptGroups,
+            '$amountMap'=> $amountMap
         ];
     }
 
