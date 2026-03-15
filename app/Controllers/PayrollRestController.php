@@ -33,7 +33,7 @@ class PayrollRestController extends Controller
 
     public function rest_api_init()
     {
-        register_rest_route('api/payroll', 'period', array(
+        register_rest_route('api/payroll', '(?P<id>\d+)/preview', array(
             'methods' => 'GET',
             'callback' => array($this, 'period')
         ));
@@ -111,12 +111,19 @@ class PayrollRestController extends Controller
         ] : $results;
     }
 
-    function getOrCreatePayroll($year, $month, $typeId, $fuenteFinanc = null, $preparedBy = null)
+    function getOrCreatePayroll($year, $month, $typeId, $id = 0, $fuenteFinanc = null, $preparedBy = null)
     {
         global $wpdb;
 
         // 1️⃣ Buscar existente
         $payroll = $wpdb->get_row(
+            $id?            $wpdb->prepare(
+                "SELECT * 
+             FROM rem_payroll
+             WHERE  id = %d
+             LIMIT 1",
+                $id
+            ):
             $wpdb->prepare(
                 "SELECT * 
              FROM rem_payroll
@@ -714,6 +721,7 @@ class PayrollRestController extends Controller
         $original_db = $wpdb->dbname;
         $db_erp = get_option("db_ofis");
         $wpdb->select($db_erp);
+        $id = intval($request['id']);
         $year = get_param($request, 'year');
         $month = get_param($request, 'month');
         $payroll_type_id = get_param($request, 'payrollType')??1;
@@ -782,7 +790,7 @@ class PayrollRestController extends Controller
 
         $headers = $this->assignLeafIndexes($headers);
 
-        $payroll = $this->getOrCreatePayroll($year, $month, 1);
+        $payroll = $this->getOrCreatePayroll($year, $month, $payroll_type_id, $id);
 
         $employees = $wpdb->get_results(
             $wpdb->prepare(
@@ -853,10 +861,9 @@ class PayrollRestController extends Controller
         }
         $wpdb->select($original_db);
         return [
-            'success' => true,
+            ... (array)$payroll,
             'data' => $items,
             'headers' => $headers,
-            'payroll' => $payroll,
             '$conceptGroups' => $conceptGroups
         ];
     }
@@ -893,8 +900,9 @@ class PayrollRestController extends Controller
 
         $year=get_param($request,'year');
         $month=get_param($request,'month');
+        $type=get_param($request,'type');
 
-        $payroll=$this->getOrCreatePayroll($year,$month,1);
+        $payroll=$this->getOrCreatePayroll($year,$month,$type);
 
         $items=$this->calculatePayroll($year,$month);
 
