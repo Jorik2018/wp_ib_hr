@@ -168,7 +168,7 @@ class PayrollAmountRestController extends Controller
 
         $results = $wpdb->get_results(
             "SELECT SQL_CALC_FOUND_ROWS pa.*, c.name conceptName
-            FROM $db_erp.rem_payroll_amount pa JOIN rem_concept c ON c.id = pa.concept_id
+            FROM $db_erp.rem_payroll_amount pa JOIN per_concept c ON c.id = pa.concept_id
             WHERE canceled=0 " .
 
             (isset($conceptId) ? " AND concept_id='$conceptId'" : "") .
