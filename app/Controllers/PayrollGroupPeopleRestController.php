@@ -135,7 +135,7 @@ class PayrollGroupPeopleRestController extends Controller
             $wpdb->prepare(
                 "SELECT 
                     gp.*,
-                    p.code,
+                    p.dni code,
                     apellidos_nombres AS full_name,
                     g.name AS group_name
                 FROM $db_erp.rem_group_people gp
