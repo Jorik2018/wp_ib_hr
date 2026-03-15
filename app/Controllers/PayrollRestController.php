@@ -118,9 +118,9 @@ class PayrollRestController extends Controller
         // 1️⃣ Buscar existente
         $payroll = $wpdb->get_row(
             $id?            $wpdb->prepare(
-                "SELECT * 
-             FROM rem_payroll
-             WHERE  id = %d
+                "SELECT p.* , pt.name payrollTypeName
+             FROM rem_payroll p JOIN rem_payroll_type pt ON pt.id=p.type_id
+             WHERE  p.id = %d 
              LIMIT 1",
                 $id
             ):
@@ -725,7 +725,12 @@ class PayrollRestController extends Controller
         $year = get_param($request, 'year');
         $month = get_param($request, 'month');
         $payroll_type_id = get_param($request, 'payrollType')??1;
-    
+
+        $payroll = $this->getOrCreatePayroll($year, $month, $payroll_type_id, $id);
+
+        $year = $payroll -> year;
+        $month = $payroll -> month;
+
         $concepts = $wpdb->get_results($wpdb->prepare("
             SELECT DISTINCT c.id, c.name, c.pdt_code, c.type_id, c.weight, c.formula, c.parent_id, c.is_parent, c.class
             FROM per_concept c
@@ -789,8 +794,6 @@ class PayrollRestController extends Controller
         $diasMes = 30; //cal_days_in_month(CAL_GREGORIAN, $month, $year);
 
         $headers = $this->assignLeafIndexes($headers);
-
-        $payroll = $this->getOrCreatePayroll($year, $month, $payroll_type_id, $id);
 
         $employees = $wpdb->get_results(
             $wpdb->prepare(
