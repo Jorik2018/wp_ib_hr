@@ -171,7 +171,7 @@ class PayrollGroupPeopleRestController extends Controller
         $results = $wpdb->get_results(
             "SELECT SQL_CALC_FOUND_ROWS
                 gp.*,
-                p.code,
+                p.dni code,
                 apellidos_nombres AS full_name,
                 g.name AS group_name
             FROM $db_erp.rem_group_people gp
