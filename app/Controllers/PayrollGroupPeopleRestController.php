@@ -79,15 +79,15 @@ class PayrollGroupPeopleRestController extends Controller
 
         $o = get_param($request);
 
-        if (empty($o['peopleId'])) {
+        if (empty($o['people'])) {
             return t_error('Persona es obligatoria');
         }
 
-        if (empty($o['groupId'])) {
+        if (empty($o['group'])) {
             return t_error('Grupo es obligatorio');
         }
 
-        $o = mapKeysToSnakeCase($o);
+        $o = mapKeysToSnakeCase($o,['people'=>'people_id','group'=>'group_id']);
 
         try {
 
