@@ -862,9 +862,9 @@ class PayrollRestController extends Controller
         $wpdb->select($original_db);
         return [
             ... (array)$payroll,
-            'data' => $items,
+            'items' => $items,
             'headers' => $headers,
-            '$conceptGroups' => $conceptGroups
+            'conceptGroups' => $conceptGroups
         ];
     }
 
