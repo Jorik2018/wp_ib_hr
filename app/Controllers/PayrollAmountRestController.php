@@ -175,9 +175,9 @@ class PayrollAmountRestController extends Controller
                 (isset($conceptId) ? " AND concept_id='$conceptId'" : "") .
                 (isset($targetId) ? " AND target_id='$targetId'" : "") .
                 (isset($type) ? " AND type='$type'" : "") .
-
-                ($to > 0 ? " LIMIT $from,$to" : "").
-                " ORDER BY id DESC",
+" ORDER BY id DESC".
+                ($to > 0 ? " LIMIT $from,$to" : "")
+                ,
                 ARRAY_A
             );
 
