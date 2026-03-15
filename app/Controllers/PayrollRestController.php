@@ -43,6 +43,11 @@ class PayrollRestController extends Controller
             'callback' => array($this, 'pag_concept')
         ));
 
+        register_rest_route('api/payroll', 'group/(?P<from>\d+)/(?P<to>\d+)', array(
+            'methods' => 'GET',
+            'callback' => array($this, 'pag_group')
+        ));
+
         register_rest_route('api/payroll', '(?P<from>\d+)/(?P<to>\d+)', array(
             'methods' => 'GET',
             'callback' => array($this, 'pag')
@@ -242,6 +247,67 @@ class PayrollRestController extends Controller
             return t_error($wpdb->last_error);
         }
 
+        return $to > 0
+            ? ['data' => $results, 'size' => (int)$wpdb->get_var("SELECT FOUND_ROWS()")]
+            : $results;
+    }
+
+    public function pag_group($request)
+    {
+        global $wpdb;
+
+        $db = get_option("db_ofis");
+
+        // Parámetros de búsqueda
+        $params = [
+            'c.name'         => get_param($request, 'name'),
+            'c.parent_id'      => get_param($request, 'parentId')
+        ];
+
+        $from = (int) get_param($request, 'from');
+        $to   = (int) get_param($request, 'to');
+
+        $where = [];
+        $values = [];
+
+        foreach ($params as $column => $value) {
+            if ($value !== null && $value !== '') {
+
+                // búsquedas exactas para números
+                if ($column === 'c.type_id') {
+                    $where[] = "$column = %d";
+                    $values[] = (int) $value;
+                } else {
+                    $where[] = "UPPER($column) LIKE %s";
+                    $values[] = '%' . strtoupper($value) . '%';
+                }
+            }
+        }
+
+        $sql = "SELECT SQL_CALC_FOUND_ROWS c.*
+            FROM $db.per_group c";
+
+        if (!empty($where)) {
+            $sql .= " WHERE " . implode(' AND ', $where);
+        }
+
+        $sql .= " ORDER BY c.id DESC";
+
+        if ($to > 0) {
+            $sql .= " LIMIT %d, %d";
+            $values[] = $from;
+            $values[] = $to;
+        }
+
+        // Preparar consulta segura
+        $query = $wpdb->prepare($sql, $values);
+
+        $results = $wpdb->get_results($query, OBJECT);
+
+        if ($wpdb->last_error) {
+            return t_error($wpdb->last_error);
+        }
+        $results = mapKeysToCamelCase($results);
         return $to > 0
             ? ['data' => $results, 'size' => (int)$wpdb->get_var("SELECT FOUND_ROWS()")]
             : $results;
