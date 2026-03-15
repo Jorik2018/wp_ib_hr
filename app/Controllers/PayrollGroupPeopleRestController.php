@@ -139,7 +139,7 @@ class PayrollGroupPeopleRestController extends Controller
                     apellidos_nombres AS full_name,
                     g.name AS group_name
                 FROM $db_erp.rem_group_people gp
-                JOIN $db_erp.m_personal p ON p.id = gp.people_id
+                JOIN $db_erp.m_personal p ON p.n = gp.people_id
                 JOIN $db_erp.rem_group g ON g.id = gp.group_id
                 WHERE gp.id=%d",
                 $request['id']
@@ -175,7 +175,7 @@ class PayrollGroupPeopleRestController extends Controller
                 apellidos_nombres AS full_name,
                 g.name AS group_name
             FROM $db_erp.rem_group_people gp
-            JOIN $db_erp.m_personal p ON p.id = gp.people_id
+            JOIN $db_erp.m_personal p ON p.n = gp.people_id
             JOIN $db_erp.rem_group g ON g.id = gp.group_id
             WHERE 1=1 " .
 
