@@ -163,26 +163,31 @@ class PayrollAmountRestController extends Controller
         $conceptId = get_param($request, 'conceptId');
         $targetId = get_param($request, 'targetId');
         $type = get_param($request, 'type');
-
+        $original_db = $wpdb->dbname;
         $db_erp = get_option("db_ofis");
+        $wpdb->select($db_erp);
+        try {
+            $results = $wpdb->get_results(
+                "SELECT SQL_CALC_FOUND_ROWS pa.*, c.name conceptName
+                FROM $db_erp.rem_payroll_amount pa JOIN per_concept c ON c.id = pa.concept_id
+                WHERE canceled=0 " .
 
-        $results = $wpdb->get_results(
-            "SELECT SQL_CALC_FOUND_ROWS pa.*, c.name conceptName
-            FROM $db_erp.rem_payroll_amount pa JOIN per_concept c ON c.id = pa.concept_id
-            WHERE canceled=0 " .
+                (isset($conceptId) ? " AND concept_id='$conceptId'" : "") .
+                (isset($targetId) ? " AND target_id='$targetId'" : "") .
+                (isset($type) ? " AND type='$type'" : "") .
 
-            (isset($conceptId) ? " AND concept_id='$conceptId'" : "") .
-            (isset($targetId) ? " AND target_id='$targetId'" : "") .
-            (isset($type) ? " AND type='$type'" : "") .
+                ($to > 0 ? " LIMIT $from,$to" : ""),
+                ARRAY_A
+            );
 
-            ($to > 0 ? " LIMIT $from,$to" : ""),
-            ARRAY_A
-        );
+            if ($wpdb->last_error) {
+                return t_error();
+            }
+        } finally {
 
-        if ($wpdb->last_error) {
-            return t_error();
+            $wpdb->select($original_db);
+
         }
-
         $results = mapKeysToCamelCase($results);
 
         return $to > 0 ? [
