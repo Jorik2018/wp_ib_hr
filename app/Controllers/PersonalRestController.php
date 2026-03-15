@@ -304,7 +304,7 @@ class PersonalRestController extends Controller
         $current_user = wp_get_current_user();
         $db_erp = get_option("db_ofis");
         $wpdb->last_error = '';
-        $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS pe.*, pe.n id FROM $db_erp.m_personal pe " .
+        $results = $wpdb->get_results("SELECT SQL_CALC_FOUND_ROWS pe.*, pe.n id, pe.apellidos_nombres fullName, pe.dni code FROM $db_erp.m_personal pe " .
             "WHERE 1=1 " . 
             (isset($query) ? " AND (pe.apellidos_nombres LIKE '%$query%' OR pe.dni LIKE '%$query%') " : "") .
             (isset($apellidosNombres) ? " AND (pe.apellidos_nombres LIKE '%$apellidosNombres%') " : "").
