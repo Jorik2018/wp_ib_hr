@@ -285,7 +285,7 @@ class PayrollRestController extends Controller
         }
 
         $sql = "SELECT SQL_CALC_FOUND_ROWS c.*
-            FROM $db.per_group c";
+            FROM $db.rem_group c";
 
         if (!empty($where)) {
             $sql .= " WHERE " . implode(' AND ', $where);
