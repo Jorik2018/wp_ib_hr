@@ -58,6 +58,11 @@ class PayrollRestController extends Controller
             'callback' => array($this, 'get_personal')
         ));
 
+        register_rest_route('api/payroll', 'type', array(
+            'methods' => 'GET',
+            'callback' => array($this, 'pag_type')
+        ));
+
         register_rest_route('api/payroll', 'add-person', array(
             'methods' => 'POST',
             'callback' => array($this, 'add_person')
@@ -111,6 +116,32 @@ class PayrollRestController extends Controller
         ] : $results;
     }
 
+    public function pag_type($request) {
+        global $wpdb;
+
+        $from = 0;//intval($request['from']);
+        $to = 0;//intval($request['to']);
+
+        $query = get_param($request, 'query');
+
+        $db_erp = get_option("db_ofis");
+
+        $results = $wpdb->get_results(
+            "SELECT SQL_CALC_FOUND_ROWS p.*
+             FROM $db_erp.rem_payroll_type p  " .
+            ($to > 0 ? " LIMIT $from,$to" : ""),
+            ARRAY_A
+        );
+
+        if ($wpdb->last_error) return t_error($wpdb->last_error);
+
+        $results = mapKeysToCamelCase($results);
+
+        return $to > 0 ? [
+            'data' => $results,
+            'size' => $wpdb->get_var('SELECT FOUND_ROWS()')
+        ] : $results;
+    }
     function getOrCreatePayroll($year, $month, $typeId, $id = 0, $fuenteFinanc = null, $preparedBy = null)
     {
         global $wpdb;
