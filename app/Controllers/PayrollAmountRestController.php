@@ -77,7 +77,7 @@ class PayrollAmountRestController extends Controller
 
         $o = get_param($request);
 
-        if (empty($o['conceptId'])) {
+        if (empty($o['concept'])) {
             return t_error('Concepto es obligatorio');
         }
 
