@@ -873,8 +873,10 @@ class PayrollRestController extends Controller
                                 $value =round($value*($values[27]??$this->resolveAmount(27, $employee,  $employee -> payrollTypeId, $amountMap)??0),2);
                             }else if($c->formula=='C27*C11'){
                                 $value =round($value*($values[27]??$this->resolveAmount(27, $employee,  $employee -> payrollTypeId, $amountMap)??0),2);
+                            }else if($c->formula=='C13*C27'){
+                                $value =round($value*($values[27]??$this->resolveAmount(27, $employee,  $employee -> payrollTypeId, $amountMap)??0),2);
                             }
-
+                            // 
                         }
                         $totalGroups[$typeId] += $value;
                         $values[$c->id] = $value;
