@@ -813,7 +813,9 @@ class PayrollRestController extends Controller
                 $payroll->payroll_type_id
             )
         );
-
+        if ($wpdb->last_error) {
+            return t_error($wpdb->last_error);
+        }
         $items = [];
         
         foreach ($employees as $employee) {
