@@ -35,7 +35,7 @@ class PayrollRestController extends Controller
     {
         register_rest_route('api/payroll', '(?P<id>\d+)/preview', array(
             'methods' => 'GET',
-            'callback' => array($this, 'period')
+            'callback' => array($this, 'preview')
         ));
 
         register_rest_route('api/payroll', 'concept/(?P<from>\d+)/(?P<to>\d+)', array(
@@ -715,7 +715,7 @@ class PayrollRestController extends Controller
     return $headers;
 }
 
-    public function period($request)
+    public function preview($request)
     {
         global $wpdb;
         $original_db = $wpdb->dbname;
@@ -796,18 +796,28 @@ class PayrollRestController extends Controller
         $headers = $this->assignLeafIndexes($headers);
 
         $employees = $wpdb->get_results(
-            $wpdb->prepare(
-                "SELECT p.apellidos_nombres fullName, pp.payroll_type_id payrollTypeId, pp.people_id peopleId, p.afp_onp  pensionSystem, p.n_cuspp nCUSPP, p.dni code 
-         FROM rem_payroll_type_people pp
-         INNER JOIN m_personal p ON p.n = pp.people_id
-         ORDER BY 1 ",
-                $payroll->id
+            $wpdb->prepare("SELECT 
+                    p.apellidos_nombres fullName,
+                    pp.payroll_type_id payrollTypeId,
+                    pp.people_id peopleId,
+                    p.afp_onp pensionSystem,
+                    p.n_cuspp nCUSPP,
+                    p.dni code,
+                    GROUP_CONCAT(gp.group_id) groups
+                    FROM rem_payroll_type_people pp
+                    INNER JOIN m_personal p ON p.n = pp.people_id
+                    LEFT JOIN rem_group_people gp ON gp.people_id = p.n
+                    WHERE pp.payroll_type_id = %s
+                    GROUP BY pp.people_id
+                    ORDER BY 1",
+                $payroll->payroll_type_id
             )
         );
 
         $items = [];
         
         foreach ($employees as $employee) {
+            $employee->groups = $employee->groups ? explode(',', $employee->groups) : [];
 
             $workedDays = $employee->worked_days ?? 30;
 
