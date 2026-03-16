@@ -7,6 +7,7 @@ use function IB\directory\Util\mapKeysToCamelCase;
 use function IB\directory\Util\mapKeysToSnakeCase;
 use function IB\directory\Util\get_param;
 use function IB\directory\Util\t_error;
+use function IB\directory\Util\remove;
 
 class PayrollAmountRestController extends Controller
 {
@@ -76,6 +77,7 @@ class PayrollAmountRestController extends Controller
         $db_erp = get_option("db_ofis");
 
         $o = get_param($request);
+        remove($o, 'conceptType');
 
         if (empty($o['concept'])) {
             return t_error('Concepto es obligatorio');
@@ -93,7 +95,8 @@ class PayrollAmountRestController extends Controller
             return t_error('Monto es obligatorio');
         }
 
-        $o = mapKeysToSnakeCase($o);
+        $o = mapKeysToSnakeCase($o,['concept'=>'concept_id',
+        'payrollType'=>'payroll_type_id']);
 
         try {
 
