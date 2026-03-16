@@ -957,11 +957,11 @@ class PayrollRestController extends Controller
         ];
     }
 
-    private function calculatePayroll($year,$month)
+    private function calculatePayroll($payroll)
     {
         global $wpdb;
 
-        $date="$year-$month-01";
+        $date="$payroll->year-$payroll->month-01";
 
         /*
         CONCEPTOS
@@ -1003,16 +1003,12 @@ class PayrollRestController extends Controller
         $amountMap=[];
 
         foreach($params as $p){
-
             if($p->type=='PT'){
-                $amountMap[$p->concept_id][$p->type][$p->payroll_type_id??'1']=$p->amount;
+                $amountMap[$p->concept_id][$p->type][$payroll->id]=$p->amount;
             }else{
                 $amountMap[$p->concept_id][$p->type][$p->target_id]=$p->amount;
             }
-
         }
-
-        
         /*
         EMPLEADOS
         */
