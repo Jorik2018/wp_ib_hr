@@ -1354,17 +1354,19 @@ foreach ($concepts as $c) {
                 switch((int)$c->concept_type_id){
 
                     case 1:
+                    case 2:
                         $income[]=$row;
                         $totalIncome += $c->amount;
                         break;
 
                     case 3:
                     case 4:
+                    case 5:
                         $discount[]=$row;
                         $totalDiscount += $c->amount;
                         break;
 
-                    case 5:
+                    case 6:
                         $contribution[]=$row;
                         $totalContribution += $c->amount;
                         break;
