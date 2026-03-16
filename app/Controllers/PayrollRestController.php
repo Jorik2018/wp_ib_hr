@@ -868,17 +868,51 @@ class PayrollRestController extends Controller
                             : $baseAmount;
                         //aqui se puede hacer calculo complejo
                         if(isset($c->formula)){//como se iteran todos los q no son tieenen tipo pero esos se caculan al final y no se puede aqui 
-                        //27 es calculadfo con el grupo 0
+                        //27 BASE DE CALCULO CONTRIBUCIONES es calculadfo con el grupo 0
                              if($c->formula=='C27*C37'){//APORTE SOLID. POR  CONV. COLECTIVO
+
                                 $value =$value*($values[27]??$this->resolveAmount(27, $employee,  $employee -> payrollTypeId, $amountMap)??0);;
                             }
                         }
 
 
-                        
+
+
                         $totalGroups[$typeId] += $value;
                         $values[$c->id] = $value;
                     }
+
+
+
+                                foreach($conceptGroups[0] as $c){
+                                    $baseAmount = $this->resolveAmount($c->id, $employee,  $employee -> payrollTypeId, $amountMap);
+                                    if(isset($c->formula)){
+                                        if($c->id=='22'){
+                                            $rate = 0.09;//(float) $rows['essalud_rate']->config_value;
+                                            $base_min = 1130;//(float) $rows['essalud_base_min']->config_value;
+                                            $base_max = 2475;//(float) $rows['essalud_base_max']->config_value;
+                                            $baseAmount = $values[1] ?? $this->resolveAmount(1, $employee,  $employee -> payrollTypeId, $amountMap)??0;
+                                            $baseAmount = round(min(max( $baseAmount, $base_min), $base_max) * $rate, 2);
+                                        }else if($c->formula=='G1+G2'){
+                                            $baseAmount = $totalGroups[1]??0+$totalGroups[2]??0;
+                                        }else if($c->formula=='G3'){
+                                            $baseAmount = $totalGroups[3]??0;
+                                        }else if($c->formula=='C24+C25'){
+                                            $baseAmount = ($values[24]?? $this->resolveAmount(24, $employee,  $employee -> payrollTypeId, $amountMap)??0)
+                                            +$values[25]?? $this->resolveAmount(25, $employee,  $employee -> payrollTypeId, $amountMap)??0;
+                                        }else if($c->formula=='C23-C26'){//27: BASE DE CALCULO CONTRIBUCIONES
+                                            $baseAmount = ($values[23]?? $this->resolveAmount(23, $employee,  $employee -> payrollTypeId, $amountMap)??0)
+                                            -$values[26]?? $this->resolveAmount(26, $employee,  $employee -> payrollTypeId, $amountMap)??0;
+                                        }else if($c->formula=='C27+C28'){
+                                            $baseAmount = ($values[27]?? $this->resolveAmount(27, $employee,  $employee -> payrollTypeId, $amountMap)??0)
+                                            +$values[28]?? $this->resolveAmount(28, $employee,  $employee -> payrollTypeId, $amountMap)??0;
+                                        }else if($c->formula=='G5'){
+                                            $baseAmount = $totalGroups[5]??0;
+                                        }
+                                        if(isset($baseAmount))$baseAmount = round($baseAmount,2);
+                                    }
+                                    $values[$c->id] = $baseAmount;
+                                }
                 }
             }
             foreach($conceptGroups[0] as $c){
@@ -897,7 +931,7 @@ class PayrollRestController extends Controller
                     }else if($c->formula=='C24+C25'){
                         $baseAmount = ($values[24]?? $this->resolveAmount(24, $employee,  $employee -> payrollTypeId, $amountMap)??0)
                         +$values[25]?? $this->resolveAmount(25, $employee,  $employee -> payrollTypeId, $amountMap)??0;
-                    }else if($c->formula=='C23-C26'){
+                    }else if($c->formula=='C23-C26'){//27: BASE DE CALCULO CONTRIBUCIONES
                         $baseAmount = ($values[23]?? $this->resolveAmount(23, $employee,  $employee -> payrollTypeId, $amountMap)??0)
                         -$values[26]?? $this->resolveAmount(26, $employee,  $employee -> payrollTypeId, $amountMap)??0;
                     }else if($c->formula=='C27+C28'){
