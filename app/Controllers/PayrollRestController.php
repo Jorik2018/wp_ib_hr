@@ -874,6 +874,13 @@ class PayrollRestController extends Controller
                             }
                         }
 
+
+                        
+                        $totalGroups[$typeId] += $value;
+                        $values[$c->id] = $value;
+                    }
+                }
+            }
             foreach($conceptGroups[0] as $c){
                 $baseAmount = $this->resolveAmount($c->id, $employee,  $employee -> payrollTypeId, $amountMap);
                 if(isset($c->formula)){
@@ -903,13 +910,6 @@ class PayrollRestController extends Controller
                 }
                 $values[$c->id] = $baseAmount;
             }
-
-                        $totalGroups[$typeId] += $value;
-                        $values[$c->id] = $value;
-                    }
-                }
-            }
-
             $items[] = [
                 ... (array)$employee,
                 'values'   => $values
