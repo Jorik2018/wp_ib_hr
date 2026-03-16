@@ -871,7 +871,10 @@ class PayrollRestController extends Controller
                         //27 BASE DE CALCULO CONTRIBUCIONES es calculadfo con el grupo 0
                              if($c->formula=='C27*C37'){//APORTE SOLID. POR  CONV. COLECTIVO
                                 $value =round($value*($values[27]??$this->resolveAmount(27, $employee,  $employee -> payrollTypeId, $amountMap)??0),2);
+                            }else if($c->formula=='C27*C11'){
+                                $value =round($value*($values[27]??$this->resolveAmount(27, $employee,  $employee -> payrollTypeId, $amountMap)??0),2);
                             }
+
                         }
                         $totalGroups[$typeId] += $value;
                         $values[$c->id] = $value;
