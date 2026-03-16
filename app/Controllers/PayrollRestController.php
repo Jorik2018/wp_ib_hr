@@ -769,7 +769,7 @@ class PayrollRestController extends Controller
             ... (array)mapKeysToCamelCase($payroll),
             
             'headers' => $headers,
-            'items' => $result['items'],,
+            'items' => $result['items'],
             'conceptGroups' => $result['conceptGroups'],
             'amountMap'=> $result['amountMap']
         ];
