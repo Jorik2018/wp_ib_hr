@@ -807,10 +807,10 @@ class PayrollRestController extends Controller
                     FROM rem_payroll_type_people pp
                     INNER JOIN m_personal p ON p.n = pp.people_id
                     LEFT JOIN rem_group_people gp ON gp.people_id = p.n
-                   
+                    WHERE pp.payroll_type_id = %s
                     GROUP BY pp.people_id
                     ORDER BY 1",
-                $payroll->payroll_type_id
+                $payroll->type_id
             )
         );
         if ($wpdb->last_error) {
