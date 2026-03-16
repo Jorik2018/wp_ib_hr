@@ -869,7 +869,7 @@ class PayrollRestController extends Controller
                         //aqui se puede hacer calculo complejo
                         if(isset($c->formula)){
                             if($c->formula=='C27*C37'){//APORTE SOLID. POR  CONV. COLECTIVO
-                                $value = $value*($this->resolveAmount(27, $employee,  $employee -> payrollTypeId, $amountMap)??0);
+                                $value = $value*($values[27]??$this->resolveAmount(27, $employee,  $employee -> payrollTypeId, $amountMap)??0);
                             }
                         }
                         $totalGroups[$typeId] += $value;
