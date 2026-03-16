@@ -867,16 +867,13 @@ class PayrollRestController extends Controller
                             ? round(($baseAmount * $workedDays) / $diasMes, 2)
                             : $baseAmount;
                         //aqui se puede hacer calculo complejo
-                        if(isset($c->formula)){
-                            if($c->formula=='C27*C37'){//APORTE SOLID. POR  CONV. COLECTIVO
-                                $value =$values['27'];//$value*($values[27]??$this->resolveAmount(27, $employee,  $employee -> payrollTypeId, $amountMap)??0);;
+                        if(isset($c->formula)){//como se iteran todos los q no son tieenen tipo pero esos se caculan al final y no se puede aqui 
+                        //27 es calculadfo con el grupo 0
+                             if($c->formula=='C27*C37'){//APORTE SOLID. POR  CONV. COLECTIVO
+                                $value =$value*($values[27]??$this->resolveAmount(27, $employee,  $employee -> payrollTypeId, $amountMap)??0);;
                             }
                         }
-                        $totalGroups[$typeId] += $value;
-                        $values[$c->id] = $value;
-                    }
-                }
-            }
+
             foreach($conceptGroups[0] as $c){
                 $baseAmount = $this->resolveAmount($c->id, $employee,  $employee -> payrollTypeId, $amountMap);
                 if(isset($c->formula)){
@@ -906,6 +903,13 @@ class PayrollRestController extends Controller
                 }
                 $values[$c->id] = $baseAmount;
             }
+
+                        $totalGroups[$typeId] += $value;
+                        $values[$c->id] = $value;
+                    }
+                }
+            }
+
             $items[] = [
                 ... (array)$employee,
                 'values'   => $values
