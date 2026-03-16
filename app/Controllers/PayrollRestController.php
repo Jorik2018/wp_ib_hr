@@ -759,7 +759,121 @@ class PayrollRestController extends Controller
 
         $payroll = $this->getOrCreatePayroll($year, $month, $payroll_type_id, $id);
 
-        $year = $payroll -> year;
+
+
+        $result = $this -> calculatePayroll($payroll);
+        $headers = $result['headers'];
+        $wpdb->select($original_db);
+        $headers = $this->assignLeafIndexes($headers);
+        return [
+            ... (array)mapKeysToCamelCase($payroll),
+            
+            'headers' => $headers,
+            'items' => $result['items'],,
+            'conceptGroups' => $result['conceptGroups'],
+            'amountMap'=> $result['amountMap']
+        ];
+    }
+
+    private function resolveAmount($conceptId, $employee, $payrollId, $amountMap) {
+        
+        if (isset($amountMap[$conceptId])) {
+
+            $map = $amountMap[$conceptId];
+            // Prioridad 1: monto específico a persona
+            if (isset($map['PE'][$employee->peopleId])) {
+                return $map['PE'][$employee->peopleId];
+            }
+
+            // 2 GRUPO
+            if (!empty($employee->groups) && isset($map['GR'])) {
+                foreach ($employee->groups as $gid) {
+                    if (isset($map['GR'][$gid])) {
+                        return $map['GR'][$gid];
+                    }
+                }
+            }
+
+            // Prioridad 2: monto por sistema de pensión
+            if (isset($map['PS'][$employee->pensionSystem])) {
+                return $map['PS'][$employee->pensionSystem];
+            }
+
+            // Prioridad 3: monto general de la planilla
+            if (isset($map['PT'][$employee->payrollTypeId])) {
+                return $map['PT'][$employee->payrollTypeId];
+            }
+        }
+    }
+
+    public function process($request)
+    {
+        global $wpdb;
+
+        $original_db = $wpdb->dbname;
+        $db_erp = get_option("db_ofis");
+        $wpdb->select($db_erp);
+
+        $year=get_param($request,'year');
+        $month=get_param($request,'month');
+        $id=get_param($request,'id');
+        $type=get_param($request,'type');
+
+        $payroll=$this->getOrCreatePayroll($year,$month,$type, $id);
+
+        $items=$this->calculatePayroll($payroll);
+
+        /*
+        limpiar planilla previa
+        */
+
+        $wpdb->delete("rem_payroll_concept",[
+            "payroll_id"=>$payroll->id
+        ]);
+
+        $wpdb->delete("rem_payroll_people",[
+            "payroll_id"=>$payroll->id
+        ]);
+
+        foreach($items as $item){
+
+            $wpdb->insert("rem_payroll_people",[
+                "payroll_id"=>$payroll->id,
+                "people_id"=>$item["peopleId"],
+                "position"=>$item["position"],
+                "dependency_id"=>$item["dependency_id"],
+
+            ]);
+
+            foreach($item["concepts"] as $c){
+
+                if($c["amount"]==0){
+                    continue;
+                }
+
+                $wpdb->insert("rem_payroll_concept",[
+                    "payroll_id"=>$payroll->id,
+                    "people_id"=>$item["peopleId"],
+                    "concept_id"=>$c["concept_id"],
+                    "concept"=>$c["concept"],
+                    "concept_type_id"=>$c["type_id"],
+                    "amount"=>$c["amount"]
+                ]);
+            }
+        }
+
+        $wpdb->select($original_db);
+
+        return [
+            "success"=>true,
+            "payroll_id"=>$payroll->id
+        ];
+    }
+
+    private function calculatePayroll($payroll)
+    {
+    global $wpdb;
+    $year = $payroll -> year;
         $month = $payroll -> month;
 
         $concepts = $wpdb->get_results($wpdb->prepare("
@@ -917,118 +1031,13 @@ class PayrollRestController extends Controller
                 'values'   => $values
             ];
         }
-
-
-        $wpdb->select($original_db);
-        $headers = $this->assignLeafIndexes($headers);
-        return [
-            ... (array)mapKeysToCamelCase($payroll),
-            'items' => $items,
-            'headers' => $headers,
-            'conceptGroups' => $conceptGroups,
-            '$amountMap'=> $amountMap
-        ];
-    }
-
-    private function resolveAmount($conceptId, $employee, $payrollId, $amountMap) {
-        
-        if (isset($amountMap[$conceptId])) {
-
-            $map = $amountMap[$conceptId];
-            // Prioridad 1: monto específico a persona
-            if (isset($map['PE'][$employee->peopleId])) {
-                return $map['PE'][$employee->peopleId];
-            }
-
-            // 2 GRUPO
-            if (!empty($employee->groups) && isset($map['GR'])) {
-                foreach ($employee->groups as $gid) {
-                    if (isset($map['GR'][$gid])) {
-                        return $map['GR'][$gid];
-                    }
-                }
-            }
-
-            // Prioridad 2: monto por sistema de pensión
-            if (isset($map['PS'][$employee->pensionSystem])) {
-                return $map['PS'][$employee->pensionSystem];
-            }
-
-            // Prioridad 3: monto general de la planilla
-            if (isset($map['PT'][$employee->payrollTypeId])) {
-                return $map['PT'][$employee->payrollTypeId];
-            }
-        }
-    }
-
-    public function process($request)
-    {
-        global $wpdb;
-
-        $original_db = $wpdb->dbname;
-        $db_erp = get_option("db_ofis");
-        $wpdb->select($db_erp);
-
-        $year=get_param($request,'year');
-        $month=get_param($request,'month');
-        $id=get_param($request,'id');
-        $type=get_param($request,'type');
-
-        $payroll=$this->getOrCreatePayroll($year,$month,$type, $id);
-
-        $items=$this->calculatePayroll($payroll);
-
-        /*
-        limpiar planilla previa
-        */
-
-        $wpdb->delete("rem_payroll_concept",[
-            "payroll_id"=>$payroll->id
-        ]);
-
-        $wpdb->delete("rem_payroll_people",[
-            "payroll_id"=>$payroll->id
-        ]);
-
-        foreach($items as $item){
-
-            $wpdb->insert("rem_payroll_people",[
-                "payroll_id"=>$payroll->id,
-                "people_id"=>$item["peopleId"],
-                "position"=>$item["position"],
-                "dependency_id"=>$item["dependency_id"],
-
-            ]);
-
-            foreach($item["concepts"] as $c){
-
-                if($c["amount"]==0){
-                    continue;
-                }
-
-                $wpdb->insert("rem_payroll_concept",[
-                    "payroll_id"=>$payroll->id,
-                    "people_id"=>$item["peopleId"],
-                    "concept_id"=>$c["concept_id"],
-                    "concept"=>$c["concept"],
-                    "concept_type_id"=>$c["type_id"],
-                    "amount"=>$c["amount"]
-                ]);
-            }
-        }
-
-        $wpdb->select($original_db);
-
-        return [
-            "success"=>true,
-            "payroll_id"=>$payroll->id
-        ];
-    }
-
-    private function calculatePayroll($payroll)
-    {
        
-        return $items;
+        return  [
+            'headers' => $headers,
+            'items' => $items,
+            'conceptGroups' => $conceptGroups,
+            'amountMap'=> $amountMap
+        ];
     }
 
     public function get_personal($request){
