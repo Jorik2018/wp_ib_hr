@@ -829,7 +829,9 @@ class PayrollRestController extends Controller
                 ]);
             }
         }
-
+        if ($wpdb->last_error) {
+            return t_error();
+        }
         $wpdb->select($original_db);
 
         return [
