@@ -773,18 +773,6 @@ class PayrollRestController extends Controller
             ORDER BY c.weight
         ", "$year-$month-01", "$year-$month-01"));
 
-        /*
-        AGRUPAR CONCEPTOS POR TIPO
-        */
-        $conceptGroups = [];
-        foreach ($concepts as $c) {
-            $type_id = $c->type_id ?? 0;
-            if (!isset($conceptGroups[$type_id])) {
-                $conceptGroups[$type_id] = [];
-            }
-            $conceptGroups[$type_id][] = $c;
-        }
-        $totalGroups = [];
         $conceptTree = [];
         foreach ($concepts as $c) {
             $parentId = $c->parent_id ?? 0; // 0 indica que es root
@@ -801,10 +789,21 @@ class PayrollRestController extends Controller
             ['title' => 'DIAS LABORADOS', 'width' => 100]
         ];
         $dynamicHeaders = $this -> buildHeaders(0, $conceptTree);
-
         // Unir columnas fijas con las dinámicas
         $headers = array_merge($headers, $dynamicHeaders);
 
+        /*
+        AGRUPAR CONCEPTOS POR TIPO
+        */       
+        $conceptGroups = [];
+        $totalGroups = [];
+        foreach ($concepts as $c) {
+            $type_id = $c->type_id ?? 0;
+            if (!isset($conceptGroups[$type_id])) {
+                $conceptGroups[$type_id] = [];
+            }
+            $conceptGroups[$type_id][] = $c;
+        }
         $params = $wpdb->get_results($wpdb->prepare("
             SELECT concept_id, amount, type, target_id, payroll_type_id
             FROM rem_payroll_amount
@@ -823,8 +822,6 @@ class PayrollRestController extends Controller
         }
          
         $diasMes = 30; //cal_days_in_month(CAL_GREGORIAN, $month, $year);
-
-        $headers = $this->assignLeafIndexes($headers);
 
         $employees = $wpdb->get_results(
             $wpdb->prepare("SELECT 
@@ -847,8 +844,9 @@ class PayrollRestController extends Controller
         if ($wpdb->last_error) {
             return t_error($wpdb->last_error);
         }
+
+
         $items = [];
-        
         foreach ($employees as $employee) {
             $employee->groups = $employee->groups ? explode(',', $employee->groups) : [];
 
@@ -866,9 +864,8 @@ class PayrollRestController extends Controller
                         $value = ($typeId == 1)
                             ? round(($baseAmount * $workedDays) / $diasMes, 2)
                             : $baseAmount;
-                        //aqui se puede hacer calculo complejo
-                        if(isset($c->formula)){//como se iteran todos los q no son tieenen tipo pero esos se caculan al final y no se puede aqui 
-                        //27 BASE DE CALCULO CONTRIBUCIONES es calculadfo con el grupo 0
+                        if(isset($c->formula)){ 
+                            //27 BASE DE CALCULO CONTRIBUCIONES es calculadfo con el grupo 0
                              if($c->formula=='C27*C37'){//APORTE SOLID. POR  CONV. COLECTIVO
                                 $value =round($value*($values[27]??$this->resolveAmount(27, $employee,  $employee -> payrollTypeId, $amountMap)??0),2);
                             }else if($c->formula=='C27*C11'){
@@ -877,12 +874,9 @@ class PayrollRestController extends Controller
                                 $value =round($value*($values[27]??$this->resolveAmount(27, $employee,  $employee -> payrollTypeId, $amountMap)??0),2);
                             }else if($c->formula=='C14*C27'){
                                 $value =round($value*($values[27]??$this->resolveAmount(27, $employee,  $employee -> payrollTypeId, $amountMap)??0),2);
-                            }else if($c->formula=='C15*C27'){
+                            }else if($c->formula=='C15*C27'){//APORTE SEGURO AFP
                                 $value =round($value*($values[27]??$this->resolveAmount(27, $employee,  $employee -> payrollTypeId, $amountMap)??0),2);
                             }
-
-                            
-                            // 
                         }
                         $totalGroups[$typeId] += $value;
                         $values[$c->id] = $value;
@@ -918,42 +912,15 @@ class PayrollRestController extends Controller
                     }
                 }
             }
-            /*
-            foreach($conceptGroups[0] as $c){
-                $baseAmount = $this->resolveAmount($c->id, $employee,  $employee -> payrollTypeId, $amountMap);
-                if(isset($c->formula)){
-                    if($c->id=='22'){
-                        $rate = 0.09;//(float) $rows['essalud_rate']->config_value;
-                        $base_min = 1130;//(float) $rows['essalud_base_min']->config_value;
-                        $base_max = 2475;//(float) $rows['essalud_base_max']->config_value;
-                        $baseAmount = $values[1] ?? $this->resolveAmount(1, $employee,  $employee -> payrollTypeId, $amountMap)??0;
-                        $baseAmount = round(min(max( $baseAmount, $base_min), $base_max) * $rate, 2);
-                    }else if($c->formula=='G1+G2'){
-                        $baseAmount = $totalGroups[1]??0+$totalGroups[2]??0;
-                    }else if($c->formula=='G3'){
-                        $baseAmount = $totalGroups[3]??0;
-                    }else if($c->formula=='C24+C25'){
-                        $baseAmount = ($values[24]?? $this->resolveAmount(24, $employee,  $employee -> payrollTypeId, $amountMap)??0)
-                        +$values[25]?? $this->resolveAmount(25, $employee,  $employee -> payrollTypeId, $amountMap)??0;
-                    }else if($c->formula=='C23-C26'){//27: BASE DE CALCULO CONTRIBUCIONES
-                        $baseAmount = ($values[23]?? $this->resolveAmount(23, $employee,  $employee -> payrollTypeId, $amountMap)??0)
-                        -$values[26]?? $this->resolveAmount(26, $employee,  $employee -> payrollTypeId, $amountMap)??0;
-                    }else if($c->formula=='C27+C28'){
-                        $baseAmount = ($values[27]?? $this->resolveAmount(27, $employee,  $employee -> payrollTypeId, $amountMap)??0)
-                        +$values[28]?? $this->resolveAmount(28, $employee,  $employee -> payrollTypeId, $amountMap)??0;
-                    }else if($c->formula=='G5'){
-                        $baseAmount = $totalGroups[5]??0;
-                    }
-                    if(isset($baseAmount))$baseAmount = round($baseAmount,2);
-                }
-                $values[$c->id] = $baseAmount;
-            }*/
             $items[] = [
                 ... (array)$employee,
                 'values'   => $values
             ];
         }
+
+
         $wpdb->select($original_db);
+        $headers = $this->assignLeafIndexes($headers);
         return [
             ... (array)mapKeysToCamelCase($payroll),
             'items' => $items,
@@ -1004,11 +971,12 @@ class PayrollRestController extends Controller
 
         $year=get_param($request,'year');
         $month=get_param($request,'month');
+        $id=get_param($request,'id');
         $type=get_param($request,'type');
 
-        $payroll=$this->getOrCreatePayroll($year,$month,$type);
+        $payroll=$this->getOrCreatePayroll($year,$month,$type, $id);
 
-        $items=$this->calculatePayroll($year,$month);
+        $items=$this->calculatePayroll($payroll);
 
         /*
         limpiar planilla previa
@@ -1059,211 +1027,7 @@ class PayrollRestController extends Controller
 
     private function calculatePayroll($payroll)
     {
-        global $wpdb;
-
-        $date="$payroll->year-$payroll->month-01";
-
-        /*
-        CONCEPTOS
-        */
-        $concepts=$wpdb->get_results($wpdb->prepare("
-            SELECT c.id,c.name,c.type_id
-            FROM rem_payroll_amount a
-            INNER JOIN per_concept c ON c.id=a.concept_id
-            WHERE a.canceled=0
-            AND a.ini_date<=%s
-            AND (a.end_date IS NULL OR a.end_date>=%s)
-            GROUP BY c.id
-            ORDER BY c.weight
-        ",$date,$date));
-
-        /*
-        AGRUPAR CONCEPTOS POR TIPO
-        */
-        $conceptGroups = [];
-        foreach ($concepts as $c) {
-            if (!isset($conceptGroups[$c->type_id])) {
-                $conceptGroups[$c->type_id] = [];
-            }
-            $conceptGroups[$c->type_id][] = $c;
-        }
-
-        /*
-        PARAMETROS DE MONTO
-        */
-
-        $params=$wpdb->get_results($wpdb->prepare("
-            SELECT concept_id,amount,type,target_id,payroll_type_id
-            FROM rem_payroll_amount
-            WHERE canceled=0
-            AND ini_date<=%s
-            AND (end_date IS NULL OR end_date>=%s)
-        ",$date,$date));
-
-        $amountMap=[];
-
-        foreach($params as $p){
-            if($p->type=='PT'){
-                $amountMap[$p->concept_id][$p->type][$payroll->id]=$p->amount;
-            }else{
-                $amountMap[$p->concept_id][$p->type][$p->target_id]=$p->amount;
-            }
-        }
-        /*
-        EMPLEADOS
-        */
-
-        $employees=$wpdb->get_results("
-            SELECT
-                p.apellidos_nombres fullName,
-                pp.payroll_type_id payrollTypeId,
-                p.unidad_id dependency_id,
-                p.cargo position,
-                pp.people_id peopleId,
-                p.afp_onp pensionSystem,
-                p.n_cuspp nCUSPP,
-                p.dni code
-            FROM rem_payroll_type_people pp
-            INNER JOIN m_personal p ON p.n=pp.people_id
-            ORDER BY 1
-        ");
-
-        $diasMes=30;
-
-        $items=[];
-
-        foreach($employees as $employee){
-
-            $workedDays=30;
-
-            $totalIngresos=0;
-            $totalEgresos=0;
-            $descuentosLey=0;
-            $otrosDescuentos=0;
-
-            $conceptResults=[];
-
-            /*
-            INGRESOS PROPORCIONALES
-            */
-
-            foreach($conceptGroups[1] as $c){
-
-                $base=$this->resolveAmount($c->id,$employee,$employee->payrollTypeId,$amountMap);
-
-                $value=round(($base*$workedDays)/$diasMes,2);
-
-                $totalIngresos+=$value;
-
-                $conceptResults[]=[
-                    "concept_id"=>$c->id,
-                    "concept"=>$c->name,
-                    "type_id"=>$c->type_id,
-                    "amount"=>$value
-                ];
-            }
-
-            /*
-            INGRESOS FIJOS
-            */
-
-            foreach($conceptGroups[2] as $c){
-
-                $value=$this->resolveAmount($c->id,$employee,$employee->payrollTypeId,$amountMap);
-
-                $totalIngresos+=$value;
-
-                $conceptResults[]=[
-                    "concept_id"=>$c->id,
-                    "concept"=>$c->name,
-                    "type_id"=>$c->type_id,
-                    "amount"=>$value
-                ];
-            }
-
-            /*
-            EGRESOS //PODRIA AGREGARSE EN TABLA CONCEPTO CON FORMULA G3 PARA SUMAR TODO
-            */
-
-            foreach($conceptGroups[3] as $c){
-
-                $value=$this->resolveAmount($c->id,$employee,$employee->payrollTypeId,$amountMap);
-
-                $totalEgresos+=$value;
-
-                $conceptResults[]=[
-                    "concept_id"=>$c->id,
-                    "concept"=>$c->name,
-                    "type_id"=>$c->type_id,
-                    "amount"=>$value
-                ];
-            }
-
-            /*
-            BASE CALCULO
-            */
-
-            $baseContrib=$totalIngresos-$totalEgresos;
-
-            /*
-            DESCUENTOS LEY //PODRIA AGREGARSE EN TABLA CONCEPTO CON FORMULA G4 PARA SUMAR TODO
-            */
-
-            foreach($conceptGroups[4] as $c){
-
-                $base=$this->resolveAmount($c->id,$employee,$employee->payrollTypeId,$amountMap);
-
-                $value=round($base*$baseContrib,2);
-
-                $descuentosLey+=$value;
-
-                $conceptResults[]=[
-                    "concept_id"=>$c->id,
-                    "concept"=>$c->name,
-                    "type_id"=>$c->type_id,
-                    "amount"=>$value
-                ];
-            }
-
-            /*
-            APORTE SOLIDARIO
-            */
-
-            $aporteSolidario=round($baseContrib*0.005,2);
-
-            $otrosDescuentos+=$aporteSolidario;
-
-            /*
-            OTROS DESCUENTOS
-            */
-
-            foreach($conceptGroups[6] as $c){
-
-                $value=$this->resolveAmount($c->id,$employee,$employee->payrollTypeId,$amountMap);
-
-                $otrosDescuentos+=$value;
-
-                $conceptResults[]=[
-                    "concept_id"=>$c->id,
-                    "concept"=>$c->name,
-                    "type_id"=>$c->type_id,
-                    "amount"=>$value
-                ];
-            }
-
-            $items[]=[
-
-                ... (array)$employee,
-                "totals"=>[
-                    "ingresos"=>$totalIngresos,
-                    "egresos"=>$totalEgresos,
-                    "descuentos"=>$descuentosLey,
-                    "otros"=>$otrosDescuentos
-                ],
-
-                "concepts"=>$conceptResults
-            ];
-        }
+       
         return $items;
     }
 
