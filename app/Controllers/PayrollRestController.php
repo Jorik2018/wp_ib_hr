@@ -803,7 +803,7 @@ class PayrollRestController extends Controller
                     p.afp_onp pensionSystem,
                     p.n_cuspp nCUSPP,
                     p.dni code,
-                    GROUP_CONCAT(gp.group_id) groups
+                    GROUP_CONCAT(gp.group_id) `groups`
                     FROM rem_payroll_type_people pp
                     INNER JOIN m_personal p ON p.n = pp.people_id
                     LEFT JOIN rem_group_people gp ON gp.people_id = p.n
@@ -892,6 +892,15 @@ class PayrollRestController extends Controller
             // Prioridad 1: monto específico a persona
             if (isset($map['PE'][$employee->peopleId])) {
                 return $map['PE'][$employee->peopleId];
+            }
+
+            // 2 GRUPO
+            if (!empty($employee->groups) && isset($map['GR'])) {
+                foreach ($employee->groups as $gid) {
+                    if (isset($map['GR'][$gid])) {
+                        return $map['GR'][$gid];
+                    }
+                }
             }
 
             // Prioridad 2: monto por sistema de pensión
