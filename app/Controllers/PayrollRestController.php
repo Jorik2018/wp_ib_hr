@@ -759,8 +759,6 @@ class PayrollRestController extends Controller
 
         $payroll = $this->getOrCreatePayroll($year, $month, $payroll_type_id, $id);
 
-
-
         $result = $this -> calculatePayroll($payroll);
         $headers = $result['headers'];
         $wpdb->select($original_db);
@@ -773,37 +771,6 @@ class PayrollRestController extends Controller
             'conceptGroups' => $result['conceptGroups'],
             'amountMap'=> $result['amountMap']
         ];
-    }
-
-    private function resolveAmount($conceptId, $employee, $payrollId, $amountMap) {
-        
-        if (isset($amountMap[$conceptId])) {
-
-            $map = $amountMap[$conceptId];
-            // Prioridad 1: monto específico a persona
-            if (isset($map['PE'][$employee->peopleId])) {
-                return $map['PE'][$employee->peopleId];
-            }
-
-            // 2 GRUPO
-            if (!empty($employee->groups) && isset($map['GR'])) {
-                foreach ($employee->groups as $gid) {
-                    if (isset($map['GR'][$gid])) {
-                        return $map['GR'][$gid];
-                    }
-                }
-            }
-
-            // Prioridad 2: monto por sistema de pensión
-            if (isset($map['PS'][$employee->pensionSystem])) {
-                return $map['PS'][$employee->pensionSystem];
-            }
-
-            // Prioridad 3: monto general de la planilla
-            if (isset($map['PT'][$employee->payrollTypeId])) {
-                return $map['PT'][$employee->payrollTypeId];
-            }
-        }
     }
 
     public function process($request)
@@ -821,8 +788,9 @@ class PayrollRestController extends Controller
 
         $payroll=$this->getOrCreatePayroll($year,$month,$type, $id);
 
-        $items=$this->calculatePayroll($payroll);
+        $result=$this->calculatePayroll($payroll);
 
+        $items = $result['items'];
         /*
         limpiar planilla previa
         */
@@ -872,8 +840,8 @@ class PayrollRestController extends Controller
 
     private function calculatePayroll($payroll)
     {
-    global $wpdb;
-    $year = $payroll -> year;
+        global $wpdb;
+        $year = $payroll -> year;
         $month = $payroll -> month;
 
         $concepts = $wpdb->get_results($wpdb->prepare("
@@ -886,7 +854,10 @@ class PayrollRestController extends Controller
             WHERE a.concept_id IS NOT NULL OR (c.formula IS NOT NULL AND c.formula <> '') OR c.is_parent
             ORDER BY c.weight
         ", "$year-$month-01", "$year-$month-01"));
-
+$conceptMap = [];
+foreach ($concepts as $c) {
+    $conceptMap[$c->id] = $c;
+}
         $conceptTree = [];
         foreach ($concepts as $c) {
             $parentId = $c->parent_id ?? 0; // 0 indica que es root
@@ -1026,9 +997,26 @@ class PayrollRestController extends Controller
                     }
                 }
             }
+
+            $conceptList = [];
+
+            foreach ($values as $conceptId => $amount) {
+
+                if(!isset($conceptMap[$conceptId])) continue;
+
+                $c = $conceptMap[$conceptId];
+
+                $conceptList[] = [
+                    "concept_id" => $conceptId,
+                    "concept" => $c->name,
+                    "type_id" => $c->type_id,
+                    "amount" => $amount
+                ];
+            }
             $items[] = [
                 ... (array)$employee,
-                'values'   => $values
+                'values'   => $values,
+                'concepts' => $conceptList
             ];
         }
        
@@ -1038,6 +1026,37 @@ class PayrollRestController extends Controller
             'conceptGroups' => $conceptGroups,
             'amountMap'=> $amountMap
         ];
+    }
+
+    private function resolveAmount($conceptId, $employee, $payrollId, $amountMap) {
+        
+        if (isset($amountMap[$conceptId])) {
+
+            $map = $amountMap[$conceptId];
+            // Prioridad 1: monto específico a persona
+            if (isset($map['PE'][$employee->peopleId])) {
+                return $map['PE'][$employee->peopleId];
+            }
+
+            // 2 GRUPO
+            if (!empty($employee->groups) && isset($map['GR'])) {
+                foreach ($employee->groups as $gid) {
+                    if (isset($map['GR'][$gid])) {
+                        return $map['GR'][$gid];
+                    }
+                }
+            }
+
+            // Prioridad 2: monto por sistema de pensión
+            if (isset($map['PS'][$employee->pensionSystem])) {
+                return $map['PS'][$employee->pensionSystem];
+            }
+
+            // Prioridad 3: monto general de la planilla
+            if (isset($map['PT'][$employee->payrollTypeId])) {
+                return $map['PT'][$employee->payrollTypeId];
+            }
+        }
     }
 
     public function get_personal($request){
