@@ -293,7 +293,7 @@ class PersonalRestController extends Controller
         $to = $request['to'];
         $query = get_param($request, 'query');
         $dni = get_param($request, 'dni');
-        $apellidosNombres = get_param($request, 'apellidosNombres');
+        $apellidosNombres = get_param($request, 'apellidosNombres') ?: get_param($request, 'fullName');
         $actividad = get_param($request, 'actividad');
         $organo = get_param($request, 'organo');
         $organoId = get_param($request, 'organoId');
