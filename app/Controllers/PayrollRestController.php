@@ -963,8 +963,6 @@ foreach ($concepts as $c) {
                                 $value =round($value*($values[27]??$this->resolveAmount(27, $employee,  $employee -> payrollTypeId, $amountMap)??0),2);
                             }else if($c->formula=='C15*C27'){//APORTE SEGURO AFP
                                 $value =round($value*($values[27]??$this->resolveAmount(27, $employee,  $employee -> payrollTypeId, $amountMap)??0),2);
-                            }else if($c->formula=='G6'){
-                                $value = 2;//$totalGroups[6]??0;
                             }
                         }
                         $totalGroups[$typeId] += $value;
@@ -994,6 +992,8 @@ foreach ($concepts as $c) {
                                 +$values[28]?? $this->resolveAmount(28, $employee,  $employee -> payrollTypeId, $amountMap)??0;
                             }else if($c->formula=='G5'){
                                 $baseAmount = $totalGroups[5]??0;
+                            }else if($c->formula=='G6'){
+                                $value = $totalGroups[6]??0;
                             }
                             if(isset($baseAmount))$baseAmount = round($baseAmount,2);
                         }
