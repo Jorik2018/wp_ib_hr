@@ -182,14 +182,14 @@ public function pag($request)
             // join solo a la tabla necesaria
             switch ($type) {
                 case 'PT':
-                    $joins .= " LEFT JOIN payroll_type pt ON pt.id = pa.target_id ";
+                    $joins .= " LEFT JOIN rem_payroll_type pt ON pt.id = pa.target_id ";
                     $targetSelect = " pt.name targetName ";
                     $targetFilter = $target ? " AND pt.name LIKE '%$target%' " : "";
                     break;
 
                 case 'PE':
-                    $joins .= " LEFT JOIN people pe ON pe.id = pa.target_id ";
-                    $targetSelect = " pe.name targetName ";
+                    $joins .= " LEFT JOIN m_personal pe ON pe.n = pa.target_id ";
+                    $targetSelect = " pe.apellidos_nombres targetName ";
                     $targetFilter = $target ? " AND pe.name LIKE '%$target%' " : "";
                     break;
 
@@ -198,18 +198,6 @@ public function pag($request)
                     $targetSelect = " gr.name targetName ";
                     $targetFilter = $target ? " AND gr.name LIKE '%$target%' " : "";
                     break;
-
-                case 'PS':
-                    $joins .= " LEFT JOIN pension_system ps ON ps.id = pa.target_id ";
-                    $targetSelect = " ps.name targetName ";
-                    $targetFilter = $target ? " AND ps.name LIKE '%$target%' " : "";
-                    break;
-
-                case 'RL':
-                    $joins .= " LEFT JOIN remunerative_level rl ON rl.id = pa.target_id ";
-                    $targetSelect = " rl.name targetName ";
-                    $targetFilter = $target ? " AND rl.name LIKE '%$target%' " : "";
-                    break;
             }
 
         } else {
@@ -217,10 +205,8 @@ public function pag($request)
             // joins polimorficos
             $joins .= "
             LEFT JOIN payroll_type pt ON pa.type='PT' AND pt.id=pa.target_id
-            LEFT JOIN people pe ON pa.type='PE' AND pe.id=pa.target_id
+            LEFT JOIN m_personal pe ON pa.type='PE' AND pe.n=pa.target_id
             LEFT JOIN `group` gr ON pa.type='GR' AND gr.id=pa.target_id
-            LEFT JOIN pension_system ps ON pa.type='PS' AND ps.id=pa.target_id
-            LEFT JOIN remunerative_level rl ON pa.type='RL' AND rl.id=pa.target_id
             ";
 
             $targetSelect = " COALESCE(pt.name,pe.name,gr.name,ps.name,rl.name) targetName ";
@@ -229,10 +215,8 @@ public function pag($request)
                 $targetFilter = "
                 AND (
                     pt.name LIKE '%$target%' OR
-                    pe.name LIKE '%$target%' OR
-                    gr.name LIKE '%$target%' OR
-                    ps.name LIKE '%$target%' OR
-                    rl.name LIKE '%$target%'
+                    pe.apellidos_nombres LIKE '%$target%' OR
+                    gr.name LIKE '%$target%' 
                 )";
             }
         }
