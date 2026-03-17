@@ -155,50 +155,122 @@ class PayrollAmountRestController extends Controller
         return mapKeysToCamelCase($o);
     }
 
-    public function pag($request)
-    {
+public function pag($request)
+{
+    global $wpdb;
 
-        global $wpdb;
+    $from = intval($request['from']);
+    $to = intval($request['to']);
 
-        $from = intval($request['from']);
-        $to = intval($request['to']);
+    $conceptId = get_param($request, 'conceptId');
+    $targetId = get_param($request, 'targetId');
+    $type = get_param($request, 'type');
+    $target = get_param($request, 'target'); // texto a buscar
 
-        $conceptId = get_param($request, 'conceptId');
-        $targetId = get_param($request, 'targetId');
-        $type = get_param($request, 'type');
-        $original_db = $wpdb->dbname;
-        $db_erp = get_option("db_ofis");
-        $wpdb->select($db_erp);
-        try {
-            $results = $wpdb->get_results(
-                "SELECT SQL_CALC_FOUND_ROWS pa.*, c.name conceptName
-                FROM $db_erp.rem_payroll_amount pa JOIN per_concept c ON c.id = pa.concept_id
-                WHERE canceled=0 " .
+    $original_db = $wpdb->dbname;
+    $db_erp = get_option("db_ofis");
+    $wpdb->select($db_erp);
 
-                (isset($conceptId) ? " AND concept_id='$conceptId'" : "") .
-                (isset($targetId) ? " AND target_id='$targetId'" : "") .
-                (isset($type) ? " AND type='$type'" : "") .
-" ORDER BY id DESC".
-                ($to > 0 ? " LIMIT $from,$to" : "")
-                ,
-                ARRAY_A
-            );
+    try {
 
-            if ($wpdb->last_error) {
-                return t_error();
+        $joins = "";
+        $targetSelect = "";
+        $targetFilter = "";
+
+        if ($type) {
+
+            // join solo a la tabla necesaria
+            switch ($type) {
+                case 'PT':
+                    $joins .= " LEFT JOIN payroll_type pt ON pt.id = pa.target_id ";
+                    $targetSelect = " pt.name targetName ";
+                    $targetFilter = $target ? " AND pt.name LIKE '%$target%' " : "";
+                    break;
+
+                case 'PE':
+                    $joins .= " LEFT JOIN people pe ON pe.id = pa.target_id ";
+                    $targetSelect = " pe.name targetName ";
+                    $targetFilter = $target ? " AND pe.name LIKE '%$target%' " : "";
+                    break;
+
+                case 'GR':
+                    $joins .= " LEFT JOIN `group` gr ON gr.id = pa.target_id ";
+                    $targetSelect = " gr.name targetName ";
+                    $targetFilter = $target ? " AND gr.name LIKE '%$target%' " : "";
+                    break;
+
+                case 'PS':
+                    $joins .= " LEFT JOIN pension_system ps ON ps.id = pa.target_id ";
+                    $targetSelect = " ps.name targetName ";
+                    $targetFilter = $target ? " AND ps.name LIKE '%$target%' " : "";
+                    break;
+
+                case 'RL':
+                    $joins .= " LEFT JOIN remunerative_level rl ON rl.id = pa.target_id ";
+                    $targetSelect = " rl.name targetName ";
+                    $targetFilter = $target ? " AND rl.name LIKE '%$target%' " : "";
+                    break;
             }
-        } finally {
 
-            $wpdb->select($original_db);
+        } else {
 
+            // joins polimorficos
+            $joins .= "
+            LEFT JOIN payroll_type pt ON pa.type='PT' AND pt.id=pa.target_id
+            LEFT JOIN people pe ON pa.type='PE' AND pe.id=pa.target_id
+            LEFT JOIN `group` gr ON pa.type='GR' AND gr.id=pa.target_id
+            LEFT JOIN pension_system ps ON pa.type='PS' AND ps.id=pa.target_id
+            LEFT JOIN remunerative_level rl ON pa.type='RL' AND rl.id=pa.target_id
+            ";
+
+            $targetSelect = " COALESCE(pt.name,pe.name,gr.name,ps.name,rl.name) targetName ";
+
+            if ($target) {
+                $targetFilter = "
+                AND (
+                    pt.name LIKE '%$target%' OR
+                    pe.name LIKE '%$target%' OR
+                    gr.name LIKE '%$target%' OR
+                    ps.name LIKE '%$target%' OR
+                    rl.name LIKE '%$target%'
+                )";
+            }
         }
-        $results = mapKeysToCamelCase($results);
 
-        return $to > 0 ? [
-            'data' => $results,
-            'size' => $wpdb->get_var('SELECT FOUND_ROWS()')
-        ] : $results;
+        $sql = "
+        SELECT SQL_CALC_FOUND_ROWS
+            pa.*, 
+            c.name conceptName,
+            $targetSelect
+        FROM $db_erp.rem_payroll_amount pa
+        JOIN per_concept c ON c.id = pa.concept_id
+        $joins
+        WHERE pa.canceled=0
+        " .
+        ($conceptId ? " AND pa.concept_id='$conceptId'" : "") .
+        ($targetId ? " AND pa.target_id='$targetId'" : "") .
+        ($type ? " AND pa.type='$type'" : "") .
+        $targetFilter .
+        " ORDER BY pa.id DESC " .
+        ($to > 0 ? " LIMIT $from,$to" : "");
+
+        $results = $wpdb->get_results($sql, ARRAY_A);
+
+        if ($wpdb->last_error) {
+            return t_error();
+        }
+
+    } finally {
+        $wpdb->select($original_db);
     }
+
+    $results = mapKeysToCamelCase($results);
+
+    return $to > 0 ? [
+        'data' => $results,
+        'size' => $wpdb->get_var('SELECT FOUND_ROWS()')
+    ] : $results;
+}
 
     public function delete($data)
     {
