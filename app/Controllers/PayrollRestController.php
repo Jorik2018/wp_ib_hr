@@ -994,6 +994,10 @@ foreach ($concepts as $c) {
                                 $baseAmount = $totalGroups[5]??0;
                             }else if($c->formula=='G6'){
                                 $baseAmount = $totalGroups[6]??0;
+                            }else if($c->formula=='C26+C33+C35'){
+                                $baseAmount = round(($values[26]??0)+($values[33]??0)+$values[35]??0,2);
+                            }else if($c->formula=='C23+C28-C38'){
+                                $baseAmount = round(($values[23]??0)+($values[28]??0)+$values[38]??0,2);
                             }
                             if(isset($baseAmount))$baseAmount = round($baseAmount,2);
                         }
