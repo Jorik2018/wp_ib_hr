@@ -964,7 +964,7 @@ foreach ($concepts as $c) {
                             }else if($c->formula=='C15*C27'){//APORTE SEGURO AFP
                                 $value =round($value*($values[27]??$this->resolveAmount(27, $employee,  $employee -> payrollTypeId, $amountMap)??0),2);
                             }else if($c->formula=='G6'){
-                                $baseAmount = $totalGroups[6]??0;
+                                $baseAmount = 12;//$totalGroups[6]??0;
                             }
                         }
                         $totalGroups[$typeId] += $value;
