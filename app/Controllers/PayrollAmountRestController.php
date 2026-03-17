@@ -194,7 +194,7 @@ public function pag($request)
                     break;
 
                 case 'GR':
-                    $joins .= " LEFT JOIN `group` gr ON gr.id = pa.target_id ";
+                    $joins .= " LEFT JOIN `rem_group` gr ON gr.id = pa.target_id ";
                     $targetSelect = " gr.name targetName ";
                     $targetFilter = $target ? " AND gr.name LIKE '%$target%' " : "";
                     break;
@@ -204,9 +204,9 @@ public function pag($request)
 
             // joins polimorficos
             $joins .= "
-            LEFT JOIN payroll_type pt ON pa.type='PT' AND pt.id=pa.target_id
+            LEFT JOIN rem_payroll_type pt ON pa.type='PT' AND pt.id=pa.target_id
             LEFT JOIN m_personal pe ON pa.type='PE' AND pe.n=pa.target_id
-            LEFT JOIN `group` gr ON pa.type='GR' AND gr.id=pa.target_id
+            LEFT JOIN `rem_group` gr ON pa.type='GR' AND gr.id=pa.target_id
             ";
 
             $targetSelect = " COALESCE(pt.name,pe.name,gr.name,ps.name,rl.name) targetName ";
