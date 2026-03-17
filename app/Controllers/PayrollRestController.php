@@ -993,7 +993,7 @@ foreach ($concepts as $c) {
                             }else if($c->formula=='G5'){
                                 $baseAmount = $totalGroups[5]??0;
                             }else if($c->formula=='G6'){
-                                $value = $totalGroups[6]??0;
+                                $baseAmount = $totalGroups[6]??0;
                             }
                             if(isset($baseAmount))$baseAmount = round($baseAmount,2);
                         }
