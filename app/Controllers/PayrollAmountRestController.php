@@ -209,7 +209,7 @@ public function pag($request)
             LEFT JOIN `rem_group` gr ON pa.type='GR' AND gr.id=pa.target_id
             ";
 
-            $targetSelect = " COALESCE(pt.name,pe.apellidos_nombres,gr.name,ps.name,rl.name) targetName ";
+            $targetSelect = " COALESCE(pt.name,pe.apellidos_nombres,gr.name) targetName ";
 
             if ($target) {
                 $targetFilter = "
