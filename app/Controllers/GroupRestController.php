@@ -104,40 +104,46 @@ class GroupRestController extends Controller
         return mapKeysToCamelCase($o);
     }
 
-    public function pag($request)
-    {
-        global $wpdb;
+public function pag($request)
+{
+    global $wpdb;
 
-        $from = intval($request['from']);
-        $to = intval($request['to']);
+    $from = intval($request['from']);
+    $to = intval($request['to']);
+    $orphan = get_param($request, 'orphan');
 
-        $original_db = $wpdb->dbname;
-        $db_erp = get_option("db_ofis");
-        $wpdb->select($db_erp);
+    $original_db = $wpdb->dbname;
+    $db_erp = get_option("db_ofis");
+    $wpdb->select($db_erp);
 
-        try {
-            $sql = "SELECT SQL_CALC_FOUND_ROWS g.*, p.name parentName
-                    FROM rem_group g
-                    LEFT JOIN rem_group p ON g.parent_id = p.id
-                    ORDER BY g.id DESC
-                    " . ($to > 0 ? " LIMIT $from,$to" : "");
-
-            $results = $wpdb->get_results($sql, ARRAY_A);
-
-            if ($wpdb->last_error) return t_error($wpdb->last_error);
-
-        } finally {
-            $wpdb->select($original_db);
+    try {
+        $where = '';
+        if ($orphan) {
+            $where = "WHERE g.parent_id IS NULL";
         }
 
-        $results = mapKeysToCamelCase($results);
+        $sql = "SELECT SQL_CALC_FOUND_ROWS g.*, p.name parentName
+                FROM rem_group g
+                LEFT JOIN rem_group p ON g.parent_id = p.id
+                $where
+                ORDER BY g.id DESC
+                " . ($to > 0 ? " LIMIT $from,$to" : "");
 
-        return $to > 0 ? [
-            'data' => $results,
-            'size' => $wpdb->get_var('SELECT FOUND_ROWS()')
-        ] : $results;
+        $results = $wpdb->get_results($sql, ARRAY_A);
+
+        if ($wpdb->last_error) return t_error($wpdb->last_error);
+
+    } finally {
+        $wpdb->select($original_db);
     }
 
+    $results = mapKeysToCamelCase($results);
+
+    return $to > 0 ? [
+        'data' => $results,
+        'size' => $wpdb->get_var('SELECT FOUND_ROWS()')
+    ] : $results;
+}
     public function delete($data)
     {
         global $wpdb;
