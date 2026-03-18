@@ -68,6 +68,11 @@ class PayrollRestController extends Controller
             'callback' => array($this, 'add_person')
         ));
 
+                register_rest_route('api/payroll', 'remove-person', array(
+            'methods' => 'POST',
+            'callback' => array($this, 'remove_people')
+        ));
+
         register_rest_route('api/payroll', 'add-concept', array(
             'methods' => 'POST',
             'callback' => array($this, 'add_concept')
