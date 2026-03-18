@@ -130,33 +130,55 @@ class ConceptRestController extends Controller
         return mapKeysToCamelCase($o);
     }
 
-    public function pag($request)
-    {
-        global $wpdb;
-        $from = intval($request['from']);
-        $to = intval($request['to']);
-        $query = get_param($request, 'query');
+public function pag($request)
+{
+    global $wpdb;
+    $from = intval($request['from']);
+    $to = intval($request['to']);
+    $query = get_param($request, 'query');
+    $orphan = get_param($request, 'orphan');
 
-        $db_erp = get_option("db_ofis");
-        $wpdb->last_error = '';
+    $db_erp = get_option("db_ofis");
+    $wpdb->last_error = '';
 
-        $results = $wpdb->get_results(
-            "SELECT SQL_CALC_FOUND_ROWS * FROM $db_erp.per_concept WHERE 1=1" .
-            (isset($query) ? " AND (name LIKE '%$query%' OR abbreviation LIKE '%$query%')" : "") .
-            ($to > 0 ? " LIMIT $from, $to" : ""),
-            ARRAY_A
-        );
+    // Construir cláusula WHERE
+    $where = [];
+    $params = [];
 
-        if ($wpdb->last_error) return t_error();
-
-        $results = mapKeysToCamelCase($results);
-
-        return $to > 0 ? [
-            'data' => $results,
-            'size' => $wpdb->get_var('SELECT FOUND_ROWS()')
-        ] : $results;
+    if (!empty($query)) {
+        $where[] = "(c.name LIKE %s OR c.abbreviation LIKE %s)";
+        $params[] = "%$query%";
+        $params[] = "%$query%";
     }
 
+    if (!empty($orphan)) {
+        $where[] = "c.parent_id IS NULL";
+    }
+
+    $whereSql = $where ? "WHERE " . implode(" AND ", $where) : "";
+
+    // SQL con LEFT JOIN para obtener parentName
+    $sql = $wpdb->prepare(
+        "SELECT SQL_CALC_FOUND_ROWS c.*, p.name AS parentName
+         FROM {$db_erp}.per_concept c
+         LEFT JOIN {$db_erp}.per_concept p ON c.parent_id = p.id
+         $whereSql
+         ORDER BY c.id DESC
+         " . ($to > 0 ? "LIMIT %d, %d" : ""),
+        ...($to > 0 ? array_merge($params, [$from, $to]) : $params)
+    );
+
+    $results = $wpdb->get_results($sql, ARRAY_A);
+
+    if ($wpdb->last_error) return t_error($wpdb->last_error);
+
+    $results = mapKeysToCamelCase($results);
+
+    return $to > 0 ? [
+        'data' => $results,
+        'size' => $wpdb->get_var('SELECT FOUND_ROWS()')
+    ] : $results;
+}
     public function delete($data)
     {
         global $wpdb;
