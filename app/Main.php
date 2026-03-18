@@ -126,6 +126,8 @@ class Main extends Bridge
         $this->add_action('rest_api_init', 'ConceptRestController@rest_api_init');
         $this->add_action('rest_api_init', 'PayrollAmountRestController@rest_api_init');
         $this->add_action('rest_api_init', 'PayrollGroupPeopleRestController@rest_api_init');
+        $this->add_action('rest_api_init', 'GroupRestController@rest_api_init');
+        
 
         
         
