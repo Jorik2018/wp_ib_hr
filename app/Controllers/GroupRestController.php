@@ -52,43 +52,66 @@ class GroupRestController extends Controller
         ]);
     }
 
-    public function post($request)
-    {
-        global $wpdb;
-        $original_db = $wpdb->dbname;
-        $db_erp = get_option("db_ofis");
+public function post($request)
+{
+    global $wpdb;
+    $original_db = $wpdb->dbname;
+    $db_erp = get_option("db_ofis");
 
-        $o = get_param($request);
+    $o = get_param($request);
 
-        if (empty($o['name'])) return t_error('Nombre es obligatorio');
+    if (empty($o['name'])) return t_error('Nombre es obligatorio');
 
-        $o = mapKeysToSnakeCase($o);
+    $o = mapKeysToSnakeCase($o);
 
-        try {
-            $wpdb->select($db_erp);
+    try {
+        $wpdb->select($db_erp);
 
-            if (isset($o['id'])) {
-                // Actualizar
-                $updated = $wpdb->update('rem_group', $o, ['id' => $o['id']]);
-            } else {
-                // Insertar nuevo
-                $updated = $wpdb->insert('rem_group', $o);
-                $o['id'] = $wpdb->insert_id;
+        if (isset($o['id'])) {
+            // Obtener parent_id anterior
+            $oldParentId = $wpdb->get_var($wpdb->prepare(
+                "SELECT parent_id FROM rem_group WHERE id = %d",
+                $o['id']
+            ));
 
-                // Marcar como is_parent si tiene parent_id
-                if (!empty($o['parent_id'])) {
-                    $wpdb->update('rem_group', ['is_parent' => 1], ['id' => $o['parent_id']]);
+            // Actualizar
+            $updated = $wpdb->update('rem_group', $o, ['id' => $o['id']]);
+            
+            // Marcar nuevo parent como is_parent
+            if (!empty($o['parent_id'])) {
+                $wpdb->update('rem_group', ['is_parent' => 1], ['id' => $o['parent_id']]);
+            }
+
+            // Opcional: desmarcar oldParent si ya no tiene hijos
+            if (!empty($oldParentId) && $oldParentId != $o['parent_id']) {
+                $childrenCount = $wpdb->get_var($wpdb->prepare(
+                    "SELECT COUNT(*) FROM rem_group WHERE parent_id = %d",
+                    $oldParentId
+                ));
+                if ($childrenCount == 0) {
+                    $wpdb->update('rem_group', ['is_parent' => 0], ['id' => $oldParentId]);
                 }
             }
 
-            if ($updated === false) return t_error($wpdb->last_error);
+        } else {
+            // Insertar nuevo
+            $updated = $wpdb->insert('rem_group', $o);
+            $o['id'] = $wpdb->insert_id;
 
-        } finally {
-            $wpdb->select($original_db);
+            // Marcar como is_parent si tiene parent_id
+            if (!empty($o['parent_id'])) {
+                $wpdb->update('rem_group', ['is_parent' => 1], ['id' => $o['parent_id']]);
+            }
         }
 
-        return mapKeysToCamelCase($o);
+        if ($updated === false) return t_error($wpdb->last_error);
+
+    } finally {
+        $wpdb->select($original_db);
     }
+
+    return mapKeysToCamelCase($o);
+}
 
     public function get($request)
     {
@@ -144,28 +167,58 @@ public function pag($request)
         'size' => $wpdb->get_var('SELECT FOUND_ROWS()')
     ] : $results;
 }
-    public function delete($data)
-    {
-        global $wpdb;
-        $original_db = $wpdb->dbname;
-        $db_erp = get_option("db_ofis");
+public function delete($data)
+{
+    global $wpdb;
+    $original_db = $wpdb->dbname;
+    $db_erp = get_option("db_ofis");
 
-        $ids = array_map('intval', explode(",", $data['id']));
+    $ids = array_map('intval', explode(",", $data['id']));
 
-        $wpdb->select($db_erp);
-        $wpdb->query('START TRANSACTION');
+    $wpdb->select($db_erp);
+    $wpdb->query('START TRANSACTION');
 
-        foreach ($ids as $id) {
-            $deleted = $wpdb->delete('rem_group', ['id' => $id]);
-            if ($deleted === false) {
-                $wpdb->query('ROLLBACK');
-                $wpdb->select($original_db);
-                return t_error($wpdb->last_error);
-            }
+    foreach ($ids as $id) {
+        // Verificar si el nodo tiene hijos
+        $childrenCount = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM rem_group WHERE parent_id = %d",
+            $id
+        ));
+
+        if ($childrenCount > 0) {
+            $wpdb->query('ROLLBACK');
+            $wpdb->select($original_db);
+            return t_error("No se puede eliminar el grupo con ID $id porque tiene hijos.");
         }
 
-        $wpdb->query('COMMIT');
-        $wpdb->select($original_db);
-        return true;
+        // Obtener parent_id antes de eliminar
+        $parentId = $wpdb->get_var($wpdb->prepare(
+            "SELECT parent_id FROM rem_group WHERE id = %d",
+            $id
+        ));
+
+        // Eliminar el registro
+        $deleted = $wpdb->delete('rem_group', ['id' => $id]);
+        if ($deleted === false) {
+            $wpdb->query('ROLLBACK');
+            $wpdb->select($original_db);
+            return t_error($wpdb->last_error);
+        }
+
+        // Opcional: desmarcar is_parent del padre si ya no tiene hijos
+        if (!empty($parentId)) {
+            $remainingChildren = $wpdb->get_var($wpdb->prepare(
+                "SELECT COUNT(*) FROM rem_group WHERE parent_id = %d",
+                $parentId
+            ));
+            if ($remainingChildren == 0) {
+                $wpdb->update('rem_group', ['is_parent' => 0], ['id' => $parentId]);
+            }
+        }
     }
+
+    $wpdb->query('COMMIT');
+    $wpdb->select($original_db);
+    return true;
+}
 }
