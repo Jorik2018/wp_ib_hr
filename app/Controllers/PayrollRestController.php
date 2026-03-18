@@ -426,7 +426,7 @@ class PayrollRestController extends Controller
         $current_user = wp_get_current_user();
 
         $persons = $o['persons'] ?? [];
-        $payroll_type_id = $o['payrollTypeId'] ?? 1;
+        $payroll_type_id = $o['payrollType'];
         $beneficiary = $o['beneficiary'];
         $benefit_type_id = $o['benefit_type_id'];
 
@@ -470,6 +470,60 @@ class PayrollRestController extends Controller
             'count'    => count($inserted)
         ];
     }
+
+    function remove_people($request) {
+    global $wpdb;
+
+    // Obtener params compatible WP_REST_Request o array
+    $o = get_param($request);
+
+    $original_db = $wpdb->dbname;
+    $wpdb->select(get_option("db_ofis"));
+
+    $persons = $o['persons'] ?? [];
+    $payroll_type_id = $o['payrollType'] ?? null;
+
+    if (!is_array($persons) || empty($persons)) {
+        $wpdb->select($original_db);
+        return t_error('No persons provided');
+    }
+
+    if (!$payroll_type_id) {
+        $wpdb->select($original_db);
+        return t_error('No payroll type provided');
+    }
+
+    $deleted = [];
+
+    foreach ($persons as $people_id) {
+
+        $people_id = (int)$people_id;
+        if (!$people_id) continue;
+
+        $where = [
+            'payroll_type_id' => $payroll_type_id,
+            'people_id'       => $people_id
+        ];
+
+        $ok = $wpdb->delete('rem_payroll_type_people', $where);
+
+        if ($ok === false) {
+            $last_error = $wpdb->last_error;
+            $wpdb->select($original_db);
+            if ($last_error) return t_error($last_error);
+        }
+
+        // si $ok === 0 → no existía, igual lo podemos considerar "eliminado"
+        $deleted[] = $people_id;
+    }
+
+    $wpdb->select($original_db);
+
+    return [
+        'deleted' => $deleted,
+        'count'   => count($deleted)
+    ];
+}
 
     function loadPayroll($id)
     {
