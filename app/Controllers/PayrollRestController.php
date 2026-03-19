@@ -4,6 +4,7 @@ namespace IB\cv\Controllers;
 
 use WPMVC\MVC\Controller;
 use function IB\directory\Util\mapKeysToCamelCase;
+use function IB\directory\Util\mapKeysToSnakeCase;
 use function IB\directory\Util\get_param;
 use function IB\directory\Util\t_error;
 use Dompdf\Dompdf;
@@ -87,8 +88,38 @@ class PayrollRestController extends Controller
             'methods' => 'POST',
             'callback' => array($this, 'process')
         ));
+    
+        register_rest_route('api/payroll', '', array(
+            'methods' => 'POST',
+            'callback' => array($this, 'post')
+        ));
     }
 
+    public function post($request)
+    {
+        global $wpdb;
+        $original_db = $wpdb->dbname;
+        $db_erp = get_option("db_ofis");
+        $o = get_param($request);
+        if (empty($o['name'])) {
+            return t_error('El nombre del concepto es obligatorio');
+        }
+        $o = mapKeysToSnakeCase($o);
+        try {
+            $wpdb->select($db_erp);
+
+            if (isset($o['id'])) {
+                $updated = $wpdb->update('rem_payroll', $o, ['id' => $o['id']]);
+            } else {
+                $updated = $wpdb->insert('rem_payroll', $o);
+                $o['id'] = $wpdb->insert_id;
+            }
+            if (false === $updated) return t_error($wpdb->last_error);
+        } finally {
+            $wpdb->select($original_db);
+        }
+        return mapKeysToCamelCase($o);
+    }
     public function pag($request)
     {
 
