@@ -7,6 +7,7 @@ use function IB\directory\Util\mapKeysToCamelCase;
 use function IB\directory\Util\mapKeysToSnakeCase;
 use function IB\directory\Util\get_param;
 use function IB\directory\Util\t_error;
+use function IB\directory\Util\remove;
 use Dompdf\Dompdf;
 
 class PayrollRestController extends Controller
@@ -101,6 +102,7 @@ class PayrollRestController extends Controller
         $original_db = $wpdb->dbname;
         $db_erp = get_option("db_ofis");
         $o = get_param($request);
+        remove($o,'typeName');
         $o = mapKeysToSnakeCase($o);
         try {
             $wpdb->select($db_erp);
