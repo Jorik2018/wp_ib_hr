@@ -136,7 +136,7 @@ class ConceptRestController extends Controller
         $from = intval($request['from']);
         $to = intval($request['to']);
         $query = get_param($request, 'query');
-        $type = get_param($request, 'type');
+        $type = get_param($request, 'typeId');
         $orphan = get_param($request, 'orphan');
 
         $db_erp = get_option("db_ofis");
