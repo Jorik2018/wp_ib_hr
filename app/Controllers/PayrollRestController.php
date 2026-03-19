@@ -89,7 +89,7 @@ class PayrollRestController extends Controller
             'callback' => array($this, 'process')
         ));
     
-        register_rest_route('api/payroll', '/', array(
+        register_rest_route('api', '/payroll', array(
             'methods' => 'POST',
             'callback' => array($this, 'post')
         ));
