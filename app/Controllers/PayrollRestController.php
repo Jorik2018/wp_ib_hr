@@ -101,9 +101,6 @@ class PayrollRestController extends Controller
         $original_db = $wpdb->dbname;
         $db_erp = get_option("db_ofis");
         $o = get_param($request);
-        if (empty($o['name'])) {
-            return t_error('El nombre del concepto es obligatorio');
-        }
         $o = mapKeysToSnakeCase($o);
         try {
             $wpdb->select($db_erp);
