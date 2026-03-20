@@ -1006,7 +1006,7 @@ class PayrollRestController extends Controller
                     pp.people_id peopleId,
                     p.afp_onp pensionSystem,
                     p.n_cuspp nCUSPP,
-                    p.days_worked daysWorked,
+                    pp.days_worked daysWorked,
                     p.dni code,
                     GROUP_CONCAT(gp.group_id) `groups`
                     FROM rem_payroll_type_people pp
