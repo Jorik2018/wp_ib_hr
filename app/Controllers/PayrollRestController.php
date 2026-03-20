@@ -962,7 +962,7 @@ class PayrollRestController extends Controller
             ['title' => 'NOMBRE COMPLETO', 'width' => 200, 'index' => 'fullName'],
             ['title' => 'AFP / ONP', 'width' => 100, 'index' => 'pensionSystem', 'class' => 'center'],
             ['title' => 'N° CUSPP', 'width' => 120, 'index' => 'nCUSPP', 'class' => 'center'],
-            ['title' => 'DIAS LABORADOS', 'index' => 'daysWorked', 'width' => 100]
+            ['title' => 'DIAS LABORADOS', 'index' => 'workedDays', 'width' => 100]
         ];
         $dynamicHeaders = $this -> buildHeaders(0, $conceptTree);
         // Unir columnas fijas con las dinámicas
@@ -1006,7 +1006,7 @@ class PayrollRestController extends Controller
                     pp.people_id peopleId,
                     p.afp_onp pensionSystem,
                     p.n_cuspp nCUSPP,
-                    pp.days_worked daysWorked,
+                    pp.worked_days workedDays,
                     p.dni code,
                     GROUP_CONCAT(gp.group_id) `groups`
                     FROM rem_payroll_type_people pp
@@ -1027,7 +1027,7 @@ class PayrollRestController extends Controller
         foreach ($employees as $employee) {
             $employee->groups = $employee->groups ? explode(',', $employee->groups) : [];
 
-            $workedDays = $employee->worked_days ?? 30;
+            $workedDays = $employee->workedDays ?? $diasMes;
 
             $values = [];
 
