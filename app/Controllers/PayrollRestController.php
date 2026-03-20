@@ -945,10 +945,10 @@ class PayrollRestController extends Controller
             WHERE a.concept_id IS NOT NULL OR (c.formula IS NOT NULL AND c.formula <> '') OR c.is_parent
             ORDER BY c.weight
         ", "$year-$month-01", "$year-$month-01"));
-$conceptMap = [];
-foreach ($concepts as $c) {
-    $conceptMap[$c->id] = $c;
-}
+        $conceptMap = [];
+        foreach ($concepts as $c) {
+            $conceptMap[$c->id] = $c;
+        }
         $conceptTree = [];
         foreach ($concepts as $c) {
             $parentId = $c->parent_id ?? 0; // 0 indica que es root
@@ -962,7 +962,7 @@ foreach ($concepts as $c) {
             ['title' => 'NOMBRE COMPLETO', 'width' => 200, 'index' => 'fullName'],
             ['title' => 'AFP / ONP', 'width' => 100, 'index' => 'pensionSystem', 'class' => 'center'],
             ['title' => 'N° CUSPP', 'width' => 120, 'index' => 'nCUSPP', 'class' => 'center'],
-            ['title' => 'DIAS LABORADOS', 'width' => 100]
+            ['title' => 'DIAS LABORADOS', 'index' => 'daysWorked', 'width' => 100]
         ];
         $dynamicHeaders = $this -> buildHeaders(0, $conceptTree);
         // Unir columnas fijas con las dinámicas
@@ -1006,6 +1006,7 @@ foreach ($concepts as $c) {
                     pp.people_id peopleId,
                     p.afp_onp pensionSystem,
                     p.n_cuspp nCUSPP,
+                    p.days_worked daysWorked,
                     p.dni code,
                     GROUP_CONCAT(gp.group_id) `groups`
                     FROM rem_payroll_type_people pp
