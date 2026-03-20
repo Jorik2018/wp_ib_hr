@@ -83,10 +83,6 @@ class PayrollAmountRestController extends Controller
             return t_error('Concepto es obligatorio');
         }
 
-        if (empty($o['targetId'])) {
-            return t_error('Target es obligatorio');
-        }
-
         if (empty($o['iniDate'])) {
             return t_error('Fecha inicio es obligatoria');
         }
