@@ -962,7 +962,7 @@ class PayrollRestController extends Controller
             ['title' => 'NOMBRE COMPLETO', 'width' => 200, 'index' => 'fullName'],
             ['title' => 'AFP / ONP', 'width' => 100, 'index' => 'pensionSystem', 'class' => 'center'],
             ['title' => 'N° CUSPP', 'width' => 120, 'index' => 'nCUSPP', 'class' => 'center'],
-            ['title' => 'DIAS LABORADOS', 'index' => 'workedDays', 'width' => 100]
+            ['title' => 'DIAS LABORADOS', 'index' => 'workedDays', 'width' => 100, 'class' => 'right']
         ];
         $dynamicHeaders = $this -> buildHeaders(0, $conceptTree);
         // Unir columnas fijas con las dinámicas
