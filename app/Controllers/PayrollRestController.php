@@ -1027,7 +1027,9 @@ class PayrollRestController extends Controller
         foreach ($employees as $employee) {
             $employee->groups = $employee->groups ? explode(',', $employee->groups) : [];
 
-            $workedDays = $employee->workedDays ?? $diasMes;
+            $employee->workedDays = $employee->workedDays ?? $diasMes;
+
+            $workedDays = $employee->workedDays;
 
             $values = [];
 
