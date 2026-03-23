@@ -125,30 +125,50 @@ class PayrollRestController extends Controller
         return mapKeysToCamelCase($o);
     }
 
-    public function post_people($request)
-    {
-        global $wpdb;
-        $original_db = $wpdb->dbname;
-        $db_erp = get_option("db_ofis");
-        $o = get_param($request);
-        $payrollType = get_param($o,'payrollType');
-        $items = get_param($o,'items');
-        /*try {
-            $wpdb->select($db_erp);
+public function post_people($request)
+{
+    global $wpdb;
 
-            if (isset($o['id'])) {
-                $updated = $wpdb->update('rem_payroll', $o, ['id' => $o['id']]);
-            } else {
-                $updated = $wpdb->insert('rem_payroll', $o);
-                $o['id'] = $wpdb->insert_id;
+    $original_db = $wpdb->dbname;
+    $db_erp = get_option("db_ofis");
+
+    $o = get_param($request);
+    $payrollType = get_param($o, 'payrollType');
+    $items = get_param($o, 'items'); 
+    // [{peopleId:1, workedDays:20}, ...]
+
+    try {
+        $wpdb->select($db_erp);
+
+        foreach ($items as $item) {
+            $peopleId = get_param($item, 'peopleId');
+            $workedDays = get_param($item, 'workedDays');
+
+            $updated = $wpdb->update(
+                'rem_payroll_type_people',
+                ['worked_days' => $workedDays],
+                [
+                    'people_id' => $peopleId,
+                    'payroll_type_id' => $payrollType
+                ],
+                ['%d'], // worked_days
+                ['%d', '%s'] // where
+            );
+
+            if ($updated === false) {
+                return t_error($wpdb->last_error);
             }
-            if (false === $updated) return t_error($wpdb->last_error);
-        } finally {
-            $wpdb->select($original_db);
-        }*/
-        return mapKeysToCamelCase(['a'=>$payrollType, 'b'=>$items]);
+        }
+
+    } finally {
+        $wpdb->select($original_db);
     }
 
+    return mapKeysToCamelCase([
+        'payrollType' => $payrollType,
+        'items' => $items
+    ]);
+}
     public function pag($request)
     {
 
