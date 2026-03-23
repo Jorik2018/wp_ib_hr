@@ -70,6 +70,11 @@ class PayrollRestController extends Controller
             'callback' => array($this, 'add_person')
         ));
 
+        register_rest_route('api/payroll', 'people', array(
+            'methods' => 'POST',
+            'callback' => array($this, 'post_people')
+        ));
+
         register_rest_route('api/payroll', 'remove-person', array(
             'methods' => 'POST',
             'callback' => array($this, 'remove_people')
@@ -119,6 +124,31 @@ class PayrollRestController extends Controller
         }
         return mapKeysToCamelCase($o);
     }
+
+    public function post_people($request)
+    {
+        global $wpdb;
+        $original_db = $wpdb->dbname;
+        $db_erp = get_option("db_ofis");
+        $o = get_param($request);
+        $payrollType = get_param($o,'payrollType');
+        $items = get_param($o,'items');
+        /*try {
+            $wpdb->select($db_erp);
+
+            if (isset($o['id'])) {
+                $updated = $wpdb->update('rem_payroll', $o, ['id' => $o['id']]);
+            } else {
+                $updated = $wpdb->insert('rem_payroll', $o);
+                $o['id'] = $wpdb->insert_id;
+            }
+            if (false === $updated) return t_error($wpdb->last_error);
+        } finally {
+            $wpdb->select($original_db);
+        }*/
+        return mapKeysToCamelCase(['a'=>$payrollType, 'b'=>$items]);
+    }
+
     public function pag($request)
     {
 
