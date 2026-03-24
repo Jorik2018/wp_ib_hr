@@ -1090,7 +1090,7 @@ public function post_people($request)
             
 
 
-            
+
             $totalGroups = [];
             foreach ($order as $conceptId) {
 
@@ -1137,6 +1137,8 @@ public function post_people($request)
                             $values,
                             $totalGroups
                         );
+
+                        $value = 11111;
                     }
                 }
 
