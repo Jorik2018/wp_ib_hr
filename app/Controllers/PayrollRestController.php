@@ -1138,7 +1138,7 @@ public function post_people($request)
                             $totalGroups
                         );
 
-                        $value = 11111;
+                        $value = $c->formula;
                     }
                 }
 
