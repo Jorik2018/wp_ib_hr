@@ -1087,74 +1087,72 @@ public function post_people($request)
 
             $values[] = $workedDays;
 
-
-            $totalGroups = [];
-
-            foreach ($order as $conceptId) {
-
-                if (!isset($conceptMap[$conceptId])) continue;
-
-                $c = $conceptMap[$conceptId];
-                $typeId = $c->type_id ?? 0;
-
-                // 1. BASE
-                $baseAmount = $this->resolveAmount(
-                    $c->id,
-                    $employee,
-                    $employee->payrollTypeId,
-                    $amountMap
-                );
-
-                // 2. AJUSTE POR DIAS (solo grupo 1)
-                if ($typeId == 1) {
-                    $baseAmount = round(($baseAmount * $workedDays) / $diasMes, 2);
-                }
-
-                $value = $baseAmount;
-
-                // 3. FORMULA DINÁMICA
-                if (!empty($c->formula)) {
-
-                    // 👇 CASOS ESPECIALES (mantienes los únicos que realmente lo necesitan)
-                    if ($c->id == 22) { // ESSALUD
-                        $rate = 0.09;
-                        $base_min = 1130;
-                        $base_max = 2475;
-
-                        $base = $values[1] ?? 0;
-
-                        $value = round(
-                            min(max($base, $base_min), $base_max) * $rate,
-                            2
-                        );
-
-                    } else {
-                        // 👇 MOTOR GENERICO
-                        $value = $this->evaluateFormula(
-                            $c->formula,
-                            $values,
-                            $totalGroups
-                        );
+            foreach ($conceptGroups as $typeId => $conceptsOfType) {
+                if($typeId > 0) {
+                    $totalGroups[$typeId] = 0;
+                    foreach ($conceptsOfType as $c) {
+                        $baseAmount = $this->resolveAmount($c->id, $employee, $employee->payrollTypeId, $amountMap);
+                        $value = ($typeId == 1)
+                            ? round(($baseAmount * $workedDays) / $diasMes, 2)
+                            : $baseAmount;
+                        if(isset($c->formula)){ 
+                            //27 BASE DE CALCULO CONTRIBUCIONES es calculadfo con el grupo 0
+                             if($c->formula=='C27*C37'){//APORTE SOLID. POR  CONV. COLECTIVO
+                                $value =round($value*($values[27]??$this->resolveAmount(27, $employee,  $employee -> payrollTypeId, $amountMap)??0),2);
+                            }else if($c->formula=='C27*C11'){
+                                $value =round($value*($values[27]??$this->resolveAmount(27, $employee,  $employee -> payrollTypeId, $amountMap)??0),2);
+                            }else if($c->formula=='C13*C27'){
+                                $value =round($value*($values[27]??$this->resolveAmount(27, $employee,  $employee -> payrollTypeId, $amountMap)??0),2);
+                            }else if($c->formula=='C14*C27'){
+                                $value =round($value*($values[27]??$this->resolveAmount(27, $employee,  $employee -> payrollTypeId, $amountMap)??0),2);
+                            }else if($c->formula=='C15*C27'){//APORTE SEGURO AFP
+                                $value =round($value*($values[27]??$this->resolveAmount(27, $employee,  $employee -> payrollTypeId, $amountMap)??0),2);
+                            }
+                        }
+                        $totalGroups[$typeId] += $value;
+                        $values[$c->id] = $value;
                     }
-                }
-
-                $value = round($value ?? 0, 2);
-
-                // 4. GUARDAR VALOR
-                $values[$c->id] = $value;
-
-                // 5. ACUMULAR GRUPO
-                if ($typeId > 0) {
-                    if (!isset($totalGroups[$typeId])) {
-                        $totalGroups[$typeId] = 0;
+                    foreach($conceptGroups[0] as $c){
+                        $baseAmount = $this->resolveAmount($c->id, $employee,  $employee -> payrollTypeId, $amountMap);
+                        if(isset($c->formula)){
+                            if($c->id=='22'){
+                                $rate = 0.09;//(float) $rows['essalud_rate']->config_value;
+                                $base_min = 1130;//(float) $rows['essalud_base_min']->config_value;
+                                $base_max = 2475;//(float) $rows['essalud_base_max']->config_value;
+                                $baseAmount = $values[1] ?? $this->resolveAmount(1, $employee,  $employee -> payrollTypeId, $amountMap)??0;
+                                $baseAmount = round(min(max( $baseAmount, $base_min), $base_max) * $rate, 2);
+                            }else if($c->formula=='G1+G2'){
+                                $baseAmount = $totalGroups[1]??0+$totalGroups[2]??0;
+                            }else if($c->formula=='G3'){
+                                $baseAmount = $totalGroups[3]??0;
+                            }else if($c->formula=='C24+C25'){
+                                $baseAmount = ($values[24]?? $this->resolveAmount(24, $employee,  $employee -> payrollTypeId, $amountMap)??0)
+                                +$values[25]?? $this->resolveAmount(25, $employee,  $employee -> payrollTypeId, $amountMap)??0;
+                            }else if($c->formula=='C23-C26'){//27: BASE DE CALCULO CONTRIBUCIONES
+                                $baseAmount = ($values[23]?? $this->resolveAmount(23, $employee,  $employee -> payrollTypeId, $amountMap)??0)
+                                -$values[26]?? $this->resolveAmount(26, $employee,  $employee -> payrollTypeId, $amountMap)??0;
+                            }else if($c->formula=='C27+C28'){
+                                $baseAmount = ($values[27]?? $this->resolveAmount(27, $employee,  $employee -> payrollTypeId, $amountMap)??0)
+                                +$values[28]?? $this->resolveAmount(28, $employee,  $employee -> payrollTypeId, $amountMap)??0;
+                            }else if($c->formula=='G5'){
+                                $baseAmount = $totalGroups[5]??0;
+                            }else if($c->formula=='G6'){
+                                $baseAmount = $totalGroups[6]??0;
+                            }else if($c->formula=='C26+C33+C35'){
+                                $baseAmount = round(($values[26]??0)+($values[33]??0)+$values[35]??0,2);
+                            }else if($c->formula=='C23+C28-C38'){
+                                $baseAmount = round(($values[23]??0)+($values[28]??0)+$values[38]??0,2);
+                            }
+                            if(isset($baseAmount))$baseAmount = round($baseAmount,2);
+                        }
+                        $values[$c->id] = $baseAmount;
                     }
-                    $totalGroups[$typeId] += $value;
                 }
             }
 
             $conceptList = [];
 
-            
+
             foreach ($values as $conceptId => $amount) {
 
                 if(!isset($conceptMap[$conceptId])) continue;
@@ -1182,34 +1180,6 @@ public function post_people($request)
             'amountMap'=> $amountMap,
             '$order' => $order
         ];
-    }
-
-    private function evaluateFormula($formula, $values, $totalGroups) {
-
-        // Reemplazar conceptos Cxx
-        $formula = preg_replace_callback('/C(\d+)/', function($m) use ($values) {
-            return $values[$m[1]] ?? 0;
-        }, $formula);
-
-        // Reemplazar grupos Gxx
-        $formula = preg_replace_callback('/G(\d+)/', function($m) use ($totalGroups) {
-            return $totalGroups[$m[1]] ?? 0;
-        }, $formula);
-
-        return $this->safeEval($formula);
-    }
-
-    private function safeEval($expression) {
-
-        if (!preg_match('/^[0-9+\-*/().\s]+$/', $expression)) {
-            return 0;
-        }
-
-        try {
-            return eval("return $expression;");
-        } catch (\Throwable $e) {
-            return 0;
-        }
     }
 
     private function extractDependencies($formula) {
