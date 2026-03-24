@@ -908,7 +908,8 @@ public function post_people($request)
             'headers' => $headers,
             'items' => $result['items'],
             'conceptGroups' => $result['conceptGroups'],
-            'amountMap'=> $result['amountMap']
+            'amountMap'=> $result['amountMap'],
+            '$order' => $result['$order']
         ];
     }
 
@@ -995,6 +996,7 @@ public function post_people($request)
             WHERE a.concept_id IS NOT NULL OR (c.formula IS NOT NULL AND c.formula <> '') OR c.is_parent
             ORDER BY c.weight
         ", "$year-$month-01", "$year-$month-01"));
+        $order = $this->sortConceptsByDependency($concepts);
         $conceptMap = [];
         foreach ($concepts as $c) {
             $conceptMap[$c->id] = $c;
@@ -1174,10 +1176,57 @@ public function post_people($request)
             'headers' => $headers,
             'items' => $items,
             'conceptGroups' => $conceptGroups,
-            'amountMap'=> $amountMap
+            'amountMap'=> $amountMap,
+            '$order' => $order
         ];
     }
 
+    private function extractDependencies($formula) {
+        preg_match_all('/C(\d+)/', $formula, $matches);
+        return $matches[1]; // lista de conceptos dependientes
+    }
+
+    private function sortConceptsByDependency($concepts) {
+        $graph = [];
+        $inDegree = [];
+
+        foreach ($concepts as $c) {
+            $graph[$c->id] = [];
+            $inDegree[$c->id] = 0;
+        }
+
+        foreach ($concepts as $c) {
+            if (!$c->formula) continue;
+
+            $deps = $this->extractDependencies($c->formula);
+
+            foreach ($deps as $dep) {
+                $graph[$dep][] = $c->id;
+                $inDegree[$c->id]++;
+            }
+        }
+
+        // Kahn algorithm
+        $queue = [];
+        foreach ($inDegree as $id => $deg) {
+            if ($deg == 0) $queue[] = $id;
+        }
+
+        $sorted = [];
+        while ($queue) {
+            $node = array_shift($queue);
+            $sorted[] = $node;
+
+            foreach ($graph[$node] as $neighbor) {
+                $inDegree[$neighbor]--;
+                if ($inDegree[$neighbor] == 0) {
+                    $queue[] = $neighbor;
+                }
+            }
+        }
+
+        return $sorted;
+    }
     private function resolveAmount($conceptId, $employee, $payrollId, $amountMap) {
         
         if (isset($amountMap[$conceptId])) {
