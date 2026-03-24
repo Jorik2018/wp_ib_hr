@@ -1182,6 +1182,35 @@ public function post_people($request)
         ];
     }
 
+
+    private function evaluateFormula($formula, $values, $totalGroups) {
+
+        // Reemplazar conceptos Cxx
+        $formula = preg_replace_callback('/C(\d+)/', function($m) use ($values) {
+            return $values[$m[1]] ?? 0;
+        }, $formula);
+
+        // Reemplazar grupos Gxx
+        $formula = preg_replace_callback('/G(\d+)/', function($m) use ($totalGroups) {
+            return $totalGroups[$m[1]] ?? 0;
+        }, $formula);
+
+        return $this->safeEval($formula);
+    }
+
+    private function safeEval($expression) {
+
+        if (!preg_match('/^[0-9+\-*/().\s]+$/', $expression)) {
+            return 0;
+        }
+
+        try {
+            return eval("return $expression;");
+        } catch (\Throwable $e) {
+            return 0;
+        }
+    }
+
     private function extractDependencies($formula) {
         preg_match_all('/C(\d+)/', $formula, $matches);
         return $matches[1]; // lista de conceptos dependientes
