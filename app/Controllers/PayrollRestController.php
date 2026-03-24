@@ -1087,6 +1087,73 @@ public function post_people($request)
 
             $values[] = $workedDays;
 
+            
+
+
+            
+            $totalGroups = [];
+            foreach ($order as $conceptId) {
+
+                if (!isset($conceptMap[$conceptId])) continue;
+
+                $c = $conceptMap[$conceptId];
+                $typeId = $c->type_id ?? 0;
+
+                // 1. BASE
+                $baseAmount = $this->resolveAmount(
+                    $c->id,
+                    $employee,
+                    $employee->payrollTypeId,
+                    $amountMap
+                );
+
+                // 2. AJUSTE POR DIAS (solo grupo 1)
+                if ($typeId == 1) {
+                    $baseAmount = round(($baseAmount * $workedDays) / $diasMes, 2);
+                }
+
+                $value = $baseAmount;
+
+                // 3. FORMULA DINÁMICA
+                if (!empty($c->formula)) {
+
+                    // 👇 CASOS ESPECIALES (mantienes los únicos que realmente lo necesitan)
+                    if ($c->id == 22) { // ESSALUD
+                        $rate = 0.09;
+                        $base_min = 1130;
+                        $base_max = 2475;
+
+                        $base = $values[1] ?? 0;
+
+                        $value = round(
+                            min(max($base, $base_min), $base_max) * $rate,
+                            2
+                        );
+
+                    } else {
+                        // 👇 MOTOR GENERICO
+                        $value = $this->evaluateFormula(
+                            $c->formula,
+                            $values,
+                            $totalGroups
+                        );
+                    }
+                }
+
+                $value = round($value ?? 0, 2);
+
+                // 4. GUARDAR VALOR
+                $values[$c->id] = $value;
+
+                // 5. ACUMULAR GRUPO
+                if ($typeId > 0) {
+                    if (!isset($totalGroups[$typeId])) {
+                        $totalGroups[$typeId] = 0;
+                    }
+                    $totalGroups[$typeId] += $value;
+                }
+            }
+            /*
             foreach ($conceptGroups as $typeId => $conceptsOfType) {
                 if($typeId > 0) {
                     $totalGroups[$typeId] = 0;
@@ -1148,7 +1215,7 @@ public function post_people($request)
                         $values[$c->id] = $baseAmount;
                     }
                 }
-            }
+            }*/
 
             $conceptList = [];
 
