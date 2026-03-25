@@ -117,15 +117,28 @@ class EvalContext {
         $c = $this->conceptMap[$id];
 
         // 🚨 ciclo
-        if (isset($this->visiting[$id])) {
+if (isset($this->visiting[$id])) {
 
-            // ✔ permitir seed/base
-            if (isset($c->base_value)) {
-                return $c->base_value;
-            }
+    // 🔥 si ya hay valor parcial, usarlo (self reference)
+    if (isset($this->values[$id])) {
+        return $this->values[$id];
+    }
 
-            throw new \Exception("Ciclo detectado en C$id");
-        }
+    // 🔹 usar base_value si existe
+    if (isset($c->base_value)) {
+        return $c->base_value;
+    }
+
+    // 🔹 fallback: usar base de resolveAmount
+    $base = $this->resolveAmount($id);
+
+    if ($base != 0) {
+        return $base;
+    }
+
+    // ❌ ciclo real
+    throw new \Exception("Ciclo detectado en C$id");
+}
 
         $this->visiting[$id] = true;
 
@@ -1290,19 +1303,15 @@ class PayrollRestController extends Controller
             }
         }
         $groupMap = [];
-
-foreach ($conceptMap as $conceptId => $c) {
-
-    $typeId = $c->type_id ?? 0;
-
-    if ($typeId > 0) {
-        if (!isset($groupMap[$typeId])) {
-            $groupMap[$typeId] = [];
+        foreach ($conceptMap as $conceptId => $c) {
+            $typeId = $c->type_id ?? 0;
+            if ($typeId > 0) {
+                if (!isset($groupMap[$typeId])) {
+                    $groupMap[$typeId] = [];
+                }
+                $groupMap[$typeId][] = $conceptId;
+            }
         }
-
-        $groupMap[$typeId][] = $conceptId;
-    }
-}
         $conceptTree = [];
         foreach ($concepts as $c) {
             $parentId = $c->parent_id ?? 0; // 0 indica que es root
