@@ -10,6 +10,250 @@ use function IB\directory\Util\t_error;
 use function IB\directory\Util\remove;
 use Dompdf\Dompdf;
 
+interface Node {
+    public function eval($ctx);
+    public function dump();
+}
+
+class NumberNode implements Node {
+    public function __construct(public $value) {}
+
+    public function eval($ctx) {
+        return $this->value;
+    }
+
+    public function dump() {
+        return (string)$this->value;
+    }
+}
+
+class ConceptNode implements Node {
+    public function __construct(public $id) {}
+
+    public function eval($ctx) {
+        return $ctx->evalConcept($this->id);
+    }
+
+    public function dump() {
+        return "C{$this->id}";
+    }
+}
+
+class GroupNode implements Node {
+    public function __construct(public $groupId) {}
+
+    public function eval($ctx) {
+        return $ctx->sumGroup($this->groupId);
+    }
+
+    public function dump() {
+        return "G{$this->groupId}";
+    }
+}
+
+class BinaryOpNode implements Node {
+    public function __construct(
+        public $left,
+        public $op,
+        public $right
+    ) {}
+
+    public function eval($ctx) {
+        $l = $this->left->eval($ctx);
+        $r = $this->right->eval($ctx);
+
+        return match($this->op) {
+            '+' => $l + $r,
+            '-' => $l - $r,
+            '*' => $l * $r,
+            '/' => $r != 0 ? $l / $r : 0,
+        };
+    }
+
+    public function dump() {
+        return "({$this->left->dump()} {$this->op} {$this->right->dump()})";
+    }
+}
+
+class FunctionNode implements Node {
+    public function __construct(public $name, public $args) {}
+
+    public function eval($ctx) {
+        $vals = array_map(fn($a) => $a->eval($ctx), $this->args);
+
+        return match(strtoupper($this->name)) {
+            'MIN' => min($vals),
+            'MAX' => max($vals),
+        };
+    }
+
+    public function dump() {
+        $args = implode(',', array_map(fn($a) => $a->dump(), $this->args));
+        return "{$this->name}($args)";
+    }
+}
+
+class EvalContext {
+
+    public $values = [];
+    public $visiting = [];
+
+    public function __construct(
+        public $employee,
+        public $conceptMap,
+        public $groupMap,
+        public $astMap,
+        public $amountMap,
+        public $diasMes
+    ) {}
+
+    public function evalConcept($id) {
+
+        // ✔ cache
+        if (isset($this->values[$id])) {
+            return $this->values[$id];
+        }
+
+        $c = $this->conceptMap[$id];
+
+        // 🚨 ciclo
+        if (isset($this->visiting[$id])) {
+
+            // ✔ permitir seed/base
+            if (isset($c->base_value)) {
+                return $c->base_value;
+            }
+
+            throw new \Exception("Ciclo detectado en C$id");
+        }
+
+        $this->visiting[$id] = true;
+
+        $typeId = $c->type_id ?? 0;
+
+        // 🔹 BASE
+        $base = $this->resolveAmount($c->id);
+
+        // 🔹 AJUSTE DIAS
+        if ($typeId == 1) {
+            $workedDays = $this->employee->workedDays ?? $this->diasMes;
+            $base = round(($base * $workedDays) / $this->diasMes, 2);
+        }
+
+        // 🔹 FORMULA
+        if (!empty($c->formula)) {
+
+            if ($c->id == 22) { // caso especial
+                $rate = 0.09;
+                $base_min = 1130;
+                $base_max = 2475;
+
+                $b = $this->values[1] ?? 0;
+
+                $val = round(
+                    min(max($b, $base_min), $base_max) * $rate,
+                    2
+                );
+
+            } else {
+                $val = $this->astMap[$id]->eval($this);
+            }
+
+        } else {
+            $val = $base;
+        }
+
+        unset($this->visiting[$id]);
+
+        return $this->values[$id] = round($val ?? 0, 2);
+    }
+
+    // 🔥 Gx
+    public function sumGroup($g) {
+
+        $sum = 0;
+
+        foreach ($this->groupMap[$g] ?? [] as $cid) {
+            $sum += $this->evalConcept($cid);
+        }
+
+        return $sum;
+    }
+
+    // 🔹 reemplaza tu resolveAmount
+    private function resolveAmount($conceptId) {
+
+        $employee = $this->employee;
+        $amountMap = $this->amountMap;
+
+        if (isset($amountMap[$conceptId])) {
+
+            $map = $amountMap[$conceptId];
+
+            if (isset($map['PE'][$employee->peopleId])) {
+                return $map['PE'][$employee->peopleId];
+            }
+
+            if (!empty($employee->groups) && isset($map['GR'])) {
+                foreach ($employee->groups as $gid) {
+                    if (isset($map['GR'][$gid])) {
+                        return $map['GR'][$gid];
+                    }
+                }
+            }
+
+            if (isset($map['PS'][$employee->pensionSystem])) {
+                return $map['PS'][$employee->pensionSystem];
+            }
+
+            if (isset($map['PT'][$employee->payrollTypeId])) {
+                return $map['PT'][$employee->payrollTypeId];
+            }
+        }
+
+        return 0;
+    }
+}
+
+function parse($expr) {
+
+    $expr = str_replace(' ', '', $expr);
+
+    // número
+    if (is_numeric($expr)) {
+        return new NumberNode($expr);
+    }
+
+    // Cx
+    if (preg_match('/^C(\d+)$/', $expr, $m)) {
+        return new ConceptNode($m[1]);
+    }
+
+    // Gx
+    if (preg_match('/^G(\d+)$/', $expr, $m)) {
+        return new GroupNode($m[1]);
+    }
+
+    // función
+    if (preg_match('/^(MIN|MAX)\((.*)\)$/i', $expr, $m)) {
+        $args = explode(',', $m[2]);
+        return new FunctionNode($m[1], array_map('parse', $args));
+    }
+
+    // operadores simples (sin precedencia completa)
+    foreach (['+', '-', '*', '/'] as $op) {
+        $pos = strrpos($expr, $op);
+        if ($pos !== false) {
+            $l = substr($expr, 0, $pos);
+            $r = substr($expr, $pos + 1);
+            return new BinaryOpNode(parse($l), $op, parse($r));
+        }
+    }
+
+    throw new \Exception("No se pudo parsear: $expr");
+}
+
+
 class PayrollRestController extends Controller
 {
 
@@ -125,50 +369,50 @@ class PayrollRestController extends Controller
         return mapKeysToCamelCase($o);
     }
 
-public function post_people($request)
-{
-    global $wpdb;
+    public function post_people($request)
+    {
+        global $wpdb;
 
-    $original_db = $wpdb->dbname;
-    $db_erp = get_option("db_ofis");
+        $original_db = $wpdb->dbname;
+        $db_erp = get_option("db_ofis");
 
-    $o = get_param($request);
-    $payrollType = get_param($o, 'payrollType');
-    $items = get_param($o, 'items'); 
-    // [{peopleId:1, workedDays:20}, ...]
+        $o = get_param($request);
+        $payrollType = get_param($o, 'payrollType');
+        $items = get_param($o, 'items'); 
+        // [{peopleId:1, workedDays:20}, ...]
 
-    try {
-        $wpdb->select($db_erp);
+        try {
+            $wpdb->select($db_erp);
 
-        foreach ($items as $item) {
-            $peopleId = get_param($item, 'peopleId');
-            $workedDays = get_param($item, 'workedDays');
+            foreach ($items as $item) {
+                $peopleId = get_param($item, 'peopleId');
+                $workedDays = get_param($item, 'workedDays');
 
-            $updated = $wpdb->update(
-                'rem_payroll_type_people',
-                ['worked_days' => $workedDays],
-                [
-                    'people_id' => $peopleId,
-                    'payroll_type_id' => $payrollType
-                ],
-                ['%d'], // worked_days
-                ['%d', '%s'] // where
-            );
+                $updated = $wpdb->update(
+                    'rem_payroll_type_people',
+                    ['worked_days' => $workedDays],
+                    [
+                        'people_id' => $peopleId,
+                        'payroll_type_id' => $payrollType
+                    ],
+                    ['%d'], // worked_days
+                    ['%d', '%s'] // where
+                );
 
-            if ($updated === false) {
-                return t_error($wpdb->last_error);
+                if ($updated === false) {
+                    return t_error($wpdb->last_error);
+                }
             }
+
+        } finally {
+            $wpdb->select($original_db);
         }
 
-    } finally {
-        $wpdb->select($original_db);
+        return mapKeysToCamelCase([
+            'payrollType' => $payrollType,
+            'items' => $items
+        ]);
     }
-
-    return mapKeysToCamelCase([
-        'payrollType' => $payrollType,
-        'items' => $items
-    ]);
-}
     public function pag($request)
     {
 
@@ -557,58 +801,58 @@ public function post_people($request)
     }
 
     function remove_people($request) {
-    global $wpdb;
+        global $wpdb;
 
-    // Obtener params compatible WP_REST_Request o array
-    $o = get_param($request);
+        // Obtener params compatible WP_REST_Request o array
+        $o = get_param($request);
 
-    $original_db = $wpdb->dbname;
-    $wpdb->select(get_option("db_ofis"));
+        $original_db = $wpdb->dbname;
+        $wpdb->select(get_option("db_ofis"));
 
-    $persons = $o['persons'] ?? [];
-    $payroll_type_id = $o['payrollType'] ?? null;
+        $persons = $o['persons'] ?? [];
+        $payroll_type_id = $o['payrollType'] ?? null;
 
-    if (!is_array($persons) || empty($persons)) {
-        $wpdb->select($original_db);
-        return t_error('No persons provided');
-    }
-
-    if (!$payroll_type_id) {
-        $wpdb->select($original_db);
-        return t_error('No payroll type provided');
-    }
-
-    $deleted = [];
-
-    foreach ($persons as $people_id) {
-
-        $people_id = (int)$people_id;
-        if (!$people_id) continue;
-
-        $where = [
-            'payroll_type_id' => $payroll_type_id,
-            'people_id'       => $people_id
-        ];
-
-        $ok = $wpdb->delete('rem_payroll_type_people', $where);
-
-        if ($ok === false) {
-            $last_error = $wpdb->last_error;
+        if (!is_array($persons) || empty($persons)) {
             $wpdb->select($original_db);
-            if ($last_error) return t_error($last_error);
+            return t_error('No persons provided');
         }
 
-        // si $ok === 0 → no existía, igual lo podemos considerar "eliminado"
-        $deleted[] = $people_id;
+        if (!$payroll_type_id) {
+            $wpdb->select($original_db);
+            return t_error('No payroll type provided');
+        }
+
+        $deleted = [];
+
+        foreach ($persons as $people_id) {
+
+            $people_id = (int)$people_id;
+            if (!$people_id) continue;
+
+            $where = [
+                'payroll_type_id' => $payroll_type_id,
+                'people_id'       => $people_id
+            ];
+
+            $ok = $wpdb->delete('rem_payroll_type_people', $where);
+
+            if ($ok === false) {
+                $last_error = $wpdb->last_error;
+                $wpdb->select($original_db);
+                if ($last_error) return t_error($last_error);
+            }
+
+            // si $ok === 0 → no existía, igual lo podemos considerar "eliminado"
+            $deleted[] = $people_id;
+        }
+
+        $wpdb->select($original_db);
+
+        return [
+            'deleted' => $deleted,
+            'count'   => count($deleted)
+        ];
     }
-
-    $wpdb->select($original_db);
-
-    return [
-        'deleted' => $deleted,
-        'count'   => count($deleted)
-    ];
-}
 
     function loadPayroll($id)
     {
@@ -907,6 +1151,7 @@ public function post_people($request)
             
             'headers' => $headers,
             'items' => $result['items'],
+            '$astMap' => $result['$astMap'],
             'conceptGroups' => $result['conceptGroups'],
             'amountMap'=> $result['amountMap'],
             '$order' => $result['$order']
@@ -1001,6 +1246,13 @@ public function post_people($request)
         foreach ($concepts as $c) {
             $conceptMap[$c->id] = $c;
         }
+        $astMap = [];
+
+        foreach ($conceptMap as $id => $c) {
+            if (!empty($c->formula)) {
+                $astMap[$id] = parse($c->formula); // 🔥 SOLO UNA VEZ
+            }
+        }
         $conceptTree = [];
         foreach ($concepts as $c) {
             $parentId = $c->parent_id ?? 0; // 0 indica que es root
@@ -1084,6 +1336,7 @@ public function post_people($request)
             $workedDays = $employee->workedDays;
 
             $values = [];
+            $visiting  = [];   // detección de ciclos
 
             $values[] = $workedDays;
 
@@ -1161,69 +1414,6 @@ public function post_people($request)
                     $totalGroups[$typeId] += $value;
                 }
             }
-            /*
-            foreach ($conceptGroups as $typeId => $conceptsOfType) {
-                if($typeId > 0) {
-                    $totalGroups[$typeId] = 0;
-                    foreach ($conceptsOfType as $c) {
-                        $baseAmount = $this->resolveAmount($c->id, $employee, $employee->payrollTypeId, $amountMap);
-                        $value = ($typeId == 1)
-                            ? round(($baseAmount * $workedDays) / $diasMes, 2)
-                            : $baseAmount;
-                        if(isset($c->formula)){ 
-                            //27 BASE DE CALCULO CONTRIBUCIONES es calculadfo con el grupo 0
-                             if($c->formula=='C27*C37'){//APORTE SOLID. POR  CONV. COLECTIVO
-                                $value =round($value*($values[27]??$this->resolveAmount(27, $employee,  $employee -> payrollTypeId, $amountMap)??0),2);
-                            }else if($c->formula=='C27*C11'){
-                                $value =round($value*($values[27]??$this->resolveAmount(27, $employee,  $employee -> payrollTypeId, $amountMap)??0),2);
-                            }else if($c->formula=='C13*C27'){
-                                $value =round($value*($values[27]??$this->resolveAmount(27, $employee,  $employee -> payrollTypeId, $amountMap)??0),2);
-                            }else if($c->formula=='C14*C27'){
-                                $value =round($value*($values[27]??$this->resolveAmount(27, $employee,  $employee -> payrollTypeId, $amountMap)??0),2);
-                            }else if($c->formula=='C15*C27'){//APORTE SEGURO AFP
-                                $value =round($value*($values[27]??$this->resolveAmount(27, $employee,  $employee -> payrollTypeId, $amountMap)??0),2);
-                            }
-                        }
-                        $totalGroups[$typeId] += $value;
-                        $values[$c->id] = $value;
-                    }
-                    foreach($conceptGroups[0] as $c){
-                        $baseAmount = $this->resolveAmount($c->id, $employee,  $employee -> payrollTypeId, $amountMap);
-                        if(isset($c->formula)){
-                            if($c->id=='22'){
-                                $rate = 0.09;//(float) $rows['essalud_rate']->config_value;
-                                $base_min = 1130;//(float) $rows['essalud_base_min']->config_value;
-                                $base_max = 2475;//(float) $rows['essalud_base_max']->config_value;
-                                $baseAmount = $values[1] ?? $this->resolveAmount(1, $employee,  $employee -> payrollTypeId, $amountMap)??0;
-                                $baseAmount = round(min(max( $baseAmount, $base_min), $base_max) * $rate, 2);
-                            }else if($c->formula=='G1+G2'){
-                                $baseAmount = $totalGroups[1]??0+$totalGroups[2]??0;
-                            }else if($c->formula=='G3'){
-                                $baseAmount = $totalGroups[3]??0;
-                            }else if($c->formula=='C24+C25'){
-                                $baseAmount = ($values[24]?? $this->resolveAmount(24, $employee,  $employee -> payrollTypeId, $amountMap)??0)
-                                +$values[25]?? $this->resolveAmount(25, $employee,  $employee -> payrollTypeId, $amountMap)??0;
-                            }else if($c->formula=='C23-C26'){//27: BASE DE CALCULO CONTRIBUCIONES
-                                $baseAmount = ($values[23]?? $this->resolveAmount(23, $employee,  $employee -> payrollTypeId, $amountMap)??0)
-                                -$values[26]?? $this->resolveAmount(26, $employee,  $employee -> payrollTypeId, $amountMap)??0;
-                            }else if($c->formula=='C27+C28'){
-                                $baseAmount = ($values[27]?? $this->resolveAmount(27, $employee,  $employee -> payrollTypeId, $amountMap)??0)
-                                +$values[28]?? $this->resolveAmount(28, $employee,  $employee -> payrollTypeId, $amountMap)??0;
-                            }else if($c->formula=='G5'){
-                                $baseAmount = $totalGroups[5]??0;
-                            }else if($c->formula=='G6'){
-                                $baseAmount = $totalGroups[6]??0;
-                            }else if($c->formula=='C26+C33+C35'){
-                                $baseAmount = round(($values[26]??0)+($values[33]??0)+$values[35]??0,2);
-                            }else if($c->formula=='C23+C28-C38'){
-                                $baseAmount = round(($values[23]??0)+($values[28]??0)+$values[38]??0,2);
-                            }
-                            if(isset($baseAmount))$baseAmount = round($baseAmount,2);
-                        }
-                        $values[$c->id] = $baseAmount;
-                    }
-                }
-            }*/
 
             $conceptList = [];
 
@@ -1244,6 +1434,7 @@ public function post_people($request)
             }
             $items[] = [
                 ... (array)$employee,
+                '$astMap' => $astMap,
                 'values'   => $values,
                 'concepts' => $conceptList,
                 '$temp' => $temp
