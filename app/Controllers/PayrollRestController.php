@@ -144,9 +144,10 @@ class EvalContext {
             $workedDays = $this->employee->workedDays ?? $this->diasMes;
             $base = round(($base * $workedDays) / $this->diasMes, 2);
         }
+        $this->values[$id] = $base;
         // 🔹 FORMULA
         if (!empty($c->formula)) {
-                $val = $this->astMap[$id]->eval($this);
+            $val = $this->astMap[$id]->eval($this);
         } else {
             $val = $base;
         }
