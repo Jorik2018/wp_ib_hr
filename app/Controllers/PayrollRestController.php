@@ -1303,15 +1303,7 @@ class PayrollRestController extends Controller
         $dynamicHeaders = $this -> buildHeaders(0, $conceptTree);
         // Unir columnas fijas con las dinámicas
         $headers = array_merge($headers, $dynamicHeaders);
-           
-        $conceptGroups = [];
-        foreach ($concepts as $c) {
-            $type_id = $c->type_id ?? 0;
-            if (!isset($conceptGroups[$type_id])) {
-                $conceptGroups[$type_id] = [];
-            }
-            $conceptGroups[$type_id][] = $c;
-        }
+
         $params = $wpdb->get_results($wpdb->prepare("
             SELECT concept_id, amount, type, target_id, payroll_type_id
             FROM rem_payroll_amount
@@ -1386,7 +1378,6 @@ class PayrollRestController extends Controller
         return  [
             'headers' => $headers,
             'items' => $items,
-            'conceptGroups' => $conceptGroups,
             'amountMap'=> $amountMap,
             '$order' => $astDebug
         ];
