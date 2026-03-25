@@ -1233,13 +1233,14 @@ public function post_people($request)
                     "concept" => $c->name,
                     "type_id" => $c->type_id,
                     "amount" => $amount,
-                    "$temp" => $temp
+                    
                 ];
             }
             $items[] = [
                 ... (array)$employee,
                 'values'   => $values,
-                'concepts' => $conceptList
+                'concepts' => $conceptList,
+                "$temp" => $temp
             ];
         }
        
