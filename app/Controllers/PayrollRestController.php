@@ -113,71 +113,44 @@ class EvalContext {
         if (isset($this->values[$id])) {
             return $this->values[$id];
         }
-
         $c = $this->conceptMap[$id];
-
         // 🚨 ciclo
-if (isset($this->visiting[$id])) {
+        if (isset($this->visiting[$id])) {
+            // 🔥 si ya hay valor parcial, usarlo (self reference)
+            if (isset($this->values[$id])) {
+                return $this->values[$id];
+            }
+            // 🔹 usar base_value si existe
+            if (isset($c->base_value)) {
+                return $c->base_value;
+            }
 
-    // 🔥 si ya hay valor parcial, usarlo (self reference)
-    if (isset($this->values[$id])) {
-        return $this->values[$id];
-    }
+            // 🔹 fallback: usar base de resolveAmount
+            $base = $this->resolveAmount($id);
 
-    // 🔹 usar base_value si existe
-    if (isset($c->base_value)) {
-        return $c->base_value;
-    }
-
-    // 🔹 fallback: usar base de resolveAmount
-    $base = $this->resolveAmount($id);
-
-    if ($base != 0) {
-        return $base;
-    }
-
-    // ❌ ciclo real
-    throw new \Exception("Ciclo detectado en C$id");
-}
-
+            if ($base != 0) {
+                return $base;
+            }
+            // ❌ ciclo real
+            throw new \Exception("Ciclo detectado en C$id".json_encode($c));
+        }
         $this->visiting[$id] = true;
-
         $typeId = $c->type_id ?? 0;
 
         // 🔹 BASE
         $base = $this->resolveAmount($c->id);
-
         // 🔹 AJUSTE DIAS
         if ($typeId == 1) {
             $workedDays = $this->employee->workedDays ?? $this->diasMes;
             $base = round(($base * $workedDays) / $this->diasMes, 2);
         }
-
         // 🔹 FORMULA
         if (!empty($c->formula)) {
-
-            if ($c->id == 22) { // caso especial
-                $rate = 0.09;
-                $base_min = 1130;
-                $base_max = 2475;
-
-                $b = $this->values[1] ?? 0;
-
-                $val = round(
-                    min(max($b, $base_min), $base_max) * $rate,
-                    2
-                );
-
-            } else {
                 $val = $this->astMap[$id]->eval($this);
-            }
-
         } else {
             $val = $base;
         }
-
         unset($this->visiting[$id]);
-
         return $this->values[$id] = round($val ?? 0, 2);
     }
 
