@@ -215,6 +215,33 @@ class EvalContext {
     }
 }
 
+function splitArgs($str) {
+    $args = [];
+    $level = 0;
+    $current = '';
+
+    for ($i = 0; $i < strlen($str); $i++) {
+        $ch = $str[$i];
+
+        if ($ch === ',' && $level === 0) {
+            $args[] = $current;
+            $current = '';
+            continue;
+        }
+
+        if ($ch === '(') $level++;
+        if ($ch === ')') $level--;
+
+        $current .= $ch;
+    }
+
+    if ($current !== '') {
+        $args[] = $current;
+    }
+
+    return $args;
+}
+
 function parse($expr) {
 
     $expr = str_replace(' ', '', $expr);
@@ -236,23 +263,32 @@ function parse($expr) {
 
     // función
     if (preg_match('/^(MIN|MAX)\((.*)\)$/i', $expr, $m)) {
-        $args = explode(',', $m[2]);
-        return new FunctionNode($m[1], array_map('parse', $args));
+
+        $args = splitArgs($m[2]);
+
+        return new FunctionNode(
+            $m[1],
+            array_map(fn($a) => parse($a), $args)
+        );
     }
 
-    // operadores simples (sin precedencia completa)
+    // operadores (simple)
     foreach (['+', '-', '*', '/'] as $op) {
         $pos = strrpos($expr, $op);
         if ($pos !== false) {
             $l = substr($expr, 0, $pos);
             $r = substr($expr, $pos + 1);
-            return new BinaryOpNode(parse($l), $op, parse($r));
+
+            return new BinaryOpNode(
+                parse($l),
+                $op,
+                parse($r)
+            );
         }
     }
 
     throw new \Exception("No se pudo parsear: $expr");
 }
-
 
 class PayrollRestController extends Controller
 {
