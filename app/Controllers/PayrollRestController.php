@@ -1240,7 +1240,7 @@ public function post_people($request)
                 ... (array)$employee,
                 'values'   => $values,
                 'concepts' => $conceptList,
-                "$temp" => $temp
+                '$temp' => $temp
             ];
         }
        
