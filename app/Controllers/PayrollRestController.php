@@ -1299,8 +1299,14 @@ public function post_people($request)
     }
 
     private function extractDependencies($formula) {
-        preg_match_all('/C(\d+)/', $formula, $matches);
-        return $matches[1]; // lista de conceptos dependientes
+        $deps = [];
+
+        preg_match_all('/C(\d+)/', $formula, $m1);
+        preg_match_all('/G(\d+)/', $formula, $m2);
+
+        $deps = array_merge($m1[1], $m2[1]);
+
+        return $deps;
     }
 
     private function sortConceptsByDependency($concepts) {
