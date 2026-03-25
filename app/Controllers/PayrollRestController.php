@@ -1298,38 +1298,61 @@ public function post_people($request)
         }
     }
 
-    private function extractDependencies($formula) {
+    private function extractDependencies($formula, $groupToConcepts) {
         $deps = [];
 
+        // Cx directos
         preg_match_all('/C(\d+)/', $formula, $m1);
+        $deps = $m1[1];
+
+        // Gx → expandir a conceptos reales
         preg_match_all('/G(\d+)/', $formula, $m2);
 
-        $deps = array_merge($m1[1], $m2[1]);
+        foreach ($m2[1] as $groupId) {
+            if (isset($groupToConcepts[$groupId])) {
+                $deps = array_merge($deps, $groupToConcepts[$groupId]);
+            }
+        }
 
-        return $deps;
+        return array_unique($deps);
     }
 
     private function sortConceptsByDependency($concepts) {
+
         $graph = [];
         $inDegree = [];
 
+        // 🔹 mapa de grupos
+        $groupToConcepts = [];
+        foreach ($concepts as $c) {
+            $typeId = $c->type_id ?? 0;
+            if ($typeId > 0) {
+                $groupToConcepts[$typeId][] = $c->id;
+            }
+        }
+
+        // init
         foreach ($concepts as $c) {
             $graph[$c->id] = [];
             $inDegree[$c->id] = 0;
         }
 
+        // dependencias
         foreach ($concepts as $c) {
             if (!$c->formula) continue;
 
-            $deps = $this->extractDependencies($c->formula);
+            $deps = $this->extractDependencies($c->formula, $groupToConcepts);
 
             foreach ($deps as $dep) {
+                // ⚠️ validar que exista como concepto
+                if (!isset($graph[$dep])) continue;
+
                 $graph[$dep][] = $c->id;
                 $inDegree[$c->id]++;
             }
         }
 
-        // Kahn algorithm
+        // Kahn
         $queue = [];
         foreach ($inDegree as $id => $deg) {
             if ($deg == 0) $queue[] = $id;
@@ -1350,6 +1373,7 @@ public function post_people($request)
 
         return $sorted;
     }
+
     private function resolveAmount($conceptId, $employee, $payrollId, $amountMap) {
         
         if (isset($amountMap[$conceptId])) {
