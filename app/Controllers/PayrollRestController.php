@@ -1468,21 +1468,25 @@ class PayrollRestController extends Controller
                     
                 ];
             }
+
             $items[] = [
                 ... (array)$employee,
-                '$astMap' => $astMap,
                 'values'   => $values,
                 'concepts' => $conceptList,
                 '$temp' => $temp
             ];
         }
-       
+       $astDebug = [];
+
+foreach ($astMap as $id => $ast) {
+    $astDebug[$id] = $ast->dump();
+}
         return  [
             'headers' => $headers,
             'items' => $items,
             'conceptGroups' => $conceptGroups,
             'amountMap'=> $amountMap,
-            '$order' => $order
+            '$order' => $astDebug
         ];
     }
 
