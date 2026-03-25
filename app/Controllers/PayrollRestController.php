@@ -1138,7 +1138,11 @@ public function post_people($request)
                             $totalGroups
                         );
 
-                        $temp[] = json_decode(json_encode([$c->formula,$values,$totalGroups,$value]));
+                        $temp[] = json_decode(json_encode(['id'=>$c->id,
+                        'formula'=>$c->formula,
+                        'values'=>$values,
+                        'totalGroups'=>$totalGroups,
+                        'value'=>$value]));
                     }
                 }
 
