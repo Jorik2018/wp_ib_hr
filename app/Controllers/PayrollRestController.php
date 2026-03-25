@@ -1289,6 +1289,20 @@ class PayrollRestController extends Controller
                 $astMap[$id] = parse($c->formula); // 🔥 SOLO UNA VEZ
             }
         }
+        $groupMap = [];
+
+foreach ($conceptMap as $conceptId => $c) {
+
+    $typeId = $c->type_id ?? 0;
+
+    if ($typeId > 0) {
+        if (!isset($groupMap[$typeId])) {
+            $groupMap[$typeId] = [];
+        }
+
+        $groupMap[$typeId][] = $conceptId;
+    }
+}
         $conceptTree = [];
         foreach ($concepts as $c) {
             $parentId = $c->parent_id ?? 0; // 0 indica que es root
@@ -1364,118 +1378,40 @@ class PayrollRestController extends Controller
 
 
         $items = [];
-        foreach ($employees as $employee) {
-            $employee->groups = $employee->groups ? explode(',', $employee->groups) : [];
+foreach ($employees as $employee) {
 
-            $employee->workedDays = $employee->workedDays ?? $diasMes;
+    $employee->groups = $employee->groups ? explode(',', $employee->groups) : [];
+    $employee->workedDays = $employee->workedDays ?? $diasMes;
 
-            $workedDays = $employee->workedDays;
+    $ctx = new EvalContext(
+        $employee,
+        $conceptMap,
+        $groupMap,
+        $astMap,
+        $amountMap,
+        $diasMes
+    );
 
-            $values = [];
-            $visiting  = [];   // detección de ciclos
+    $conceptList = [];
 
-            $values[] = $workedDays;
+    foreach ($conceptMap as $conceptId => $c) {
 
+        $value = $ctx->evalConcept($conceptId);
 
-            $temp = [];
+        $conceptList[] = [
+            "concept_id" => $conceptId,
+            "concept"    => $c->name,
+            "type_id"    => $c->type_id,
+            "amount"     => $value,
+        ];
+    }
 
-            
-            $totalGroups = [];
-            foreach ($order as $conceptId) {
-
-                if (!isset($conceptMap[$conceptId])) continue;
-
-                $c = $conceptMap[$conceptId];
-                $typeId = $c->type_id ?? 0;
-
-                // 1. BASE
-                $baseAmount = $this->resolveAmount(
-                    $c->id,
-                    $employee,
-                    $employee->payrollTypeId,
-                    $amountMap
-                );
-
-                // 2. AJUSTE POR DIAS (solo grupo 1)
-                if ($typeId == 1) {
-                    $baseAmount = round(($baseAmount * $workedDays) / $diasMes, 2);
-                }
-
-                $value = $baseAmount;
-
-                // 3. FORMULA DINÁMICA
-                if (!empty($c->formula)) {
-
-                    // 👇 CASOS ESPECIALES (mantienes los únicos que realmente lo necesitan)
-                    if ($c->id == 22) { // ESSALUD
-                        $rate = 0.09;
-                        $base_min = 1130;
-                        $base_max = 2475;
-
-                        $base = $values[1] ?? 0;
-
-                        $value = round(
-                            min(max($base, $base_min), $base_max) * $rate,
-                            2
-                        );
-
-                    } else {
-                        // 👇 MOTOR GENERICO
-                        $value = $this->evaluateFormula(
-                            $c->formula,
-                            $values,
-                            $totalGroups
-                        );
-
-                        $temp[] = json_decode(json_encode([
-                        'id'=>$c->id,
-                        'concept'=>$c->name,
-                        'formula'=>$c->formula,
-                        'values'=>$values,
-                        'totalGroups'=>$totalGroups,
-                        'value'=>$value]));
-                    }
-                }
-
-                $value = round($value ?? 0, 2);
-
-                // 4. GUARDAR VALOR
-                $values[$c->id] = $value;
-
-                // 5. ACUMULAR GRUPO
-                if ($typeId > 0) {
-                    if (!isset($totalGroups[$typeId])) {
-                        $totalGroups[$typeId] = 0;
-                    }
-                    $totalGroups[$typeId] += $value;
-                }
-            }
-
-            $conceptList = [];
-
-
-            foreach ($values as $conceptId => $amount) {
-
-                if(!isset($conceptMap[$conceptId])) continue;
-
-                $c = $conceptMap[$conceptId];
-
-                $conceptList[] = [
-                    "concept_id" => $conceptId,
-                    "concept" => $c->name,
-                    "type_id" => $c->type_id,
-                    "amount" => $amount,
-                    
-                ];
-            }
-
-            $items[] = [
-                ... (array)$employee,
-                'values'   => $values,
-                'concepts' => $conceptList,
-                '$temp' => $temp
-            ];
-        }
+    $items[] = [
+        ...(array)$employee,
+        'values'   => $ctx->values,
+        'concepts' => $conceptList,
+    ];
+}
        $astDebug = [];
 
 foreach ($astMap as $id => $ast) {
