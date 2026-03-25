@@ -1087,10 +1087,10 @@ public function post_people($request)
 
             $values[] = $workedDays;
 
+
+            $temp = [];
+
             
-
-
-
             $totalGroups = [];
             foreach ($order as $conceptId) {
 
@@ -1138,7 +1138,7 @@ public function post_people($request)
                             $totalGroups
                         );
 
-                        $value = $c->formula;
+                        $temp[] = json_decode(json_encode([$c->formula,$values,$totalGroups,$value]));
                     }
                 }
 
@@ -1232,7 +1232,8 @@ public function post_people($request)
                     "concept_id" => $conceptId,
                     "concept" => $c->name,
                     "type_id" => $c->type_id,
-                    "amount" => $amount
+                    "amount" => $amount,
+                    "$temp" => $temp
                 ];
             }
             $items[] = [
