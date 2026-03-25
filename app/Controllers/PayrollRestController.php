@@ -1174,8 +1174,6 @@ class PayrollRestController extends Controller
             
             'headers' => $headers,
             'items' => $result['items'],
-            '$astMap' => $result['$astMap'],
-            'conceptGroups' => $result['conceptGroups'],
             'amountMap'=> $result['amountMap'],
             '$order' => $result['$order']
         ];
