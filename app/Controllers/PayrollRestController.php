@@ -1303,12 +1303,8 @@ class PayrollRestController extends Controller
         $dynamicHeaders = $this -> buildHeaders(0, $conceptTree);
         // Unir columnas fijas con las dinámicas
         $headers = array_merge($headers, $dynamicHeaders);
-
-        /*
-        AGRUPAR CONCEPTOS POR TIPO
-        */       
+           
         $conceptGroups = [];
-        $totalGroups = [];
         foreach ($concepts as $c) {
             $type_id = $c->type_id ?? 0;
             if (!isset($conceptGroups[$type_id])) {
@@ -1332,9 +1328,6 @@ class PayrollRestController extends Controller
                 $amountMap[$p->concept_id][$p->type][$p->target_id] = $p->amount;
             }
         }
-         
-        $diasMes = 30; //cal_days_in_month(CAL_GREGORIAN, $month, $year);
-
         $employees = $wpdb->get_results(
             $wpdb->prepare("SELECT 
                     p.apellidos_nombres fullName,
@@ -1357,48 +1350,39 @@ class PayrollRestController extends Controller
         if ($wpdb->last_error) {
             return t_error($wpdb->last_error);
         }
-
-
+        $diasMes = 30; //cal_days_in_month(CAL_GREGORIAN, $month, $year);
         $items = [];
-foreach ($employees as $employee) {
-
-    $employee->groups = $employee->groups ? explode(',', $employee->groups) : [];
-    $employee->workedDays = $employee->workedDays ?? $diasMes;
-
-    $ctx = new EvalContext(
-        $employee,
-        $conceptMap,
-        $groupMap,
-        $astMap,
-        $amountMap,
-        $diasMes
-    );
-
-    $conceptList = [];
-
-    foreach ($conceptMap as $conceptId => $c) {
-
-        $value = $ctx->evalConcept($conceptId);
-
-        $conceptList[] = [
-            "concept_id" => $conceptId,
-            "concept"    => $c->name,
-            "type_id"    => $c->type_id,
-            "amount"     => $value,
-        ];
-    }
-
-    $items[] = [
-        ...(array)$employee,
-        'values'   => $ctx->values,
-        'concepts' => $conceptList,
-    ];
-}
-       $astDebug = [];
-
-foreach ($astMap as $id => $ast) {
-    $astDebug[$id] = $ast->dump();
-}
+        foreach ($employees as $employee) {
+            $employee->groups = $employee->groups ? explode(',', $employee->groups) : [];
+            $employee->workedDays = $employee->workedDays ?? $diasMes;
+            $ctx = new EvalContext(
+                $employee,
+                $conceptMap,
+                $groupMap,
+                $astMap,
+                $amountMap,
+                $diasMes
+            );
+            $conceptList = [];
+            foreach ($conceptMap as $conceptId => $c) {
+                $value = $ctx->evalConcept($conceptId);
+                $conceptList[] = [
+                    "concept_id" => $conceptId,
+                    "concept"    => $c->name,
+                    "type_id"    => $c->type_id,
+                    "amount"     => $value,
+                ];
+            }
+            $items[] = [
+                ...(array)$employee,
+                'values'   => $ctx->values,
+                'concepts' => $conceptList,
+            ];
+        }
+        $astDebug = [];
+        foreach ($astMap as $id => $ast) {
+            $astDebug[$id] = $ast->dump();
+        }
         return  [
             'headers' => $headers,
             'items' => $items,
