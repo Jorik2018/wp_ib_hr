@@ -1253,6 +1253,8 @@ class PayrollRestController extends Controller
         global $wpdb;
         $year = $payroll -> year;
         $month = $payroll -> month;
+        $start_date = "$year-$month-01";
+        $end_date = date("Y-m-t", strtotime($start_date));
 
         $concepts = $wpdb->get_results($wpdb->prepare("
             SELECT DISTINCT c.id, c.name, c.pdt_code, c.type_id, c.weight, c.formula, c.parent_id, c.is_parent, c.class
@@ -1263,7 +1265,7 @@ class PayrollRestController extends Controller
             AND (a.end_date IS NULL OR a.end_date >= %s)
             WHERE a.concept_id IS NOT NULL OR (c.formula IS NOT NULL AND c.formula <> '') OR c.is_parent
             ORDER BY c.weight
-        ", "$year-$month-01", "$year-$month-01"));
+        ", $end_date, $start_date));
         $conceptMap = [];
         foreach ($concepts as $c) {
             $conceptMap[$c->id] = $c;
@@ -1310,7 +1312,7 @@ class PayrollRestController extends Controller
             WHERE canceled = 0
             AND ini_date <= %s
             AND (end_date IS NULL OR end_date >= %s)
-        ", "$year-$month-01", "$year-$month-01"));
+        ", $end_date, $start_date));
 
         $amountMap = [];
         foreach ($params as $p) {
