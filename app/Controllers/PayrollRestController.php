@@ -62,18 +62,22 @@ public function eval($ctx) {
     $l = $this->left->eval($ctx);
     $r = $this->right->eval($ctx);
 
+    // Ambos null → null
     if ($l === null && $r === null) {
         return null;
     }
 
-    $l = $l ?? 0;
-    $r = $r ?? 0;
-
     return match($this->op) {
-        '+' => $l + $r,
-        '-' => $l - $r,
-        '*' => $l * $r,
-        '/' => $r != 0 ? $l / $r : 0,
+        '+' => ($l ?? 0) + ($r ?? 0),
+        '-' => ($l ?? 0) - ($r ?? 0),
+
+        '*' => ($l === null || $r === null)
+            ? null
+            : $l * $r,
+
+        '/' => ($l === null || $r === null || $r == 0)
+            ? null
+            : $l / $r,
     };
 }
     public function dump() {
