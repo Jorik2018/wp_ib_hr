@@ -117,53 +117,59 @@ class EvalContext {
         public $diasMes
     ) {}
 
-    public function evalConcept($id) {
+public function evalConcept($id) {
 
-        // ✔ cache
-        if (isset($this->values[$id])) {
-            return $this->values[$id];
-        }
-        $c = $this->conceptMap[$id];
-        // 🚨 ciclo
-        if (isset($this->visiting[$id])) {
-            // 🔥 si ya hay valor parcial, usarlo (self reference)
-            if (isset($this->values[$id])) {
-                return $this->values[$id];
-            }
-            // 🔹 usar base_value si existe
-            if (isset($c->base_value)) {
-                return $c->base_value;
-            }
-
-            // 🔹 fallback: usar base de resolveAmount
-            $base = $this->resolveAmount($id);
-
-            if ($base != 0) {
-                return $base;
-            }
-            // ❌ ciclo real
-            throw new \Exception("Ciclo detectado en C$id".json_encode($c));
-        }
-        $this->visiting[$id] = true;
-        $typeId = $c->type_id ?? 0;
-
-        // 🔹 BASE
-        $base = $this->resolveAmount($c->id);
-        // 🔹 AJUSTE DIAS
-        if ($typeId == 1) {
-            $workedDays = $this->employee->workedDays ?? $this->diasMes;
-            $base = round(($base * $workedDays) / $this->diasMes, 2);
-        }
-        $this->values[$id] = $base;
-        // 🔹 FORMULA
-        if (!empty($c->formula)) {
-            $val = $this->astMap[$id]->eval($this);
-        } else {
-            $val = $base;
-        }
-        unset($this->visiting[$id]);
-        return $this->values[$id] = round($val ?? 0, 2);
+    // ✅ cache SOLO de resultados finales
+    if (array_key_exists($id, $this->values)) {
+        return $this->values[$id];
     }
+
+    $c = $this->conceptMap[$id];
+
+    // 🚨 ciclo / autoreferencia
+    if (isset($this->visiting[$id])) {
+
+        // 🔹 intentar base directa
+        if (isset($c->base_value)) {
+            return $c->base_value;
+        }
+
+        $base = $this->resolveAmount($id);
+
+        // 👇 clave: no guardamos en values
+        return $base != 0 ? $base : null;
+    }
+
+    $this->visiting[$id] = true;
+
+    $typeId = $c->type_id ?? 0;
+
+    // 🔹 BASE
+    $base = $this->resolveAmount($c->id);
+
+    // 🔹 AJUSTE DIAS
+    if ($typeId == 1) {
+        $workedDays = $this->employee->workedDays ?? $this->diasMes;
+        $base = round(($base * $workedDays) / $this->diasMes, 2);
+    }
+
+    // 🔹 evaluar formula o usar base
+    if (!empty($c->formula)) {
+        $val = $this->astMap[$id]->eval($this);
+    } else {
+        $val = $base;
+    }
+
+    unset($this->visiting[$id]);
+
+    // ❗ regla clave: no guardar null "vacío"
+    if ($val === null) {
+        return null;
+    }
+
+    // ✅ solo guardar resultados reales
+    return $this->values[$id] = round($val, 2);
+}
 
     // 🔥 Gx
     public function sumGroup($g) {
