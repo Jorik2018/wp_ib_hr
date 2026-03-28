@@ -1141,6 +1141,7 @@ class PayrollRestController extends Controller
             } else {
                 // Si no tiene hijos, asignamos concept_id e index para data
                 $header['concept_id'] = $c->id;
+                if(isset($c->formula))$header['formula'] = $c->formula;
                 if (!empty($c->pdt_code)) {
                     $header['index'] = $c->pdt_code;
                 }
