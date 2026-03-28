@@ -1265,15 +1265,12 @@ class PayrollRestController extends Controller
             ORDER BY c.weight
         ", $end_date, $start_date));
         $conceptMap = [];
+        $astMap = [];
         foreach ($concepts as $c) {
             $conceptMap[$c->id] = $c;
-        }
-        $astMap = [];
-
-        foreach ($conceptMap as $id => $c) {
             if (!empty($c->formula)) {
                 $ast = parse($c->formula); // 🔥 SOLO UNA VEZ
-                $astMap[$id] = $ast;
+                $astMap[$c->id] = $ast;
                 $c->formula = $ast->dump();
             }
         }
