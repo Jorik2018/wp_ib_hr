@@ -569,7 +569,7 @@ class PayrollRestController extends Controller
                 if (isset($h['children']) && count($h['children']) > 0) {
                     $walk($h['children']);
                 } elseif (!isset($h['index'])) {
-                    $h['index'] = $index++; // solo hojas obtienen índice
+                    //$h['index'] = $index++; // solo hojas obtienen índice
                 }
             }
         };
@@ -1175,8 +1175,7 @@ class PayrollRestController extends Controller
             
             'headers' => $headers,
             'items' => $result['items'],
-            'amountMap'=> $result['amountMap'],
-            '$order' => $result['$order']
+            'amountMap'=> $result['amountMap']
         ];
     }
 
@@ -1273,7 +1272,9 @@ class PayrollRestController extends Controller
 
         foreach ($conceptMap as $id => $c) {
             if (!empty($c->formula)) {
-                $astMap[$id] = parse($c->formula); // 🔥 SOLO UNA VEZ
+                $ast = parse($c->formula); // 🔥 SOLO UNA VEZ
+                $astMap[$id] = $ast;
+                $c->formula = $ast->dump();
             }
         }
         $groupMap = [];
@@ -1372,15 +1373,10 @@ class PayrollRestController extends Controller
                 'concepts' => $conceptList,
             ];
         }
-        $astDebug = [];
-        foreach ($astMap as $id => $ast) {
-            $astDebug[$id] = $ast->dump();
-        }
         return  [
             'headers' => $headers,
             'items' => $items,
-            'amountMap'=> $amountMap,
-            '$order' => $astDebug
+            'amountMap'=> $amountMap
         ];
     }
 
