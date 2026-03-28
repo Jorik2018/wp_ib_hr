@@ -58,18 +58,24 @@ class BinaryOpNode implements Node {
         public $right
     ) {}
 
-    public function eval($ctx) {
-        $l = $this->left->eval($ctx);
-        $r = $this->right->eval($ctx);
+public function eval($ctx) {
+    $l = $this->left->eval($ctx);
+    $r = $this->right->eval($ctx);
 
-        return match($this->op) {
-            '+' => $l + $r,
-            '-' => $l - $r,
-            '*' => $l * $r,
-            '/' => $r != 0 ? $l / $r : 0,
-        };
+    if ($l === null && $r === null) {
+        return null;
     }
 
+    $l = $l ?? 0;
+    $r = $r ?? 0;
+
+    return match($this->op) {
+        '+' => $l + $r,
+        '-' => $l - $r,
+        '*' => $l * $r,
+        '/' => $r != 0 ? $l / $r : 0,
+    };
+}
     public function dump() {
         return "({$this->left->dump()} {$this->op} {$this->right->dump()})";
     }
@@ -197,8 +203,6 @@ class EvalContext {
                 return $map['PT'][$employee->payrollTypeId];
             }
         }
-
-        return 0;
     }
 }
 
