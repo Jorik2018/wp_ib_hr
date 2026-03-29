@@ -148,7 +148,7 @@ public function evalConcept($id) {
     $base = $this->resolveAmount($c->id);
 
     // 🔹 AJUSTE DIAS
-    if ($typeId == 1) {
+    if ($typeId == 1 && $base !== null) {
         $workedDays = $this->employee->workedDays ?? $this->diasMes;
         $base = round(($base * $workedDays) / $this->diasMes, 2);
     }
@@ -174,18 +174,18 @@ public function evalConcept($id) {
     // 🔥 Gx
 public function sumGroup($g) {
 
-    $sum = null;
+        $sum = null;
 
-    foreach ($this->groupMap[$g] ?? [] as $cid) {
-        $val = $this->evalConcept($cid);
+        foreach ($this->groupMap[$g] ?? [] as $cid) {
+            $val = $this->evalConcept($cid);
 
-        if ($val !== null) {
-            $sum = ($sum === null) ? $val : $sum + $val;
+            if ($val !== null) {
+                $sum = ($sum === null) ? $val : $sum + $val;
+            }
         }
-    }
 
-    return $sum;
-}
+        return $sum;
+    }
 
     // 🔹 reemplaza tu resolveAmount
     private function resolveAmount($conceptId) {
