@@ -1704,7 +1704,7 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
                     case 1:
                     case 2:
                         $income[]=$row;
-                        $totalIncome += $c->amount;
+                        $totalIncome += 0;//$c->amount;
                         break;
 
                     case 3:
