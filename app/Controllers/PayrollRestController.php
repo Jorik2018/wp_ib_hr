@@ -1495,7 +1495,7 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
         <?php foreach($data as $worker): ?>
 
         <div class="boleta">
-<?= json_encode($worker) ?>?>
+<?= json_encode($worker['concepts']) ?>?>
         <table>
             <tr>
                 <td colspan="8" class="title">
@@ -1741,6 +1741,7 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
                 "totalIncome"=>$income,
                 "totalDiscount"=>$discount,
                 "contributions"=>$contributions,
+                "concepts"=>$concepts,
 
                 "totalIncomeSum"=>$totalIncome,
                 "totalDiscountSum"=>$totalDiscount,
