@@ -1552,13 +1552,13 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
             $max = max(
                 count($worker['totalIncome'] ?? []),
                 count($worker['totalDiscount'] ?? []),
-                count($worker['totalContribution'] ?? [])
+                count($worker['contribution'] ?? [])
             );
 
             for($i=0;$i<$max;$i++):
                 $inc = $worker['totalIncome'][$i] ?? null;
                 $des = $worker['totalDiscount'][$i] ?? null;
-                $apo = $worker['totalContribution'][$i] ?? null;
+                $apo = $worker['contributions'][$i] ?? null;
             ?>
             <tr>
                 <td><?= $inc['name'] ?? '' ?></td>
@@ -1684,7 +1684,7 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
 
             $income=[];
             $discount=[];
-            $contribution=[];
+            $contributions=[];
 
             $totalIncome=0;
             $totalDiscount=0;
@@ -1715,7 +1715,7 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
                         $totalDiscount += $c->amount;
                         break;
                     case 8:
-                        $contribution[]=$row;
+                        $contributions[]=$row;
                         $totalContribution += $c->amount;
                         break;
                 }
@@ -1737,7 +1737,7 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
 
                 "totalIncome"=>$income,
                 "totalDiscount"=>$discount,
-                "totalContribution"=>$contribution,
+                "contributions"=>$contributions,
 
                 "totalIncomeSum"=>$totalIncome,
                 "totalDiscountSum"=>$totalDiscount,
