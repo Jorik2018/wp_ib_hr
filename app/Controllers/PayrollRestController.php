@@ -1715,6 +1715,7 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
                         break;
 
                     case 6:
+                    case 8:
                         $contribution[]=$row;
                         $totalContribution += $c->amount;
                         break;
