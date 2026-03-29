@@ -1495,7 +1495,6 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
         <?php foreach($data as $worker): ?>
 
         <div class="boleta">
-<?= json_encode($worker['concepts']) ?>
         <table>
             <tr>
                 <td colspan="8" class="title">
