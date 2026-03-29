@@ -1710,11 +1710,10 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
                     case 3:
                     case 4:
                     case 5:
+                    case 6:
                         $discount[]=$row;
                         $totalDiscount += $c->amount;
                         break;
-
-                    case 6:
                     case 8:
                         $contribution[]=$row;
                         $totalContribution += $c->amount;
