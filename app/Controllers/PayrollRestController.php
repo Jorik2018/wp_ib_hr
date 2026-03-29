@@ -1495,7 +1495,7 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
         <?php foreach($data as $worker): ?>
 
         <div class="boleta">
-
+<?= json_encode($worker) ?>?>
         <table>
             <tr>
                 <td colspan="8" class="title">
@@ -1564,7 +1564,7 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
                 <td><?= $inc['name'] ?? '' ?></td>
                 <td class="right"><?= isset($inc) ? number_format($inc['value'],2) : '' ?>
             
-            <?= json_encode($worker['contributions']) ?>?>
+            
             </td>
 
                 <td><?= $des['name'] ?? '' ?></td>
