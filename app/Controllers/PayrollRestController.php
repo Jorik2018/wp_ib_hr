@@ -1562,7 +1562,10 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
             ?>
             <tr>
                 <td><?= $inc['name'] ?? '' ?></td>
-                <td class="right"><?= isset($inc) ? number_format($inc['value'],2) : '' ?></td>
+                <td class="right"><?= isset($inc) ? number_format($inc['value'],2) : '' ?>
+            
+            <?= json_encode($worker['contributions']) ?>?>
+            </td>
 
                 <td><?= $des['name'] ?? '' ?></td>
                 <td class="right"><?= isset($des) ? number_format($des['value'],2) : '' ?></td>
@@ -1704,7 +1707,7 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
                     case 1:
                     case 2:
                         $income[]=$row;
-                        $totalIncome += 0;//$c->amount;
+                        $totalIncome += $c->amount;
                         break;
 
                     case 3:
