@@ -512,72 +512,91 @@ class PayrollRestController extends Controller
             'size' => $wpdb->get_var('SELECT FOUND_ROWS()')
         ] : $results;
     }
-    function getOrCreatePayroll($year, $month, $typeId, $id = 0, $fuenteFinanc = null, $preparedBy = null)
-    {
-        global $wpdb;
+function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0, $fuenteFinanc = null, $preparedBy = null)
+{
+    global $wpdb;
 
-        // 1️⃣ Buscar existente
-        $payroll = $wpdb->get_row(
-            $id?            $wpdb->prepare(
+    // 1️⃣ Buscar existente
+    $payroll = $wpdb->get_row(
+        $id ?
+            $wpdb->prepare(
                 "SELECT p.* , pt.name payrollTypeName
-             FROM rem_payroll p JOIN rem_payroll_type pt ON pt.id=p.type_id
-             WHERE  p.id = %d 
-             LIMIT 1",
+                 FROM rem_payroll p 
+                 JOIN rem_payroll_type pt ON pt.id = p.type_id
+                 WHERE p.id = %d 
+                 LIMIT 1",
                 $id
-            ):
+            ) :
             $wpdb->prepare(
                 "SELECT * 
-             FROM rem_payroll
-             WHERE year = %d 
-             AND month = %d 
-             AND type_id = %d
-             LIMIT 1",
+                 FROM rem_payroll
+                 WHERE year = %d 
+                 AND month = %d 
+                 AND type_id = %d
+                 LIMIT 1",
                 $year,
                 $month,
                 $typeId
             )
-        );
+    );
 
-        if ($payroll) {
-            return $payroll;
-        }
+    if ($payroll) {
 
-        // 2️⃣ Insertar si no existe
-        $wpdb->insert(
+        // 🔹 Actualizar generate_date al momento actual
+        $wpdb->update(
             'rem_payroll',
             [
-                'year' => $year,
-                'month' => $month,
-                'type_id' => $typeId,
-                'number' => 1, // puedes ajustar lógica si necesitas correlativo
-                'id_fuente_financ' => $fuenteFinanc,
-                'closed' => 0,
-                'canceled' => 0,
-                'prepared_by' => $preparedBy,
                 'generate_date' => current_time('mysql')
             ],
             [
-                '%d',
-                '%d',
-                '%d',
-                '%d',
-                '%d',
-                '%d',
-                '%d',
-                '%s'
-            ]
+                'id' => $payroll->id
+            ],
+            ['%s'],
+            ['%d']
         );
 
-        $newId = $wpdb->insert_id;
+        // 🔹 (opcional) actualizar el objeto en memoria
+        $payroll->generate_date = current_time('mysql');
 
-        // 3️⃣ Devolver el nuevo registro
-        return $wpdb->get_row(
-            $wpdb->prepare(
-                "SELECT * FROM rem_payroll WHERE id = %d",
-                $newId
-            )
-        );
+        return $payroll;
     }
+
+    // 2️⃣ Insertar si no existe
+    $wpdb->insert(
+        'rem_payroll',
+        [
+            'year' => $year,
+            'month' => $month,
+            'type_id' => $typeId,
+            'number' => 1,
+            'id_fuente_financ' => $fuenteFinanc,
+            'closed' => 0,
+            'canceled' => 0,
+            'prepared_by' => $preparedBy,
+            'generate_date' => current_time('mysql')
+        ],
+        [
+            '%d',
+            '%d',
+            '%d',
+            '%d',
+            '%d',
+            '%d',
+            '%d',
+            '%s'
+        ]
+    );
+
+    $newId = $wpdb->insert_id;
+
+    // 3️⃣ Devolver el nuevo registro
+    return $wpdb->get_row(
+        $wpdb->prepare(
+            "SELECT * FROM rem_payroll WHERE id = %d",
+            $newId
+        )
+    );
+}
     function assignLeafIndexes(array &$headers)
     {
         $index = 0;
@@ -1204,14 +1223,9 @@ class PayrollRestController extends Controller
         $original_db = $wpdb->dbname;
         $db_erp = get_option("db_ofis");
         $wpdb->select($db_erp);
-
-        $year=get_param($request,'year');
-        $month=get_param($request,'month');
         $id=get_param($request,'id');
-        $type=get_param($request,'type');
 
-        $payroll=$this->getOrCreatePayroll($year,$month,$type, $id);
-
+        $payroll=$this->getOrCreatePayroll(null , null, null, $id);
         $result=$this->calculatePayroll($payroll);
 
         $items = $result['items'];
