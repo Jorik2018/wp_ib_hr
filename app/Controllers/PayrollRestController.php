@@ -1760,7 +1760,8 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
         }
 
         $wpdb->select($original_db);
-        $this->export_pdf("BOLETAS_".$payrollTypeName."_".$payroll->year.sprintf('%02d', $payroll->month),$data);
+        $cleanName = str_replace('-', '_', preg_replace('/[^A-Za-z0-9\-]/', '', $payrollTypeName));
+        $this->export_pdf("BOLETAS_".$cleanName."_".$payroll->year.sprintf('%02d', $payroll->month),$data);
     }
 
 }
