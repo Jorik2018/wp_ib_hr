@@ -1249,7 +1249,7 @@ class PayrollRestController extends Controller
                 "payroll_id"=>$payroll->id,
                 "people_id"=>$item["peopleId"],
                 "position"=>$item["position"],
-                "dependency_id"=>$item["dependency_id"],
+                "dependency_id"=>$item["dependencyId"],
 
             ]);
 
@@ -1365,6 +1365,7 @@ class PayrollRestController extends Controller
                     p.n_cuspp nCUSPP,
                     pp.worked_days,
                     p.dni code,
+                    p.unidad_id,
                     GROUP_CONCAT(gp.group_id) `groups`
                     FROM rem_payroll_type_people pp
                     INNER JOIN m_personal p ON p.n = pp.people_id
@@ -1374,7 +1375,7 @@ class PayrollRestController extends Controller
                     ORDER BY 1",
                 $payroll->type_id
             )
-        ),['codigo_airhsp'=>'AIRHSP']);
+        ),['codigo_airhsp'=>'AIRHSP','unidad_id'=>'dependencyId']);
         if ($wpdb->last_error) {
             return t_error($wpdb->last_error);
         }
@@ -1503,7 +1504,6 @@ class PayrollRestController extends Controller
         <?php foreach($data as $worker): ?>
 
         <div class="boleta">
-            <?= json_encode($worker) ?>?>
         <table class="unlined">
             <tr>
                 <td colspan="8" class="title">
@@ -1519,7 +1519,7 @@ class PayrollRestController extends Controller
             </tr>
             <tr>
                 <td><b>Dependencia:</b></td>
-                <td colspan="3"><?= $worker['dependence'] ?></td>
+                <td colspan="3"><?= $worker['dependency'] ?></td>
                 <td><b>Nivel Remunerativo:</b></td>
                 <td colspan="3"><?= $worker['remunerativeLevel'] ?? '' ?></td>
             </tr>
@@ -1663,7 +1663,7 @@ class PayrollRestController extends Controller
                 p.bank_account_number,
                 pp.position,
                 pp.remunerative_level remunerativeLevel,
-                d.unidad_organica dependence
+                d.unidad_organica dependency
             FROM rem_payroll_people pp
             LEFT JOIN m_personal p ON p.n = pp.people_id
             LEFT JOIN maestro_unidad d ON d.id = pp.dependency_id
@@ -1746,12 +1746,19 @@ class PayrollRestController extends Controller
 
             $netIncome = $totalIncome - $totalDiscount;
             $payrollTypeName = "CAS - D.LEG. N° 1057";
+            $meses = [
+    1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo',
+    4 => 'Abril', 5 => 'Mayo', 6 => 'Junio',
+    7 => 'Julio', 8 => 'Agosto', 9 => 'Septiembre',
+    10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre'
+];
             $data[]=[
                 ... (array)$employee,
                 "payrollTypeName" => $payrollTypeName,
+                "companyCode" => "20613449869",
                 "remunerativeLevel" => $employee->remunerativeLevel??'SIN NIVEL',
                 "position" => $employee->position??'SIN CARGO',
-                "period" => $payroll->month." ".$payroll->year,
+                "period" => strtoupper($meses[(int)$payroll->month]) . " " . $payroll->year,
                 "incomes" => $incomes,
                 "discounts" => $discounts,
                 "contributions" => $contributions,
