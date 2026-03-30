@@ -1545,7 +1545,7 @@ class PayrollRestController extends Controller
                 <td><b>CUSSP:</b></td>
                 <td colspan="3"><?= $worker['nCUSSP'] ?></td>
                 <td><b>Fecha del Ultimo Contrato:</b></td>
-                <td colspan="3"><?= $worker['period'] ?? '' ?></td>
+                <td colspan="3"><?= $worker['lastContractDate'] ?? '' ?></td>
             </tr>
             <tr>
                 <td><b>SNP/AFP:</b></td>
@@ -1661,6 +1661,7 @@ class PayrollRestController extends Controller
                 p.bank_name,
                 p.codigo_airhsp,
                 p.bank_account_number,
+                p.fecha_de_inicio_contrato lastContractDate,
                 pp.position,
                 pp.remunerative_level remunerativeLevel,
                 d.unidad_organica dependency
