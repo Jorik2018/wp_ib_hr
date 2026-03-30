@@ -1498,7 +1498,7 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
         <table>
             <tr>
                 <td colspan="8" class="title">
-                BOLETA DE PAGOS CAS - D.LEG. N° 1057
+                BOLETA DE PAGOS <?= $worker['payrollTypeName'] ?>
                 </td>
             </tr>
             <tr>
@@ -1520,6 +1520,18 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
                 <td><b>Cargo Estructural:</b></td>
                 <td colspan="3"><?= $worker['position'] ?? '' ?></td>
             </tr>
+                        <tr>
+                <td><b>Codigo AIRHSP:</b></td>
+                <td colspan="3"><?= $worker['AIRHSP'] ?></td>
+                <td><b>Cargo Estructural:</b></td>
+                <td colspan="3"><?= $worker['position'] ?? '' ?></td>
+            </tr>
+                        <tr>
+                <td><b>DNI:</b></td>
+                <td colspan="3"><?= $worker['code'] ?></td>
+                <td><b>Dias Laborados:</b></td>
+                <td colspan="3"><?= $worker['workedDays'] ?? '' ?></td>
+            </tr>
             <tr>
                 <td><b>CUSSP:</b></td>
                 <td colspan="3"><?= $worker['nCUSSP'] ?></td>
@@ -1530,15 +1542,15 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
                 <td><b>SNP/AFP:</b></td>
                 <td colspan="3"><?= $worker['pensionSystem'] ?></td>
                 <td><b>Nº de Cuenta Bancaria:</b></td>
-                <td colspan="3"><?= $worker['period'] ?? '' ?></td>
+                <td colspan="3"><?= $worker['bankAccountNumber'] ?? '' ?></td>
             </tr>
             <tr>
                 <td><b>VACACIONES:</b></td>
                 <td><?= $worker['vacations'] ?></td>
                 <td><b>DESC. MED.:</b></td>
-                <td><?= $worker['pensionSystem'] ?></td>
+                <td><?= $worker['medicalLeave:'] ?></td>
                 <td><b>Monto de Contrato:</b></td>
-                <td colspan="3"><?= $worker['amount'] ?? '' ?></td>
+                <td colspan="3"><?= $worker['contractAmount'] ?? '' ?></td>
             </tr>
         </table>
         <table>
@@ -1550,13 +1562,13 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
             <?php
             $max = max(
                 count($worker['totalIncome'] ?? []),
-                count($worker['totalDiscount'] ?? []),
+                count($worker['discounts'] ?? []),
                 count($worker['contribution'] ?? [])
             );
 
             for($i=0;$i<$max;$i++):
                 $inc = $worker['totalIncome'][$i] ?? null;
-                $des = $worker['totalDiscount'][$i] ?? null;
+                $des = $worker['discounts'][$i] ?? null;
                 $apo = $worker['contributions'][$i] ?? null;
             ?>
             <tr>
@@ -1681,8 +1693,8 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
 
         foreach($employees as $employee){
 
-            $income=[];
-            $discount=[];
+            $incomes=[];
+            $discounts=[];
             $contributions=[];
 
             $totalIncome=0;
@@ -1702,7 +1714,7 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
 
                     case 1:
                     case 2:
-                        $income[]=$row;
+                        $incomes[] = $row;
                         $totalIncome += $c->amount;
                         break;
 
@@ -1710,11 +1722,11 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
                     case 4:
                     case 5:
                     case 6:
-                        $discount[]=$row;
+                        $discounts[] = $row;
                         $totalDiscount += $c->amount;
                         break;
                     case 8:
-                        $contributions[]=$row;
+                        $contributions[] = $row;
                         $totalContribution += $c->amount;
                         break;
                 }
@@ -1723,27 +1735,27 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
             $netIncome = $totalIncome - $totalDiscount;
 
             $data[]=[
+                "payrollTypeName" => "CAS - D.LEG. N° 1057",
+                "fullName" => $employee->fullName,
+                "code" => $employee->code,
+                "dependence" => $employee->dependence,
+                "remunerativeLevel" => $employee->remunerativeLevel??'SIN NIVEL',
+                "position" => $employee->position??'SIN CARGO',
+                "pensionSystem" => $employee->pensionSystem,
+                "nCUSSP" => $employee->nCUSSP,
 
-                "fullName"=>$employee->fullName,
-                "code"=>$employee->code,
-                "dependence"=>$employee->dependence,
-                "remunerativeLevel"=>$employee->remunerativeLevel,
-                "position"=>$employee->position,
-                "pensionSystem"=>$employee->pensionSystem,
-                "nCUSSP"=>$employee->nCUSSP,
+                "month" => $payroll->month." / ".$payroll->year,
 
-                "month"=>$payroll->month." / ".$payroll->year,
+                "incomes" => $incomes,
+                "discounts" => $discounts,
+                "contributions" => $contributions,
+                "concepts" => $concepts,
 
-                "totalIncome"=>$income,
-                "totalDiscount"=>$discount,
-                "contributions"=>$contributions,
-                "concepts"=>$concepts,
+                "totalIncomeSum" => $totalIncome,
+                "totalDiscountSum" => $totalDiscount,
+                "totalContributionSum" => $totalContribution,
 
-                "totalIncomeSum"=>$totalIncome,
-                "totalDiscountSum"=>$totalDiscount,
-                "totalContributionSum"=>$totalContribution,
-
-                "netIncome"=>$netIncome
+                "netIncome" => $netIncome
             ];
         }
 
