@@ -1354,13 +1354,13 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
         $employees = mapKeysToCamelCase($wpdb->get_results(
             $wpdb->prepare("SELECT 
                     p.apellidos_nombres fullName,
-                    pp.payroll_type_id payrollTypeId,
-                    pp.people_id peopleId,
+                    pp.payroll_type_id,
+                    pp.people_id,
                     p.afp_onp pensionSystem,
                     p.bank_name,
                     p.bank_account_number,
                     p.n_cuspp nCUSPP,
-                    pp.worked_days workedDays,
+                    pp.worked_days,
                     p.dni code,
                     GROUP_CONCAT(gp.group_id) `groups`
                     FROM rem_payroll_type_people pp
@@ -1697,7 +1697,7 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
         $data=[];
 
         foreach($employees as $employee){
-
+            $employee = (object) $employee;
             $incomes=[];
             $discounts=[];
             $contributions=[];
