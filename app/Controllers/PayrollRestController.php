@@ -1545,7 +1545,7 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
                 <td><b>SNP/AFP:</b></td>
                 <td colspan="3"><?= $worker['pensionSystem'] ?></td>
                 <td><b>Nº de Cuenta Bancaria:</b></td>
-                <td colspan="3"><?= ($worker['bankAccountNumber'] ?? '')." ".$worker['bankName'] ?? '' ?></td>
+                <td colspan="3"><?= ($worker['bankName'] ?? '')." ".$worker['bankAccountNumber'] ?? '' ?></td>
             </tr>
             <tr>
                 <td><b>VACACIONES:</b></td>
@@ -1706,7 +1706,7 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
             $totalDiscount=0;
             $totalContribution=0;
 
-            $concepts = $conceptsByPeople[$employee->people_id] ?? [];
+            $concepts = $conceptsByPeople[$employee->peopleId] ?? [];
 
             foreach($concepts as $c){
 
