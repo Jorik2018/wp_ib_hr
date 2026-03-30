@@ -1528,7 +1528,9 @@ class PayrollRestController extends Controller
             </tr>
                         <tr>
                 <td><b>Codigo AIRHSP:</b></td>
-                <td colspan="3"><?= $worker['AIRHSP'] ?></td>
+                <td colspan="3"><?= isset($worker['AIRHSP']) && $worker['AIRHSP'] !== '' 
+        ? sprintf('%06d', $worker['AIRHSP']) 
+        : '' ?></td>
                 <td><b>Condicion Laboral:</b></td>
                 <td colspan="3"><?= $worker['employmentCondition'] ?? '' ?></td>
             </tr>
