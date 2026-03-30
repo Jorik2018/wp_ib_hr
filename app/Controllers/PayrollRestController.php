@@ -1502,8 +1502,8 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
                 </td>
             </tr>
             <tr>
-                <td colspan="4"><b>RUC: <?= $worker['code'] ?></b></td>
-                <td colspan="4" class="right">MES DE PAGO: <?= $worker['month'] ?? '' ?></td>
+                <td colspan="4"><b>RUC: <?= $worker['companyCode'] ?></b></td>
+                <td colspan="4" class="right">MES DE PAGO: <?= $worker['period'] ?? '' ?></td>
             </tr>
             <tr>
                 <td colspan="8"><br/></td>
@@ -1523,8 +1523,8 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
                         <tr>
                 <td><b>Codigo AIRHSP:</b></td>
                 <td colspan="3"><?= $worker['AIRHSP'] ?></td>
-                <td><b>Cargo Estructural:</b></td>
-                <td colspan="3"><?= $worker['position'] ?? '' ?></td>
+                <td><b>Condicion Laboral:</b></td>
+                <td colspan="3"><?= $worker['employmentCondition'] ?? '' ?></td>
             </tr>
                         <tr>
                 <td><b>DNI:</b></td>
