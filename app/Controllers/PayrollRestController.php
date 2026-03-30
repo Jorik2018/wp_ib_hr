@@ -1733,9 +1733,9 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
             }
 
             $netIncome = $totalIncome - $totalDiscount;
-
+            $payrollTypeName = "CAS - D.LEG. N° 1057";
             $data[]=[
-                "payrollTypeName" => "CAS - D.LEG. N° 1057",
+                "payrollTypeName" => $payrollTypeName,
                 "fullName" => $employee->fullName,
                 "code" => $employee->code,
                 "dependence" => $employee->dependence,
@@ -1760,7 +1760,7 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
         }
 
         $wpdb->select($original_db);
-        $this->export_pdf("boletas_payroll_".$id,$data);
+        $this->export_pdf("BOLETAS_".$payrollTypeName."_".$payroll->year.sprintf('%02d', $payroll->month),$data);
     }
 
 }
