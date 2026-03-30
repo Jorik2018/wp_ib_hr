@@ -512,91 +512,93 @@ class PayrollRestController extends Controller
             'size' => $wpdb->get_var('SELECT FOUND_ROWS()')
         ] : $results;
     }
-function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0, $fuenteFinanc = null, $preparedBy = null)
-{
-    global $wpdb;
 
-    // 1️⃣ Buscar existente
-    $payroll = $wpdb->get_row(
-        $id ?
-            $wpdb->prepare(
-                "SELECT p.* , pt.name payrollTypeName
-                 FROM rem_payroll p 
-                 JOIN rem_payroll_type pt ON pt.id = p.type_id
-                 WHERE p.id = %d 
-                 LIMIT 1",
-                $id
-            ) :
-            $wpdb->prepare(
-                "SELECT * 
-                 FROM rem_payroll
-                 WHERE year = %d 
-                 AND month = %d 
-                 AND type_id = %d
-                 LIMIT 1",
-                $year,
-                $month,
-                $typeId
-            )
-    );
+    function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0, $fuenteFinanc = null, $preparedBy = null)
+    {
+        global $wpdb;
 
-    if ($payroll) {
+        // 1️⃣ Buscar existente
+        $payroll = $wpdb->get_row(
+            $id ?
+                $wpdb->prepare(
+                    "SELECT p.* , pt.name payrollTypeName
+                    FROM rem_payroll p 
+                    JOIN rem_payroll_type pt ON pt.id = p.type_id
+                    WHERE p.id = %d 
+                    LIMIT 1",
+                    $id
+                ) :
+                $wpdb->prepare(
+                    "SELECT * 
+                    FROM rem_payroll
+                    WHERE year = %d 
+                    AND month = %d 
+                    AND type_id = %d
+                    LIMIT 1",
+                    $year,
+                    $month,
+                    $typeId
+                )
+        );
 
-        // 🔹 Actualizar generate_date al momento actual
-        $wpdb->update(
+        if ($payroll) {
+
+            // 🔹 Actualizar generate_date al momento actual
+            $wpdb->update(
+                'rem_payroll',
+                [
+                    'generate_date' => current_time('mysql')
+                ],
+                [
+                    'id' => $payroll->id
+                ],
+                ['%s'],
+                ['%d']
+            );
+
+            // 🔹 (opcional) actualizar el objeto en memoria
+            $payroll->generate_date = current_time('mysql');
+
+            return $payroll;
+        }
+
+        // 2️⃣ Insertar si no existe
+        $wpdb->insert(
             'rem_payroll',
             [
+                'year' => $year,
+                'month' => $month,
+                'type_id' => $typeId,
+                'number' => 1,
+                'id_fuente_financ' => $fuenteFinanc,
+                'closed' => 0,
+                'canceled' => 0,
+                'prepared_by' => $preparedBy,
                 'generate_date' => current_time('mysql')
             ],
             [
-                'id' => $payroll->id
-            ],
-            ['%s'],
-            ['%d']
+                '%d',
+                '%d',
+                '%d',
+                '%d',
+                '%d',
+                '%d',
+                '%d',
+                '%s'
+            ]
         );
 
-        // 🔹 (opcional) actualizar el objeto en memoria
-        $payroll->generate_date = current_time('mysql');
+        $newId = $wpdb->insert_id;
 
-        return $payroll;
+        // 3️⃣ Devolver el nuevo registro
+        return $wpdb->get_row(
+            $wpdb->prepare(
+                "SELECT * FROM rem_payroll WHERE id = %d",
+                $newId
+            )
+        );
     }
 
-    // 2️⃣ Insertar si no existe
-    $wpdb->insert(
-        'rem_payroll',
-        [
-            'year' => $year,
-            'month' => $month,
-            'type_id' => $typeId,
-            'number' => 1,
-            'id_fuente_financ' => $fuenteFinanc,
-            'closed' => 0,
-            'canceled' => 0,
-            'prepared_by' => $preparedBy,
-            'generate_date' => current_time('mysql')
-        ],
-        [
-            '%d',
-            '%d',
-            '%d',
-            '%d',
-            '%d',
-            '%d',
-            '%d',
-            '%s'
-        ]
-    );
-
-    $newId = $wpdb->insert_id;
-
-    // 3️⃣ Devolver el nuevo registro
-    return $wpdb->get_row(
-        $wpdb->prepare(
-            "SELECT * FROM rem_payroll WHERE id = %d",
-            $newId
-        )
-    );
-}
     function assignLeafIndexes(array &$headers)
     {
         $index = 0;
@@ -1359,6 +1361,7 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
                     p.afp_onp pensionSystem,
                     p.bank_name,
                     p.bank_account_number,
+                    p.codigo_airhsp AIRHSP,
                     p.n_cuspp nCUSPP,
                     pp.worked_days,
                     p.dni code,
@@ -1653,6 +1656,7 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
                 p.n_cuspp nCUSSP,
                 p.dni code,
                 p.bank_name,
+                p.codigo_airhsp AIRHSP,
                 p.bank_account_number,
                 pp.position,
                 pp.remunerative_level remunerativeLevel,
