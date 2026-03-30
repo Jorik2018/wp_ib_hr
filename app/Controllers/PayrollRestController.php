@@ -1542,7 +1542,7 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
                 <td><b>SNP/AFP:</b></td>
                 <td colspan="3"><?= $worker['pensionSystem'] ?></td>
                 <td><b>Nº de Cuenta Bancaria:</b></td>
-                <td colspan="3"><?= $worker['bankAccountNumber'] ?? '' ?></td>
+                <td colspan="3"><?= ($worker['bankAccountNumber'] ?? '')." ".$worker['bankName'] ?? '' ?></td>
             </tr>
             <tr>
                 <td><b>VACACIONES:</b></td>
@@ -1642,13 +1642,15 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
         /*
         * 1️⃣ EMPLEADOS DE LA PLANILLA
         */
-        $employees = $wpdb->get_results($wpdb->prepare("
+        $employees = mapKeysToSnakeCase($wpdb->get_results($wpdb->prepare("
             SELECT
                 pp.people_id,
                 p.apellidos_nombres fullName,
                 p.afp_onp pensionSystem,
                 p.n_cuspp nCUSSP,
                 p.dni code,
+                p.bank_name,
+                p.bank_account_number,
                 pp.position,
                 pp.remunerative_level remunerativeLevel,
                 d.unidad_organica dependence
@@ -1657,7 +1659,7 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
             LEFT JOIN maestro_unidad d ON d.id = pp.dependency_id
             WHERE pp.payroll_id=%d
             ORDER BY p.apellidos_nombres
-        ",$id));
+        ",$id)));
         if ($wpdb->last_error) return t_error();
        
         /*
@@ -1739,6 +1741,8 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
                 "fullName" => $employee->fullName,
                 "code" => $employee->code,
                 "dependence" => $employee->dependence,
+                "bankName" => $employee->bankName,
+                "bankAccountNumber" => $employee->bankAccountNumber,
                 "remunerativeLevel" => $employee->remunerativeLevel??'SIN NIVEL',
                 "position" => $employee->position??'SIN CARGO',
                 "pensionSystem" => $employee->pensionSystem,
