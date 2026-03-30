@@ -1501,6 +1501,7 @@ class PayrollRestController extends Controller
         <?php foreach($data as $worker): ?>
 
         <div class="boleta">
+            <?= json_encode($worker) ?>?>
         <table>
             <tr>
                 <td colspan="8" class="title">
