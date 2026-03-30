@@ -1250,6 +1250,7 @@ class PayrollRestController extends Controller
                 "people_id"=>$item["peopleId"],
                 "position"=>$item["position"],
                 "dependency_id"=>$item["dependencyId"],
+                "worked_days"=>$item["workedDays"],
 
             ]);
 
@@ -1662,6 +1663,7 @@ class PayrollRestController extends Controller
                 p.codigo_airhsp,
                 p.bank_account_number,
                 p.fecha_de_inicio_contrato lastContractDate,
+                pp.worked_days,
                 pp.position,
                 pp.remunerative_level remunerativeLevel,
                 d.unidad_organica dependency
