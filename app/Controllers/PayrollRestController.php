@@ -1747,7 +1747,7 @@ class PayrollRestController extends Controller
             $netIncome = $totalIncome - $totalDiscount;
             $payrollTypeName = "CAS - D.LEG. N° 1057";
             $data[]=[
-                ... (array)mapKeysToCamelCase($employee),
+                ... (array)$employee,
                 "payrollTypeName" => $payrollTypeName,
                 "remunerativeLevel" => $employee->remunerativeLevel??'SIN NIVEL',
                 "position" => $employee->position??'SIN CARGO',
