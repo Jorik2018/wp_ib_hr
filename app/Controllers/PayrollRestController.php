@@ -1351,7 +1351,7 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
                 $amountMap[$p->concept_id][$p->type][$p->target_id] = $p->amount;
             }
         }
-        $employees = mapKeysToSnakeCase($wpdb->get_results(
+        $employees = mapKeysToCamelCase($wpdb->get_results(
             $wpdb->prepare("SELECT 
                     p.apellidos_nombres fullName,
                     pp.payroll_type_id payrollTypeId,
@@ -1644,7 +1644,7 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
         /*
         * 1️⃣ EMPLEADOS DE LA PLANILLA
         */
-        $employees = mapKeysToSnakeCase($wpdb->get_results($wpdb->prepare("
+        $employees = mapKeysToCamelCase($wpdb->get_results($wpdb->prepare("
             SELECT
                 pp.people_id,
                 p.apellidos_nombres fullName,
