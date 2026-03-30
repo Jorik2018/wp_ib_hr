@@ -1361,7 +1361,7 @@ class PayrollRestController extends Controller
                     p.afp_onp pensionSystem,
                     p.bank_name,
                     p.bank_account_number,
-                    p.codigo_airhsp AIRHSP,
+                    p.codigo_airhsp,
                     p.n_cuspp nCUSPP,
                     pp.worked_days,
                     p.dni code,
@@ -1374,7 +1374,7 @@ class PayrollRestController extends Controller
                     ORDER BY 1",
                 $payroll->type_id
             )
-        ));
+        ),['codigo_airhsp'=>'AIRHSP']);
         if ($wpdb->last_error) {
             return t_error($wpdb->last_error);
         }
@@ -1658,7 +1658,7 @@ class PayrollRestController extends Controller
                 p.n_cuspp nCUSSP,
                 p.dni code,
                 p.bank_name,
-                p.codigo_airhsp AIRHSP,
+                p.codigo_airhsp,
                 p.bank_account_number,
                 pp.position,
                 pp.remunerative_level remunerativeLevel,
@@ -1668,7 +1668,7 @@ class PayrollRestController extends Controller
             LEFT JOIN maestro_unidad d ON d.id = pp.dependency_id
             WHERE pp.payroll_id=%d
             ORDER BY p.apellidos_nombres
-        ",$id)));
+        ",$id)),['codigo_airhsp'=>'AIRHSP']);
         if ($wpdb->last_error) return t_error();
        
         /*
