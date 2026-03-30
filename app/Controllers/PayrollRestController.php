@@ -1378,6 +1378,7 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
         $diasMes = 30; //cal_days_in_month(CAL_GREGORIAN, $month, $year);
         $items = [];
         foreach ($employees as $employee) {
+            $employee = (object) $employee;
             $employee->groups = $employee->groups ? explode(',', $employee->groups) : [];
             $employee->workedDays = $employee->workedDays ?? $diasMes;
             $ctx = new EvalContext(
