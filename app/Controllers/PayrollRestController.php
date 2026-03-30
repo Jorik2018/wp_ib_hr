@@ -1483,7 +1483,9 @@ class PayrollRestController extends Controller
                 border:1px solid #999;
                 padding:4px;
             }
-
+            .unlined td,.unlined th{
+                border:0px solid #999;
+            }
             .title{
                 text-align:center;
                 font-weight:bold;
@@ -1502,7 +1504,7 @@ class PayrollRestController extends Controller
 
         <div class="boleta">
             <?= json_encode($worker) ?>?>
-        <table>
+        <table class="unlined">
             <tr>
                 <td colspan="8" class="title">
                 BOLETA DE PAGOS <?= $worker['payrollTypeName'] ?>
@@ -1527,11 +1529,9 @@ class PayrollRestController extends Controller
                 <td><b>Cargo Estructural:</b></td>
                 <td colspan="3"><?= $worker['position'] ?? '' ?></td>
             </tr>
-                        <tr>
+            <tr>
                 <td><b>Codigo AIRHSP:</b></td>
-                <td colspan="3"><?= (isset($worker['AIRHSP']) && $worker['AIRHSP'] !== '' 
-        ? sprintf('%06d', $worker['AIRHSP']) 
-        : '').$worker['AIRHSP'] ?></td>
+                <td colspan="3"><?= (isset($worker['AIRHSP']) && $worker['AIRHSP'] !== '' ? sprintf('%06d', $worker['AIRHSP']) : '')?></td>
                 <td><b>Condicion Laboral:</b></td>
                 <td colspan="3"><?= $worker['employmentCondition'] ?? '' ?></td>
             </tr>
