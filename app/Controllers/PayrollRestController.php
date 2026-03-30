@@ -1564,13 +1564,13 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
             </tr>
             <?php
             $max = max(
-                count($worker['totalIncome'] ?? []),
+                count($worker['incomes'] ?? []),
                 count($worker['discounts'] ?? []),
                 count($worker['contribution'] ?? [])
             );
 
             for($i=0;$i<$max;$i++):
-                $inc = $worker['totalIncome'][$i] ?? null;
+                $inc = $worker['incomes'][$i] ?? null;
                 $des = $worker['discounts'][$i] ?? null;
                 $apo = $worker['contributions'][$i] ?? null;
             ?>
