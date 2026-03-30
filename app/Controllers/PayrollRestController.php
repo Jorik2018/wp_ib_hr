@@ -1351,12 +1351,14 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
                 $amountMap[$p->concept_id][$p->type][$p->target_id] = $p->amount;
             }
         }
-        $employees = $wpdb->get_results(
+        $employees = mapKeysToSnakeCase($wpdb->get_results(
             $wpdb->prepare("SELECT 
                     p.apellidos_nombres fullName,
                     pp.payroll_type_id payrollTypeId,
                     pp.people_id peopleId,
                     p.afp_onp pensionSystem,
+                    p.bank_name,
+                    p.bank_account_number,
                     p.n_cuspp nCUSPP,
                     pp.worked_days workedDays,
                     p.dni code,
@@ -1369,7 +1371,7 @@ function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0
                     ORDER BY 1",
                 $payroll->type_id
             )
-        );
+        ));
         if ($wpdb->last_error) {
             return t_error($wpdb->last_error);
         }
