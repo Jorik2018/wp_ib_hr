@@ -1538,20 +1538,20 @@ class PayrollRestController extends Controller
                 <td colspan="3"><?= $worker['employmentCondition'] ?? '' ?></td>
             </tr>
             <tr>
-                <td><b>Dias Laborados:</b></td>
-                <td colspan="3"><?= $worker['workedDays'] ?? '' ?></td>
                 <td><b>Nivel Remunerativo:</b></td>
                 <td colspan="3"><?= $worker['remunerativeLevel'] ?? '' ?></td>
-            </tr>
-            <tr>
-                <td><b>CUSSP:</b></td>
-                <td colspan="3"><?= $worker['nCUSSP'] ?></td>
                 <td><b>Fecha del Ultimo Contrato:</b></td>
                 <td colspan="3"><?= $worker['lastContractDate'] ?? '' ?></td>
             </tr>
             <tr>
                 <td><b>SNP/AFP:</b></td>
                 <td colspan="3"><?= $worker['pensionSystem'] ?></td>
+                <td><b>CUSSP:</b></td>
+                <td colspan="3"><?= $worker['nCUSSP'] ?></td>
+            </tr>
+            <tr>
+                <td><b>Dias Laborados:</b></td>
+                <td colspan="3"><?= $worker['workedDays'] ?? '' ?></td>
                 <td><b>Nº de Cuenta Bancaria:</b></td>
                 <td colspan="3"><?= ($worker['bankName'] ?? '')." ".$worker['bankAccountNumber'] ?? '' ?></td>
             </tr>
