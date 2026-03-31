@@ -1519,14 +1519,15 @@ class PayrollRestController extends Controller
                 <td colspan="8"><br/></td>
             </tr>
             <tr>
-                <td><b>Dependencia:</b></td>
-                <td colspan="3"><?= $worker['dependency'] ?></td>
-                <td><b>Nivel Remunerativo:</b></td>
-                <td colspan="3"><?= $worker['remunerativeLevel'] ?? '' ?></td>
-            </tr>
-            <tr>
                 <td><b>Nombre:</b></td>
                 <td colspan="3"><?= $worker['fullName'] ?></td>
+                <td><b>DNI:</b></td>
+                <td colspan="3"><?= $worker['code'] ?></td>
+            </tr>
+            <tr>
+                <td><b>Dependencia:</b></td>
+                <td colspan="3"><?= $worker['dependency'] ?></td>
+                
                 <td><b>Cargo Estructural:</b></td>
                 <td colspan="3"><?= $worker['position'] ?? '' ?></td>
             </tr>
@@ -1536,11 +1537,11 @@ class PayrollRestController extends Controller
                 <td><b>Condicion Laboral:</b></td>
                 <td colspan="3"><?= $worker['employmentCondition'] ?? '' ?></td>
             </tr>
-                        <tr>
-                <td><b>DNI:</b></td>
-                <td colspan="3"><?= $worker['code'] ?></td>
+            <tr>
                 <td><b>Dias Laborados:</b></td>
                 <td colspan="3"><?= $worker['workedDays'] ?? '' ?></td>
+                <td><b>Nivel Remunerativo:</b></td>
+                <td colspan="3"><?= $worker['remunerativeLevel'] ?? '' ?></td>
             </tr>
             <tr>
                 <td><b>CUSSP:</b></td>
