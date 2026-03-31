@@ -1694,7 +1694,7 @@ class PayrollRestController extends Controller
                 p.bank_account_number,
                 p.fecha_de_inicio_contrato lastContractDate,
                 p.tipo_de_contrato contractType,
-                p.monto_rem contractAmount,
+                pp.monto_rem contractAmount,
                 pp.worked_days,
                 pp.position,
                 pp.remunerative_level remunerativeLevel,
