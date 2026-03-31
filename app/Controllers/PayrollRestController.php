@@ -1519,9 +1519,9 @@ class PayrollRestController extends Controller
                 <td colspan="8"><br/></td>
             </tr>
             <tr>
-                <td  width="60"><b>Nombre:</b></td>
+                <td  width="66"><b>Nombre:</b></td>
                 <td colspan="3"><?= $worker['fullName'] ?></td>
-                <td  width="90"><b>DNI:</b></td>
+                <td  width="96"><b>DNI:</b></td>
                 <td colspan="3"><?= $worker['code'] ?></td>
             </tr>
             <tr>
