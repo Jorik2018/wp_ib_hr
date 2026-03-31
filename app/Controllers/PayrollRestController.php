@@ -1512,7 +1512,7 @@ class PayrollRestController extends Controller
 
             td,th{
                 border:1px solid #999;
-                padding:4px;
+                padding:2px;
             }
             .unlined td,.unlined th{
                 border:0px solid #999;
