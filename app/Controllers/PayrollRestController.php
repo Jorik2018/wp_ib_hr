@@ -1663,6 +1663,7 @@ class PayrollRestController extends Controller
                 p.codigo_airhsp,
                 p.bank_account_number,
                 p.fecha_de_inicio_contrato lastContractDate,
+                p.tipo_de_contrato contractType,
                 pp.worked_days,
                 pp.position,
                 pp.remunerative_level remunerativeLevel,
@@ -1750,13 +1751,15 @@ class PayrollRestController extends Controller
             $netIncome = $totalIncome - $totalDiscount;
             $payrollTypeName = "CAS - D.LEG. N° 1057";
             $meses = [
-    1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo',
-    4 => 'Abril', 5 => 'Mayo', 6 => 'Junio',
-    7 => 'Julio', 8 => 'Agosto', 9 => 'Septiembre',
-    10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre'
-];
+                1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo',
+                4 => 'Abril', 5 => 'Mayo', 6 => 'Junio',
+                7 => 'Julio', 8 => 'Agosto', 9 => 'Septiembre',
+                10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre'
+            ];
             $data[]=[
                 ... (array)$employee,
+                "contractAmount" => 2500,
+                'employmentCondition' => "CAS ".$employee->contractType,
                 "payrollTypeName" => $payrollTypeName,
                 "companyCode" => "20613449869",
                 "remunerativeLevel" => $employee->remunerativeLevel??'SIN NIVEL',
