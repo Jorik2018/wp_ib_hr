@@ -1789,7 +1789,6 @@ class PayrollRestController extends Controller
             ];
             $data[]=[
                 ... (array)$employee,
-                "contractAmount" => 2500,
                 'employmentCondition' => "CAS ".$employee->contractType,
                 "payrollTypeName" => $payrollTypeName,
                 "companyCode" => "20613449869",
