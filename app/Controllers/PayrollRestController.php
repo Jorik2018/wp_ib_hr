@@ -1272,7 +1272,6 @@ class PayrollRestController extends Controller
             "payroll_id"=>$payroll->id
         ]);
 
-       
         foreach($items as $item){
             $monto_rem = resolveAmount($amountMap, 1, (object)$item);
             $wpdb->insert("rem_payroll_people",[
