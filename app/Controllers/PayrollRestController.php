@@ -117,59 +117,59 @@ class EvalContext {
         public $diasMes
     ) {}
 
-public function evalConcept($id) {
+    public function evalConcept($id) {
 
-    // ✅ cache SOLO de resultados finales
-    if (array_key_exists($id, $this->values)) {
-        return $this->values[$id];
-    }
-
-    $c = $this->conceptMap[$id];
-
-    // 🚨 ciclo / autoreferencia
-    if (isset($this->visiting[$id])) {
-
-        // 🔹 intentar base directa
-        if (isset($c->base_value)) {
-            return $c->base_value;
+        // ✅ cache SOLO de resultados finales
+        if (array_key_exists($id, $this->values)) {
+            return $this->values[$id];
         }
 
-        $base = $this->resolveAmount($id);
+        $c = $this->conceptMap[$id];
 
-        // 👇 clave: no guardamos en values
-        return $base != 0 ? $base : null;
+        // 🚨 ciclo / autoreferencia
+        if (isset($this->visiting[$id])) {
+
+            // 🔹 intentar base directa
+            if (isset($c->base_value)) {
+                return $c->base_value;
+            }
+
+            $base = $this->resolveAmount($id);
+
+            // 👇 clave: no guardamos en values
+            return $base != 0 ? $base : null;
+        }
+
+        $this->visiting[$id] = true;
+
+        $typeId = $c->type_id ?? 0;
+
+        // 🔹 BASE
+        $base = $this->resolveAmount($c->id);
+
+        // 🔹 AJUSTE DIAS
+        if ($typeId == 1 && $base !== null) {
+            $workedDays = $this->employee->workedDays ?? $this->diasMes;
+            $base = round(($base * $workedDays) / $this->diasMes, 2);
+        }
+
+        // 🔹 evaluar formula o usar base
+        if (!empty($c->formula)) {
+            $val = $this->astMap[$id]->eval($this);
+        } else {
+            $val = $base;
+        }
+
+        unset($this->visiting[$id]);
+
+        // ❗ regla clave: no guardar null "vacío"
+        if ($val === null) {
+            return null;
+        }
+
+        // ✅ solo guardar resultados reales
+        return $this->values[$id] = round($val, 2);
     }
-
-    $this->visiting[$id] = true;
-
-    $typeId = $c->type_id ?? 0;
-
-    // 🔹 BASE
-    $base = $this->resolveAmount($c->id);
-
-    // 🔹 AJUSTE DIAS
-    if ($typeId == 1 && $base !== null) {
-        $workedDays = $this->employee->workedDays ?? $this->diasMes;
-        $base = round(($base * $workedDays) / $this->diasMes, 2);
-    }
-
-    // 🔹 evaluar formula o usar base
-    if (!empty($c->formula)) {
-        $val = $this->astMap[$id]->eval($this);
-    } else {
-        $val = $base;
-    }
-
-    unset($this->visiting[$id]);
-
-    // ❗ regla clave: no guardar null "vacío"
-    if ($val === null) {
-        return null;
-    }
-
-    // ✅ solo guardar resultados reales
-    return $this->values[$id] = round($val, 2);
-}
 
     // 🔥 Gx
 public function sumGroup($g) {
@@ -220,6 +220,33 @@ public function sumGroup($g) {
     }
 }
 
+ function resolveAmount($amountMap, $conceptId, $employee) {
+
+        if (isset($amountMap[$conceptId])) {
+
+            $map = $amountMap[$conceptId];
+
+            if (isset($map['PE'][$employee->peopleId])) {
+                return $map['PE'][$employee->peopleId];
+            }
+
+            if (!empty($employee->groups) && isset($map['GR'])) {
+                foreach ($employee->groups as $gid) {
+                    if (isset($map['GR'][$gid])) {
+                        return $map['GR'][$gid];
+                    }
+                }
+            }
+
+            if (isset($map['PS'][$employee->pensionSystem])) {
+                return $map['PS'][$employee->pensionSystem];
+            }
+
+            if (isset($map['PT'][$employee->payrollTypeId])) {
+                return $map['PT'][$employee->payrollTypeId];
+            }
+        }
+    }
 function splitArgs($str) {
     $args = [];
     $level = 0;
@@ -1231,6 +1258,8 @@ class PayrollRestController extends Controller
         $result=$this->calculatePayroll($payroll);
 
         $items = $result['items'];
+
+        $amountMap = $result['amountMap'];
         /*
         limpiar planilla previa
         */
@@ -1243,15 +1272,16 @@ class PayrollRestController extends Controller
             "payroll_id"=>$payroll->id
         ]);
 
+       
         foreach($items as $item){
-
+            $monto_rem = resolveAmount($amountMap, 1, (object)$item);
             $wpdb->insert("rem_payroll_people",[
-                "payroll_id"=>$payroll->id,
-                "people_id"=>$item["peopleId"],
-                "position"=>$item["position"],
-                "dependency_id"=>$item["dependencyId"],
-                "worked_days"=>$item["workedDays"],
-
+                "payroll_id" => $payroll->id,
+                "people_id" => $item["peopleId"],
+                "position" => $item["position"],
+                "dependency_id" => $item["dependencyId"],
+                "worked_days" => $item["workedDays"],
+                "monto_rem" => $monto_rem
             ]);
 
             foreach($item["concepts"] as $c){
@@ -1665,6 +1695,7 @@ class PayrollRestController extends Controller
                 p.bank_account_number,
                 p.fecha_de_inicio_contrato lastContractDate,
                 p.tipo_de_contrato contractType,
+                p.monto_rem contractAmount,
                 pp.worked_days,
                 pp.position,
                 pp.remunerative_level remunerativeLevel,
