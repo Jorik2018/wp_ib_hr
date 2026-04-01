@@ -467,7 +467,7 @@ class PayrollRestController extends Controller
                     // 🔥 UPSERT (INSERT o UPDATE si ya existe)
                     $sql = $wpdb->prepare("
                         INSERT INTO rem_payroll_amount 
-                        (target, type, payroll_type_id, concept_id, amount, ini_date)
+                        (target_id, type, payroll_type_id, concept_id, amount, ini_date)
                         VALUES (%d, %s, %d, %d, %f, %s)
                         ON DUPLICATE KEY UPDATE 
                             amount = VALUES(amount)
