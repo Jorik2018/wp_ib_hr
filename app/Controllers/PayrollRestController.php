@@ -436,7 +436,6 @@ class PayrollRestController extends Controller
         }
         return mapKeysToCamelCase($o);
     }
-
     public function post_people($request)
     {
         global $wpdb;
@@ -445,40 +444,82 @@ class PayrollRestController extends Controller
         $db_erp = get_option("db_ofis");
 
         $o = get_param($request);
-        $payrollType = get_param($o, 'payrollType');
-        $items = get_param($o, 'items'); 
-        // [{peopleId:1, workedDays:20}, ...]
+        $id = get_param($o, 'id');
+        $values = get_param($o, 'values'); 
+
+        $payroll = $this->getOrCreatePayroll(null, null, null, $id);
 
         try {
             $wpdb->select($db_erp);
 
-            foreach ($items as $item) {
-                $peopleId = get_param($item, 'peopleId');
-                $workedDays = get_param($item, 'workedDays');
+            // 🔥 INICIAR TRANSACCIÓN
+            $wpdb->query('START TRANSACTION');
 
-                $updated = $wpdb->update(
-                    'rem_payroll_type_people',
-                    ['worked_days' => $workedDays],
-                    [
-                        'people_id' => $peopleId,
-                        'payroll_type_id' => $payrollType
-                    ],
-                    ['%d'], // worked_days
-                    ['%d', '%s'] // where
-                );
+            foreach ($values as $item) {
+
+                $peopleId = get_param($item, 'peopleId');
+                $index    = get_param($item, 'index');
+                $value    = get_param($item, 'value');
+                $concept  = get_param($item, 'concept');
+
+                if ($concept) {
+
+                    // 🔥 UPSERT (INSERT o UPDATE si ya existe)
+                    $sql = $wpdb->prepare("
+                        INSERT INTO rem_payroll_amount 
+                        (target, type, payroll_type_id, concept_id, amount, ini_date)
+                        VALUES (%d, %s, %d, %d, %f, %s)
+                        ON DUPLICATE KEY UPDATE 
+                            amount = VALUES(amount)
+                    ",
+                        $peopleId,
+                        'PE',
+                        $payroll->type_id,
+                        $concept,
+                        $value,
+                        "{$payroll->year}-{$payroll->month}-01"
+                    );
+
+                    $updated = $wpdb->query($sql);
+
+                } else if ($index === 'workedDays') { // ✅ FIX comparación
+
+                    $updated = $wpdb->update(
+                        'rem_payroll_type_people',
+                        ['worked_days' => $value],
+                        [
+                            'people_id' => $peopleId,
+                            'payroll_type_id' => $payroll->type_id
+                        ],
+                        ['%d'],
+                        ['%d', '%d']
+                    );
+                } else {
+                    continue;
+                }
 
                 if ($updated === false) {
-                    return t_error($wpdb->last_error);
+                    throw new \Exception($wpdb->last_error);
                 }
             }
+
+            // 🔥 COMMIT si todo OK
+            $wpdb->query('COMMIT');
+
+        } catch (\Exception $e) {
+
+            // 🔥 ROLLBACK si algo falla
+            $wpdb->query('ROLLBACK');
+
+            return t_error($e->getMessage());
 
         } finally {
             $wpdb->select($original_db);
         }
 
         return mapKeysToCamelCase([
-            'payrollType' => $payrollType,
-            'items' => $items
+            'id' => $id,
+            'values' => $values
         ]);
     }
     public function pag($request)
