@@ -452,7 +452,7 @@ class PayrollRestController extends Controller
                         $id
                     ) 
             );
-            return [$wpdb->last_error,$id,$payroll];
+            return $payroll;
         }
 
         // 2️⃣ Insertar si no existe
@@ -507,12 +507,7 @@ class PayrollRestController extends Controller
         $values = get_param($o, 'values'); 
         $wpdb->select($db_erp);
         $payroll = $this->getOrCreatePayroll(null, null, null, $id);
-
-        return [$payroll,$id];
-
         try {
-            $wpdb->select($db_erp);
-
             // 🔥 INICIAR TRANSACCIÓN
             $wpdb->query('START TRANSACTION');
 
