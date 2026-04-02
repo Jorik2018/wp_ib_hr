@@ -505,7 +505,7 @@ class PayrollRestController extends Controller
             return t_error("El id es obligatorio");
         }
         $values = get_param($o, 'values'); 
-
+        $wpdb->select($db_erp);
         $payroll = $this->getOrCreatePayroll(null, null, null, $id);
 
         return [$payroll,$id];
