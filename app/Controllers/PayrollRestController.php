@@ -452,6 +452,8 @@ class PayrollRestController extends Controller
 
         $payroll = $this->getOrCreatePayroll(null, null, null, $id);
 
+        return $payroll;
+        
         try {
             $wpdb->select($db_erp);
 
