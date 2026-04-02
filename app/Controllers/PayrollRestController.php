@@ -1248,7 +1248,7 @@ class PayrollRestController extends Controller
         $result = $this -> calculatePayroll($payroll);
         $headers = $result['headers'];
         $wpdb->select($original_db);
-        $headers = $this->assignLeafIndexes($headers);
+        //$headers = $this->assignLeafIndexes($headers);
         return [
             ... (array)mapKeysToCamelCase($payroll),
             
