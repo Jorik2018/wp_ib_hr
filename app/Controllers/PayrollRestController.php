@@ -590,48 +590,17 @@ class PayrollRestController extends Controller
     {
         global $wpdb;
 
-        // 1️⃣ Buscar existente
-        $payroll = $wpdb->get_row(
-            $id ?
+        if(isset($id)) {
+            $payroll = $wpdb->get_row(
                 $wpdb->prepare(
-                    "SELECT p.* , pt.name payrollTypeName
-                    FROM rem_payroll p 
-                    JOIN rem_payroll_type pt ON pt.id = p.type_id
-                    WHERE p.id = %d 
-                    LIMIT 1",
-                    $id
-                ) :
-                $wpdb->prepare(
-                    "SELECT * 
-                    FROM rem_payroll
-                    WHERE year = %d 
-                    AND month = %d 
-                    AND type_id = %d
-                    LIMIT 1",
-                    $year,
-                    $month,
-                    $typeId
-                )
-        );
-
-        if ($payroll) {
-
-            // 🔹 Actualizar generate_date al momento actual
-            $wpdb->update(
-                'rem_payroll',
-                [
-                    'generate_date' => current_time('mysql')
-                ],
-                [
-                    'id' => $payroll->id
-                ],
-                ['%s'],
-                ['%d']
+                        "SELECT p.* , pt.name payrollTypeName
+                        FROM rem_payroll p 
+                        JOIN rem_payroll_type pt ON pt.id = p.type_id
+                        WHERE p.id = %d 
+                        LIMIT 1",
+                        $id
+                    ) 
             );
-
-            // 🔹 (opcional) actualizar el objeto en memoria
-            $payroll->generate_date = current_time('mysql');
-
             return $payroll;
         }
 
@@ -1348,6 +1317,24 @@ class PayrollRestController extends Controller
         if ($wpdb->last_error) {
             return t_error();
         }
+            
+
+            // 🔹 Actualizar generate_date al momento actual
+            $wpdb->update(
+                'rem_payroll',
+                [
+                    'generate_date' => current_time('mysql')
+                ],
+                [
+                    'id' => $payroll->id
+                ],
+                ['%s'],
+                ['%d']
+            );
+
+            // 🔹 (opcional) actualizar el objeto en memoria
+            $payroll->generate_date = current_time('mysql');
+
         $wpdb->select($original_db);
 
         return [
