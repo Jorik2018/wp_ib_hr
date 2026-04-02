@@ -452,7 +452,7 @@ class PayrollRestController extends Controller
                         $id
                     ) 
             );
-            return [100,$id,$payroll];
+            return [$wpdb->last_error,$id,$payroll];
         }
 
         // 2️⃣ Insertar si no existe
