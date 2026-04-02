@@ -436,6 +436,62 @@ class PayrollRestController extends Controller
         }
         return mapKeysToCamelCase($o);
     }
+
+    function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0, $fuenteFinanc = null, $preparedBy = null)
+    {
+        global $wpdb;
+
+        if(isset($id)) {
+            $payroll = $wpdb->get_row(
+                $wpdb->prepare(
+                        "SELECT p.* , pt.name payrollTypeName
+                        FROM rem_payroll p 
+                        JOIN rem_payroll_type pt ON pt.id = p.type_id
+                        WHERE p.id = %d 
+                        LIMIT 1",
+                        $id
+                    ) 
+            );
+            return [100,$id,$payroll];
+        }
+
+        // 2️⃣ Insertar si no existe
+        $wpdb->insert(
+            'rem_payroll',
+            [
+                'year' => $year,
+                'month' => $month,
+                'type_id' => $typeId,
+                'number' => 1,
+                'id_fuente_financ' => $fuenteFinanc,
+                'closed' => 0,
+                'canceled' => 0,
+                'prepared_by' => $preparedBy,
+                'generate_date' => current_time('mysql')
+            ],
+            [
+                '%d',
+                '%d',
+                '%d',
+                '%d',
+                '%d',
+                '%d',
+                '%d',
+                '%s'
+            ]
+        );
+
+        $newId = $wpdb->insert_id;
+
+        // 3️⃣ Devolver el nuevo registro
+        return $wpdb->get_row(
+            $wpdb->prepare(
+                "SELECT * FROM rem_payroll WHERE id = %d",
+                $newId
+            )
+        );
+    }
+
     public function post_people($request)
     {
         global $wpdb;
@@ -586,60 +642,6 @@ class PayrollRestController extends Controller
         ] : $results;
     }
 
-    function getOrCreatePayroll($year = null, $month = null, $typeId = null, $id = 0, $fuenteFinanc = null, $preparedBy = null)
-    {
-        global $wpdb;
-
-        if(isset($id)) {
-            $payroll = $wpdb->get_row(
-                $wpdb->prepare(
-                        "SELECT p.* , pt.name payrollTypeName
-                        FROM rem_payroll p 
-                        JOIN rem_payroll_type pt ON pt.id = p.type_id
-                        WHERE p.id = %d 
-                        LIMIT 1",
-                        $id
-                    ) 
-            );
-            return $payroll;
-        }
-
-        // 2️⃣ Insertar si no existe
-        $wpdb->insert(
-            'rem_payroll',
-            [
-                'year' => $year,
-                'month' => $month,
-                'type_id' => $typeId,
-                'number' => 1,
-                'id_fuente_financ' => $fuenteFinanc,
-                'closed' => 0,
-                'canceled' => 0,
-                'prepared_by' => $preparedBy,
-                'generate_date' => current_time('mysql')
-            ],
-            [
-                '%d',
-                '%d',
-                '%d',
-                '%d',
-                '%d',
-                '%d',
-                '%d',
-                '%s'
-            ]
-        );
-
-        $newId = $wpdb->insert_id;
-
-        // 3️⃣ Devolver el nuevo registro
-        return $wpdb->get_row(
-            $wpdb->prepare(
-                "SELECT * FROM rem_payroll WHERE id = %d",
-                $newId
-            )
-        );
-    }
 
     function assignLeafIndexes(array &$headers)
     {
