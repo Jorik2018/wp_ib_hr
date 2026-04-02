@@ -444,10 +444,9 @@ class PayrollRestController extends Controller
         $db_erp = get_option("db_ofis");
 
         $o = get_param($request);
-        $id = get_param($o, 'id2');
+        $id = get_param($o, 'id');
         if (!isset($id) || trim($id) === '') {
-            //return t_error("El id es obligatorio");
-            throw new \Exception("El id es obligatorio");
+            return t_error("El id es obligatorio");
         }
         $values = get_param($o, 'values'); 
 
