@@ -514,7 +514,7 @@ class PayrollRestController extends Controller
 
             foreach ($values as $item) {
 
-                $peopleId = get_param($item, 'peopleId');
+                $peopleId = get_param($item, 'people');
                 $index    = get_param($item, 'index');
                 $value    = get_param($item, 'value');
                 $concept  = get_param($item, 'concept');
