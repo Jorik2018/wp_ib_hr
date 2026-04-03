@@ -597,8 +597,9 @@ class PayrollRestController extends Controller
              LEFT JOIN $db_erp.rem_payroll_type pt ON pt.id=p.type_id
              WHERE canceled=0 " .
             (isset($query) ? " AND (comments LIKE '%$query%')" : "") .
+            " ORDER BY p.id DESC".
             ($to > 0 ? " LIMIT $from,$to" : "")
-            ." ORDER BY p.id DESC",
+            ,
             ARRAY_A
         );
 
