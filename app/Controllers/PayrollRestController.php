@@ -457,6 +457,7 @@ class PayrollRestController extends Controller
                         $id
                     ) 
             );
+            $payroll->closed = $payroll->closed==1;
             return $payroll;
         }
 
@@ -770,7 +771,7 @@ class PayrollRestController extends Controller
             : $results;
     }
 
-    public function add_concept($request)
+    function add_concept($request)
     {
         global $wpdb;
 
