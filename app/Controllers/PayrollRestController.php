@@ -389,7 +389,12 @@ class PayrollRestController extends Controller
 
         register_rest_route('api/payroll', 'values', array(
             'methods' => 'POST',
-            'callback' => array($this, 'post_people')
+            'callback' => array($this, 'post_values')
+        ));
+
+        register_rest_route('api/payroll', 'lock', array(
+            'methods' => 'POST',
+            'callback' => array($this, 'post_lock')
         ));
 
         register_rest_route('api/payroll', 'remove-person', array(
@@ -498,7 +503,7 @@ class PayrollRestController extends Controller
         );
     }
 
-    public function post_people($request)
+    public function post_values($request)
     {
         global $wpdb;
 
@@ -585,6 +590,59 @@ class PayrollRestController extends Controller
             'values' => $values
         ]);
     }
+
+    public function post_lock($request)
+    {
+        global $wpdb;
+
+        $original_db = $wpdb->dbname;
+        $db_erp = get_option("db_ofis");
+
+        $o = get_param($request);
+        $id = get_param($o, 'id');
+        if (!isset($id) || trim($id) === '') {
+            return t_error("El id es obligatorio");
+        }
+        $values = get_param($o, 'values'); 
+        $wpdb->select($db_erp);
+        $payroll = $this->getOrCreatePayroll(null, null, null, $id);
+     
+        try {
+            // 🔥 INICIAR TRANSACCIÓN
+            $wpdb->query('START TRANSACTION');
+
+            // 🔹 Actualizar generate_date al momento actual
+            $wpdb->update(
+                'rem_payroll',
+                [
+                    'closed' => true
+                ],
+                [
+                    'id' => $id
+                ],
+                ['%s'],
+                ['%d']
+            );
+            // 🔥 COMMIT si todo OK
+            $wpdb->query('COMMIT');
+
+        } catch (\Exception $e) {
+
+            // 🔥 ROLLBACK si algo falla
+            $wpdb->query('ROLLBACK');
+
+            return t_error($e->getMessage());
+
+        } finally {
+            $wpdb->select($original_db);
+        }
+
+        return mapKeysToCamelCase([
+            'id' => $id,
+            'values' => $values
+        ]);
+    }
+
     public function pag($request)
     {
 
@@ -1244,7 +1302,6 @@ class PayrollRestController extends Controller
             'amountMap'=> $result['amountMap']
         ];
     }
-
     public function generate($request)
     {
         global $wpdb;
@@ -1303,22 +1360,21 @@ class PayrollRestController extends Controller
             return t_error();
         }
             
+        // 🔹 Actualizar generate_date al momento actual
+        $wpdb->update(
+            'rem_payroll',
+            [
+                'generate_date' => current_time('mysql')
+            ],
+            [
+                'id' => $payroll->id
+            ],
+            ['%s'],
+            ['%d']
+        );
 
-            // 🔹 Actualizar generate_date al momento actual
-            $wpdb->update(
-                'rem_payroll',
-                [
-                    'generate_date' => current_time('mysql')
-                ],
-                [
-                    'id' => $payroll->id
-                ],
-                ['%s'],
-                ['%d']
-            );
-
-            // 🔹 (opcional) actualizar el objeto en memoria
-            $payroll->generate_date = current_time('mysql');
+        // 🔹 (opcional) actualizar el objeto en memoria
+        $payroll->generate_date = current_time('mysql');
 
         $wpdb->select($original_db);
 
@@ -1463,6 +1519,7 @@ class PayrollRestController extends Controller
             'amountMap'=> $amountMap
         ];
     }
+
     public function get_personal($request){
         global $wpdb;
         $original_db = $wpdb->dbname;
@@ -1481,7 +1538,6 @@ class PayrollRestController extends Controller
         $wpdb->select($original_db);
         return $employees;
     }
-
     function pag_people($request)
     {
         global $wpdb;
@@ -1606,8 +1662,6 @@ class PayrollRestController extends Controller
             ]
             : $results;
     }
-    
-
     public function delete($data)
     {
         global $wpdb;
