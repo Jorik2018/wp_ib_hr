@@ -1462,11 +1462,6 @@ class PayrollRestController extends Controller
             'amountMap'=> $amountMap
         ];
     }
-
-    function pag_people($request) {
-    
-    } 
-    
     public function get_personal($request){
         global $wpdb;
         $original_db = $wpdb->dbname;
@@ -1484,8 +1479,133 @@ class PayrollRestController extends Controller
         );
         $wpdb->select($original_db);
         return $employees;
-
     }
+
+    function pag_people($request)
+    {
+        global $wpdb;
+
+        $from = isset($request['from']) ? intval($request['from']) : 0;
+        $to   = isset($request['to']) ? intval($request['to']) : 0;
+
+        $query = get_param($request, 'query');
+        $dni = get_param($request, 'dni') ?: get_param($request, 'code');
+        $apellidosNombres = get_param($request, 'apellidosNombres') ?: get_param($request, 'fullName');
+        $actividad = get_param($request, 'actividad');
+        $organo = get_param($request, 'organo');
+        $organoId = get_param($request, 'organoId');
+        $unidadOrganica = get_param($request, 'unidadOrganica');
+        $tipoDeContrato = get_param($request, 'tipoDeContrato');
+        $afpOnp = get_param($request, 'afpOnp');
+        $estado = get_param($request, 'estado');
+
+        $db_erp = get_option("db_ofis");
+
+        $where = [];
+        $params = [];
+
+        // Exclusión principal
+        $where[] = "NOT EXISTS (
+            SELECT 1 
+            FROM {$db_erp}.rem_payroll_type_people pp
+            WHERE pp.people_id = pe.n
+        )";
+
+        // Filtros seguros
+        if ($query) {
+            $like = '%' . $wpdb->esc_like($query) . '%';
+            $where[] = "(pe.apellidos_nombres LIKE %s OR pe.dni LIKE %s)";
+            $params[] = $like;
+            $params[] = $like;
+        }
+
+        if ($apellidosNombres) {
+            $like = '%' . $wpdb->esc_like($apellidosNombres) . '%';
+            $where[] = "pe.apellidos_nombres LIKE %s";
+            $params[] = $like;
+        }
+
+        if ($organo) {
+            $like = '%' . $wpdb->esc_like($organo) . '%';
+            $where[] = "pe.organo LIKE %s";
+            $params[] = $like;
+        }
+
+        if ($actividad) {
+            $like = '%' . $wpdb->esc_like($actividad) . '%';
+            $where[] = "pe.actividad LIKE %s";
+            $params[] = $like;
+        }
+
+        if ($organoId) {
+            $where[] = "pe.organo_id = %s";
+            $params[] = $organoId;
+        }
+
+        if ($estado) {
+            $where[] = "pe.estado = %s";
+            $params[] = $estado;
+        }
+
+        if ($unidadOrganica) {
+            $like = '%' . $wpdb->esc_like(strtoupper($unidadOrganica)) . '%';
+            $where[] = "UPPER(pe.unidad_organica) LIKE %s";
+            $params[] = $like;
+        }
+
+        if ($tipoDeContrato) {
+            $like = '%' . $wpdb->esc_like($tipoDeContrato) . '%';
+            $where[] = "pe.tipo_de_contrato LIKE %s";
+            $params[] = $like;
+        }
+
+        if ($afpOnp) {
+            $like = '%' . $wpdb->esc_like($afpOnp) . '%';
+            $where[] = "pe.afp_onp LIKE %s";
+            $params[] = $like;
+        }
+
+        if ($dni) {
+            $like = '%' . $wpdb->esc_like($dni) . '%';
+            $where[] = "pe.dni LIKE %s";
+            $params[] = $like;
+        }
+
+        $where_sql = count($where) ? 'WHERE ' . implode(' AND ', $where) : '';
+
+        $sql = "SELECT SQL_CALC_FOUND_ROWS 
+                    pe.*, 
+                    pe.n AS id, 
+                    pe.apellidos_nombres AS fullName, 
+                    pe.dni AS code
+                FROM {$db_erp}.m_personal pe
+                {$where_sql}";
+
+        if ($to > 0) {
+            $sql .= " LIMIT %d, %d";
+            $params[] = $from;
+            $params[] = $to;
+        }
+
+        // Preparar query seguro
+        $prepared_sql = $wpdb->prepare($sql, $params);
+
+        $results = $wpdb->get_results($prepared_sql, ARRAY_A);
+
+        if ($wpdb->last_error) {
+            return t_error($wpdb->last_error);
+        }
+
+        $results = mapKeysToCamelCase($results);
+
+        return $to > 0
+            ? [
+                'data' => $results,
+                'size' => $wpdb->get_var("SELECT FOUND_ROWS()")
+            ]
+            : $results;
+    }
+    
 
     public function delete($data)
     {
