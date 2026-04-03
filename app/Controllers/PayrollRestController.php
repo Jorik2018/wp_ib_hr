@@ -382,7 +382,7 @@ class PayrollRestController extends Controller
             'callback' => array($this, 'add_person')
         ));
 
-        register_rest_route('api/payroll', 'people', array(
+        register_rest_route('api/payroll', 'values', array(
             'methods' => 'POST',
             'callback' => array($this, 'post_people')
         ));
@@ -402,9 +402,9 @@ class PayrollRestController extends Controller
             'callback' => array($this, 'download')
         ));
 
-        register_rest_route('api/payroll', '/process', array(
+        register_rest_route('api/payroll', '/generate', array(
             'methods' => 'POST',
-            'callback' => array($this, 'process')
+            'callback' => array($this, 'generate')
         ));
     
         register_rest_route('api', '/payroll', array(
@@ -597,7 +597,8 @@ class PayrollRestController extends Controller
              LEFT JOIN $db_erp.rem_payroll_type pt ON pt.id=p.type_id
              WHERE canceled=0 " .
             (isset($query) ? " AND (comments LIKE '%$query%')" : "") .
-            ($to > 0 ? " LIMIT $from,$to" : ""),
+            ($to > 0 ? " LIMIT $from,$to" : "")
+            ." ORDER BY p.id DESC",
             ARRAY_A
         );
 
@@ -636,25 +637,6 @@ class PayrollRestController extends Controller
             'data' => $results,
             'size' => $wpdb->get_var('SELECT FOUND_ROWS()')
         ] : $results;
-    }
-
-
-    function assignLeafIndexes(array &$headers)
-    {
-        $index = 0;
-
-        $walk = function (&$items) use (&$walk, &$index) {
-            foreach ($items as &$h) {
-                if (isset($h['children']) && count($h['children']) > 0) {
-                    $walk($h['children']);
-                } elseif (!isset($h['index'])) {
-                    //$h['index'] = $index++; // solo hojas obtienen índice
-                }
-            }
-        };
-
-        $walk($headers);
-        return $headers;
     }
 
     public function pag_concept($request)
@@ -1248,17 +1230,15 @@ class PayrollRestController extends Controller
         $result = $this -> calculatePayroll($payroll);
         $headers = $result['headers'];
         $wpdb->select($original_db);
-        //$headers = $this->assignLeafIndexes($headers);
         return [
             ... (array)mapKeysToCamelCase($payroll),
-            
             'headers' => $headers,
             'items' => $result['items'],
             'amountMap'=> $result['amountMap']
         ];
     }
 
-    public function process($request)
+    public function generate($request)
     {
         global $wpdb;
 
