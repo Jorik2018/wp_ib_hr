@@ -372,6 +372,11 @@ class PayrollRestController extends Controller
             'callback' => array($this, 'get_personal')
         ));
 
+        register_rest_route('api/payroll', '(?P<id>\d+)/people', array(
+            'methods' => 'GET',
+            'callback' => array($this, 'pag_people')
+        ));
+
         register_rest_route('api/payroll', 'type', array(
             'methods' => 'GET',
             'callback' => array($this, 'pag_type')
@@ -1458,6 +1463,10 @@ class PayrollRestController extends Controller
         ];
     }
 
+    function pag_people($request) {
+    
+    } 
+    
     public function get_personal($request){
         global $wpdb;
         $original_db = $wpdb->dbname;
