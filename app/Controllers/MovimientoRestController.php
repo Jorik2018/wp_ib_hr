@@ -382,12 +382,12 @@ class MovimientoRestController extends Controller
     <div>
         <table class="no-border">
             <tr>
-                <td><b>OFIS</b><br>Organismo de Focalización de Información Social
+                <td width="25"><b>OFIS</b><br>Organismo de Focalización de Información Social
                 Código:SDGSIT<br>
                 Versión: V.0.1
                 </td>
                 <td><h3 class="title">ACTA DE ENTREGA</h3></td>
-                <td class="right">
+                <td width="25" class="right">
                     Jr. de la Unión N° 264<br>
                     Edificio el Palacio - Piso 6.<br>
                     Cercado Lima - Lima<br>
@@ -400,7 +400,7 @@ class MovimientoRestController extends Controller
 
         <!-- DATOS USUARIO -->
         <table>
-            <tr><td class="section" >DATOS DEL USUARIO</td></tr>
+            <tr><td class="section" colspan="2">DATOS DEL USUARIO</td></tr>
             <tr>
                 <td>Número de Documento</td><td><b><?= $data['personal']['dni'] ?? '' ?></b></td>
             </tr>
@@ -414,8 +414,7 @@ class MovimientoRestController extends Controller
                 <td>Unidad Orgánica</td><td><?= $data['personal']['unidadOrganica'] ?? '' ?></td>
             </tr>
             <tr>
-                <td>Codigo Registro</td><td><?= $data['dni'] ?? '' ?>
-                <?= str_replace(' ', '', $data['personal']['apellidosNombres'] ?? '') ?></td>
+                <td>Codigo Registro</td><td><b><?= $data['dni'] ?? '' ?><?= str_replace(' ', '', $data['personal']['apellidosNombres'] ?? '') ?></b></td>
              
             </tr>
         </table>
