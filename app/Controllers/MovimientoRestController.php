@@ -333,38 +333,7 @@ class MovimientoRestController extends Controller
         $db_erp = get_option("db_ofis");
         $wpdb->select($db_erp);
 
-        $id = get_param($request, 'id');
-
-        $acta = $wpdb->get_row($wpdb->prepare("
-            SELECT *
-            FROM $db_erp.r_actas
-            WHERE id=%d
-        ", $id), ARRAY_A);
-
-        if (!$acta) {
-            wp_die("Acta no encontrada");
-        }
-
-        $acta['personal'] = $wpdb->get_row($wpdb->prepare("
-            SELECT *
-            FROM $db_erp.m_personal
-            WHERE dni=%d
-        ", $acta['dni']), ARRAY_A);
-
-        $acta['resources'] = $wpdb->get_results($wpdb->prepare("
-            SELECT 
-                d.id,
-                r.tipo,
-                r.codpatrimonio,
-                r.codigo,
-                r.modelo,
-                r.marca,
-                r.observaciones
-            FROM r_actas_det d
-            INNER JOIN t_recursos r ON r.id = d.resource_id
-            WHERE d.movement_id = %d
-            ORDER BY d.id ASC
-        ", $acta['id']), ARRAY_A);
+        $acta = $this->get($request);
 
         $wpdb->select($original_db);
 
@@ -411,31 +380,42 @@ class MovimientoRestController extends Controller
     </style>
 
     <div>
-
-        <!-- HEADER -->
         <table class="no-border">
             <tr>
-                <td><b>OFIS</b><br>Organismo de Focalización de Información Social</td>
+                <td><b>OFIS</b><br>Organismo de Focalización de Información Social
+                Código:SDGSIT<br>
+                Versión: V.0.1
+                </td>
+                <td><h3 class="title">ACTA DE ENTREGA</h3></td>
                 <td class="right">
                     Jr. de la Unión N° 264<br>
+                    Edificio el Palacio - Piso 6.<br>
                     Cercado Lima - Lima<br>
                     Fecha: <?= date('d/m/Y') ?>
                 </td>
             </tr>
         </table>
 
-        <h3 class="title">ACTA DE ENTREGA</h3>
+
 
         <!-- DATOS USUARIO -->
         <table>
-            <tr><td class="section" colspan="4">DATOS DEL USUARIO</td></tr>
+            <tr><td class="section" >DATOS DEL USUARIO</td></tr>
             <tr>
-                <td>DNI</td><td><?= $data['personal']['dni'] ?? '' ?></td>
-                <td>Nombre</td><td><?= $data['personal']['apellidos_nombres'] ?? '' ?></td>
+                <td>Número de Documento</td><td><b><?= $data['personal']['dni'] ?? '' ?></b></td>
+            </tr>
+            <tr>
+                <td>Nombres y Apellidos</td><td><?= $data['personal']['apellidosNombres'] ?? '' ?></td>
             </tr>
             <tr>
                 <td>Cargo</td><td><?= $data['personal']['cargo'] ?? '' ?></td>
-                <td>Unidad</td><td><?= $data['personal']['unidad'] ?? '' ?></td>
+            </tr>
+            <tr>
+                <td>Unidad Orgánica</td><td><?= $data['personal']['unidadOrganica'] ?? '' ?></td>
+            </tr>
+            <tr>
+                <td>Codigo Registro</td><td><?= $data['dni'] ?? '' ?>
+                <?= $data['personal']['apellidosNombres'] ?? '' ?></td>
             </tr>
         </table>
 
@@ -457,7 +437,7 @@ class MovimientoRestController extends Controller
             <?php foreach ($data['resources'] as $i => $r): ?>
             <tr>
                 <td class="center"><?= $i + 1 ?></td>
-                <td><?= $r['tipo'] ?></td>
+                <td><?= $r['typeName'] ?></td>
                 <td><?= $r['codpatrimonio'] ?></td>
                 <td><?= $r['codigo'] ?></td>
                 <td><?= $r['modelo'] ?></td>
