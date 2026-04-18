@@ -415,7 +415,8 @@ class MovimientoRestController extends Controller
             </tr>
             <tr>
                 <td>Codigo Registro</td><td><?= $data['dni'] ?? '' ?>
-                <?= $data['personal']['apellidosNombres'] ?? '' ?></td>
+                <?= str_replace(' ', '', $data['personal']['apellidosNombres'] ?? '') ?></td>
+             
             </tr>
         </table>
 
