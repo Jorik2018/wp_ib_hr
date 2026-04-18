@@ -382,7 +382,7 @@ class MovimientoRestController extends Controller
     
         <table class="no-border">
             <tr>
-                <td width="25%"><b>OFIS</b><br>Organismo de Focalización de Información Social
+                <td width="25%"><b>OFIS</b><br>Organismo de Focalización de Información Social<br>
                 Código:SDGSIT<br>
                 Versión: V.0.1
                 </td>
