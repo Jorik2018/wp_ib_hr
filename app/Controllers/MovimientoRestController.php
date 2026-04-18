@@ -382,12 +382,12 @@ class MovimientoRestController extends Controller
     <div>
         <table class="no-border">
             <tr>
-                <td width="25"><b>OFIS</b><br>Organismo de Focalización de Información Social
+                <td width="25%"><b>OFIS</b><br>Organismo de Focalización de Información Social
                 Código:SDGSIT<br>
                 Versión: V.0.1
                 </td>
                 <td><h3 class="title">ACTA DE ENTREGA</h3></td>
-                <td width="25" class="right">
+                <td width="25%" class="right">
                     Jr. de la Unión N° 264<br>
                     Edificio el Palacio - Piso 6.<br>
                     Cercado Lima - Lima<br>
