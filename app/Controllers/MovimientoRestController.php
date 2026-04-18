@@ -423,7 +423,7 @@ class MovimientoRestController extends Controller
 
         <!-- EQUIPOS -->
         <table>
-            <tr><td class="section" colspan="8">DESCRIPCIÓN DE EQUIPO</td></tr>
+            <tr><td class="section" colspan="7">DESCRIPCIÓN DE EQUIPO</td></tr>
             <tr>
                 <th width="18">#</th>
                 <th width="10%">Tipo</th>
