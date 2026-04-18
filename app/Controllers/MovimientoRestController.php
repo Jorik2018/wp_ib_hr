@@ -379,7 +379,7 @@ class MovimientoRestController extends Controller
         .section { background: #eee; font-weight: bold; }
     </style>
 
-    <div>
+    
         <table class="no-border">
             <tr>
                 <td width="25%"><b>OFIS</b><br>Organismo de Focalización de Información Social
@@ -425,7 +425,7 @@ class MovimientoRestController extends Controller
         <table>
             <tr><td class="section" colspan="8">DESCRIPCIÓN DE EQUIPO</td></tr>
             <tr>
-                <th width="20">#</th>
+                <th width="18">#</th>
                 <th width="10%">Tipo</th>
                 <th width="15%">Cod. Patrimonial</th>
                 <th width="15%">Código</th>
@@ -474,7 +474,7 @@ class MovimientoRestController extends Controller
             </tr>
         </table>
 
-    </div>
+    
 
     <?php
         return ob_get_clean();
