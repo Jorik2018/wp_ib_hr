@@ -68,7 +68,7 @@ class MovimientoRestController extends Controller
             'callback' => array($this, 'delete')
         ));
 
-        register_rest_route('api/payroll', '/download', array(
+        register_rest_route('api/hr', '/download', array(
             'methods' => 'POST',
             'callback' => array($this, 'download')
         ));
