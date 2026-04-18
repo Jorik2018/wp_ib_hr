@@ -9,7 +9,7 @@ use function IB\directory\Util\t_error;
 use function IB\directory\Util\get_param;
 use function IB\directory\Util\mapKeysToSnakeCase;
 use function IB\directory\Util\mapKeysToCamelCase;
-
+use Dompdf\Dompdf;
 class MovimientoRestController extends Controller
 {
 
@@ -66,6 +66,11 @@ class MovimientoRestController extends Controller
         register_rest_route('api/hr', '/movement/(?P<ids>[0-9,]+)', array(
             'methods' => 'DELETE',
             'callback' => array($this, 'delete')
+        ));
+
+        register_rest_route('api/payroll', '/download', array(
+            'methods' => 'POST',
+            'callback' => array($this, 'download')
         ));
     }
 
@@ -224,6 +229,7 @@ class MovimientoRestController extends Controller
     public function get($request)
     {
         global $wpdb;
+
         $original_db = $wpdb->dbname;
         $db_erp = get_option("db_ofis");
         $o = $wpdb->get_row($wpdb->prepare("SELECT * FROM $db_erp.r_actas WHERE id=%d", $request['id']), ARRAY_A);
@@ -281,8 +287,6 @@ class MovimientoRestController extends Controller
         $results = mapKeysToCamelCase($results);
         return $to > 0 ? array('data' => $results, 'size' => $wpdb->get_var('SELECT FOUND_ROWS()')) : $results;
     }
-
-
     public function delete($data)
     {
         global $wpdb;
@@ -319,6 +323,181 @@ class MovimientoRestController extends Controller
         }
         $wpdb->select($original_db);
         return true;
+    }
+
+    public function download($request)
+    {
+        global $wpdb;
+
+        $original_db = $wpdb->dbname;
+        $db_erp = get_option("db_ofis");
+        $wpdb->select($db_erp);
+
+        $id = get_param($request, 'id');
+
+        $acta = $wpdb->get_row($wpdb->prepare("
+            SELECT *
+            FROM $db_erp.r_actas
+            WHERE id=%d
+        ", $id), ARRAY_A);
+
+        if (!$acta) {
+            wp_die("Acta no encontrada");
+        }
+
+        $acta['personal'] = $wpdb->get_row($wpdb->prepare("
+            SELECT *
+            FROM $db_erp.m_personal
+            WHERE dni=%d
+        ", $acta['dni']), ARRAY_A);
+
+        $acta['resources'] = $wpdb->get_results($wpdb->prepare("
+            SELECT 
+                d.id,
+                r.tipo,
+                r.codpatrimonio,
+                r.codigo,
+                r.modelo,
+                r.marca,
+                r.observaciones
+            FROM r_actas_det d
+            INNER JOIN t_recursos r ON r.id = d.resource_id
+            WHERE d.movement_id = %d
+            ORDER BY d.id ASC
+        ", $acta['id']), ARRAY_A);
+
+        $wpdb->select($original_db);
+
+        $html = $this->render_acta_template($acta);
+
+        $this->export_pdf(
+            "ACTA_ENTREGA_" . $acta['id'],
+            $html
+        );
+    }
+
+    function export_pdf($filename, $html)
+    {
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+
+        $dompdf = new Dompdf([
+            'isRemoteEnabled' => true
+        ]);
+
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        header("Content-Type: application/pdf");
+        header("Content-Disposition: attachment; filename=\"{$filename}.pdf\"");
+        echo $dompdf->output();
+        exit;
+    }
+    function render_acta_template($data)
+    {
+        ob_start();
+    ?>
+    <style>
+        body { font-family: Arial; font-size: 11px; }
+        table { width: 100%; border-collapse: collapse; }
+        td, th { border: 1px solid #999; padding: 4px; }
+        .no-border td { border: none; }
+        .title { text-align: center; font-weight: bold; font-size: 16px; }
+        .right { text-align: right; }
+        .center { text-align: center; }
+        .section { background: #eee; font-weight: bold; }
+    </style>
+
+    <div>
+
+        <!-- HEADER -->
+        <table class="no-border">
+            <tr>
+                <td><b>OFIS</b><br>Organismo de Focalización de Información Social</td>
+                <td class="right">
+                    Jr. de la Unión N° 264<br>
+                    Cercado Lima - Lima<br>
+                    Fecha: <?= date('d/m/Y') ?>
+                </td>
+            </tr>
+        </table>
+
+        <h3 class="title">ACTA DE ENTREGA</h3>
+
+        <!-- DATOS USUARIO -->
+        <table>
+            <tr><td class="section" colspan="4">DATOS DEL USUARIO</td></tr>
+            <tr>
+                <td>DNI</td><td><?= $data['personal']['dni'] ?? '' ?></td>
+                <td>Nombre</td><td><?= $data['personal']['apellidos_nombres'] ?? '' ?></td>
+            </tr>
+            <tr>
+                <td>Cargo</td><td><?= $data['personal']['cargo'] ?? '' ?></td>
+                <td>Unidad</td><td><?= $data['personal']['unidad'] ?? '' ?></td>
+            </tr>
+        </table>
+
+        <br>
+
+        <!-- EQUIPOS -->
+        <table>
+            <tr><td class="section" colspan="8">DESCRIPCIÓN DE EQUIPO</td></tr>
+            <tr>
+                <th width="5%">#</th>
+                <th width="10%">Tipo</th>
+                <th width="15%">Cod. Patrimonial</th>
+                <th width="15%">Código</th>
+                <th width="15%">Modelo</th>
+                <th width="15%">Marca</th>
+                <th width="25%">Observaciones</th>
+            </tr>
+
+            <?php foreach ($data['resources'] as $i => $r): ?>
+            <tr>
+                <td class="center"><?= $i + 1 ?></td>
+                <td><?= $r['tipo'] ?></td>
+                <td><?= $r['codpatrimonio'] ?></td>
+                <td><?= $r['codigo'] ?></td>
+                <td><?= $r['modelo'] ?></td>
+                <td><?= $r['marca'] ?></td>
+                <td><?= $r['observaciones'] ?></td>
+            </tr>
+            <?php endforeach; ?>
+
+        </table>
+
+        <br>
+
+        <!-- ACLARACION -->
+        <table>
+            <tr><td class="section">ACLARACIÓN Y/O JUSTIFICACIÓN DE LA SOLICITUD</td></tr>
+            <tr><td height="60"></td></tr>
+        </table>
+
+        <br>
+
+        <!-- CONFORMIDAD -->
+        <table>
+            <tr><td class="section">CONFORMIDAD</td></tr>
+            <tr><td height="60"></td></tr>
+        </table>
+
+        <br><br>
+
+        <!-- FIRMAS -->
+        <table class="no-border">
+            <tr>
+                <td class="center">_____________________<br>Responsable de entrega</td>
+                <td class="center">_____________________<br>Responsable de recepción</td>
+            </tr>
+        </table>
+
+    </div>
+
+    <?php
+        return ob_get_clean();
     }
 
 }
