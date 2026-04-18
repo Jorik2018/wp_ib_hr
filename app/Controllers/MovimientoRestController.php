@@ -425,13 +425,13 @@ class MovimientoRestController extends Controller
         <table>
             <tr><td class="section" colspan="8">DESCRIPCIÓN DE EQUIPO</td></tr>
             <tr>
-                <th width="5%">#</th>
+                <th width="20">#</th>
                 <th width="10%">Tipo</th>
                 <th width="15%">Cod. Patrimonial</th>
                 <th width="15%">Código</th>
                 <th width="15%">Modelo</th>
                 <th width="15%">Marca</th>
-                <th width="25%">Observaciones</th>
+                <th>Observaciones</th>
             </tr>
 
             <?php foreach ($data['resources'] as $i => $r): ?>
